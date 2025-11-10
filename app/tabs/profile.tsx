@@ -98,35 +98,35 @@ const profile = () => {
         {/* Name */}
         <View style={styles.row}>
           <Text style={styles.label}>Name:</Text>
-          <TextInput style={[styles.value, { width: "70%" }]} />
+          <TextInput style={[styles.value, { width: "70%", outline:'none', borderWidth:0 }]} />
         </View>
         <View style={styles.divider} />
 
         {/* Phone */}
         <View style={styles.row}>
           <Text style={styles.label}>Phone No:</Text>
-          <TextInput style={[styles.value, { width: "70%" }]} />
+          <TextInput style={[styles.value, { width: "70%", height:20, outline:'none', borderWidth:0 }]} />
         </View>
         <View style={styles.divider} />
 
         {/* Location */}
         <View style={styles.row}>
           <Text style={styles.label}>Location:</Text>
-          <TextInput style={[styles.value, { width: "70%" }]} />
+          <TextInput style={[styles.value, { width: "70%", height:20, outline:'none', borderWidth:0 }]} />
         </View>
         <View style={styles.divider} />
 
         {/* Email */}
         <View style={styles.row}>
           <Text style={styles.label}>Email:</Text>
-          <TextInput style={[styles.value, { width: "70%" }]} />
+          <TextInput style={[styles.value, { width: "70%", height:20, outline:'none', borderWidth:0 }]} />
         </View>
         <View style={styles.divider} />
 
         {/* Last Delivery */}
         <View style={styles.row}>
           <Text style={styles.label}>Last Delivery:</Text>
-          <TextInput style={[styles.value, { width: "70%" }]} />
+          <TextInput style={[styles.value, { width: "70%", height:20, outline:'none', borderWidth:0 }]} />
         </View>
 
         {/* Item Delivered */}
@@ -180,9 +180,9 @@ const styles = StyleSheet.create({
   },
   row: {
     flexDirection: "row",
-    // justifyContent: "space-around",
+    justifyContent: "flex-start",
     alignItems: "center",
-    // marginBottom: 10,
+    marginBottom: 9,
   },
   label: {
     fontWeight: "700",

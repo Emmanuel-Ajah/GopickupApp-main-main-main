@@ -20,14 +20,14 @@ export default function RootLayout() {
   }, []);
 
   // Restore last visited route
-  useEffect(() => {
-    (async () => {
-      const lastRoute = await AsyncStorage.getItem("lastRoute");
-      if (lastRoute && lastRoute !== pathname) {
-        router.replace(lastRoute as any);
-      }
-    })();
-  }, []);
+  // useEffect(() => {
+  //   (async () => {
+  //     const lastRoute = await AsyncStorage.getItem("lastRoute");
+  //     if (lastRoute && lastRoute !== pathname) {
+  //       router.replace(lastRoute as any);
+  //     }
+  //   })();
+  // }, []);
 
   // Save route whenever it changes
   // useEffect(() => {
@@ -36,11 +36,12 @@ export default function RootLayout() {
   //   }
   // }, [pathname]);
 
-  // if (!loaded) return null;
+  if (!loaded) return null;
 
   return (
       <Stack screenOptions={{ headerShown: false }}>
         <StatusBar style="auto" />
+        <Stack.Screen name="TermsOfService" />
         <Stack.Screen name="index" />
         <Stack.Screen name="info" />
         <Stack.Screen name="tabs" />

@@ -299,20 +299,22 @@ export default function Home() {
         </View>
 
         {/* Register Vendor Card */}
-        <View style={styles.vendorCard}>
-          <Image
-            source={require("../../assets/images/Futures 1.png")}
-            style={{ width: 68.94, height: 62.85, marginRight: 10 }}
-          />
-          <View>
-            <Text style={{ fontSize: 13, fontWeight: "800" }}>
-              Register as a building material vendor.
-            </Text>
-            <Text style={{ fontSize: 11, fontWeight: "400" }}>
-              Begin your journey to great business values
-            </Text>
+        <TouchableOpacity>
+          <View style={styles.vendorCard}>
+            <Image
+              source={require("../../assets/images/Futures 1.png")}
+              style={{ width: 68.94, height: 62.85, marginRight: 10 }}
+            />
+            <View>
+              <Text style={{ fontSize: 13, fontWeight: "800" }}>
+                Register as a building material vendor.
+              </Text>
+              <Text style={{ fontSize: 11, fontWeight: "400" }}>
+                Begin your journey to great business values
+              </Text>
+            </View>
           </View>
-        </View>
+        </TouchableOpacity>
         <Image
           source={require("../../assets/images/Truck GoPick 1.png")}
           style={{

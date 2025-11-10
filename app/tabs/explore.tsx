@@ -78,7 +78,7 @@ const Explore = () => {
         {/* Refer a Friend */}
         <View style={styles.referCard}>
           <Image
-            source={require("../../assets/images/Friends & Gifts.png")}
+            source={require("../../assets/images/Friends.png")}
             style={styles.referImage}
           />
           <View>

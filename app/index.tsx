@@ -2,7 +2,7 @@ import GoogleSignInButton from "@/components/GoogleSignInButton";
 import { useRouter } from "expo-router";
 import { Image, StatusBar, Text, View } from "react-native";
 import Button from "../components/Button";
-
+import React from "react";
 export default function HomeScreen() {
   const router = useRouter();
   return (
