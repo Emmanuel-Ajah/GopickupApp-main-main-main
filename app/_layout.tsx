@@ -41,7 +41,7 @@ export default function RootLayout() {
   return (
       <Stack screenOptions={{ headerShown: false }}>
         <StatusBar style="auto" />
-        <Stack.Screen name="TermsOfService" />
+        {/* <Stack.Screen name="TermsOfService" /> */}
         <Stack.Screen name="index" />
         <Stack.Screen name="info" />
         <Stack.Screen name="tabs" />

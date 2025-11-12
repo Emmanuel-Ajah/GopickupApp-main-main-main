@@ -1,4 +1,3 @@
-import Ionicons from "@expo/vector-icons/Ionicons";
 import React from "react";
 import {
   Image,
@@ -8,107 +7,133 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import MapView, { PROVIDER_GOOGLE } from "react-native-maps";
+import MapView from "react-native-maps";
+import Ionicons from "@expo/vector-icons/Ionicons";
 
-const map = () => {
+const MapScreen = () => {
   return (
-    <View>
-      <View
-        style={{
-          flexDirection: "row",
-          justifyContent: "space-between",
-          alignItems: "center",
-          padding: 20,
-          backgroundColor: "white",
-          shadowColor: "#000",
-          shadowOffset: { width: 0, height: 2 },
-          shadowOpacity: 0.1,
-          shadowRadius: 6,
-          elevation: 3,
-        }}
-      >
-        <Text style={{ fontSize: 30.91, fontWeight: "bold" }}>Map</Text>
-        <View style={{ flexDirection: "row", alignItems: "center" }}>
-          <TouchableOpacity>
-            <Ionicons name="ellipsis-vertical" size={28} color="black" />
-          </TouchableOpacity>
-        </View>
+    <View style={styles.screen}>
+      {/* Header */}
+      <View style={styles.header}>
+        <Text style={styles.headerTitle}>Map</Text>
+        <TouchableOpacity>
+          <Ionicons name="ellipsis-vertical" size={28} color="black" />
+        </TouchableOpacity>
       </View>
-      <View style={{ alignItems: "center", marginTop: 20 }}>
-        <View
-          style={{
-            borderWidth: 1,
-            width: 366,
-            height: 64,
-            paddingLeft: 23,
-            borderRadius: 39,
-            flexDirection: "row",
-            justifyContent: "flex-start",
-            alignItems: "center",
-            backgroundColor: "white",
-          }}
-        >
+
+      {/* User Info Card */}
+      <View style={styles.userCardContainer}>
+        <View style={styles.userCard}>
           <Image
             source={require("../../assets/images/myImage.jpg")}
-            style={{
-              width: 45,
-              height: 45,
-              borderRadius: 100,
-              marginRight: 20,
-            }}
+            style={styles.userImage}
           />
           <View>
-            <Text style={{ color: "#1E1E1E", fontWeight: "600" }}>
-              John Doe
-            </Text>
-            <View style={{ flexDirection: "row" }}>
-              <Text
-                style={{
-                  color: "white",
-                  backgroundColor: "#439D25",
-                  fontSize: 15,
-                  // height: 11.23,
-                  // width: 37.93,
-                  textAlign: "center",
-                  paddingHorizontal: 4,
-                  borderRadius: 100,
-                  fontWeight: "600",
-                }}
-              >
-                User ID
-              </Text>
-              <Text
-                style={{ color: "#1E1E1E", fontWeight: "300", marginLeft: 4 }}
-              >
-                D422Q7827
-              </Text>
+            <Text style={styles.userName}>John Doe</Text>
+            <View style={styles.userIdRow}>
+              <Text style={styles.userIdBadge}>User ID</Text>
+              <Text style={styles.userIdText}>D422Q7827</Text>
             </View>
           </View>
         </View>
       </View>
-      <View style={styles.container}>
+
+      {/* Map Section */}
+      <View style={styles.mapContainer}>
         {/* <MapView
-          provider={PROVIDER_GOOGLE}
           style={styles.map}
           initialRegion={{
-            latitude: 37.78825,
-            longitude: -122.4324,
-            latitudeDelta: 0.0922,
-            longitudeDelta: 0.0421,
-          }} */}
+            latitude: 6.5244, Lagos, Nigeria example
+            longitude: 3.3792,
+            latitudeDelta: 0.05,
+            longitudeDelta: 0.05,
+          }}
+          showsUserLocation={true}
+        /> */}
       </View>
-      <StatusBar hidden={true} />
+
+      <StatusBar hidden />
     </View>
   );
 };
 
-export default map;
+export default MapScreen;
 
 const styles = StyleSheet.create({
-  container: {
+  screen: {
     flex: 1,
+    backgroundColor: "#f8f8f8",
+  },
+  header: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingHorizontal: 20,
+    paddingVertical: 15,
+    backgroundColor: "white",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    elevation: 3,
+  },
+  headerTitle: {
+    fontSize: 30,
+    fontWeight: "bold",
+  },
+  userCardContainer: {
+    alignItems: "center",
+    marginTop: 20,
+  },
+  userCard: {
+    borderWidth: 1,
+    width: 360,
+    height: 64,
+    paddingLeft: 23,
+    borderRadius: 39,
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "white",
+  },
+  userImage: {
+    width: 45,
+    height: 45,
+    borderRadius: 100,
+    marginRight: 20,
+  },
+  userName: {
+    color: "#1E1E1E",
+    fontWeight: "600",
+  },
+  userIdRow: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  userIdBadge: {
+    color: "white",
+    backgroundColor: "#439D25",
+    fontSize: 13,
+    textAlign: "center",
+    paddingHorizontal: 6,
+    borderRadius: 100,
+    fontWeight: "600",
+  },
+  userIdText: {
+    color: "#1E1E1E",
+    fontWeight: "300",
+    marginLeft: 6,
+  },
+  mapContainer: {
+    flex: 1,
+    marginHorizontal: 20,
+    marginTop: 20,
+    borderRadius: 15,
+    overflow: "hidden",
+    borderWidth: 1,
+    borderColor: "#ddd",
   },
   map: {
-    flex: 1,
+    width: "100%",
+    height: "100%",
   },
 });

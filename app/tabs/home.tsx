@@ -13,9 +13,15 @@ import {
   View,
 } from "react-native";
 
+import BuyMaterialContent from '@/components/BuyMaterialContent'
+import NaturalResourcesContent from '@/components/NaturalResourcesContent'
+import PostRequestContent from '@/components/PostRequestContent'
+import TrackDeliveryContent from '@/components/TrackDeliveryContent'
+
 export default function Home() {
   const [selected, setSelected] = useState("Buy Material");
   const [visible, setVisible] = useState(false);
+  const [activeTab, setActiveTab] = useState(null);
 
   const tabs = [
     "Buy Material",
@@ -233,7 +239,11 @@ export default function Home() {
             {tabs.map((tab) => (
               <TouchableOpacity
                 key={tab}
-                onPress={() => setSelected(tab)}
+                onPress={() => {
+                  setSelected(tab);
+                  setActiveTab(tab);
+                  setVisible(true);
+                }}
                 style={[
                   styles.button,
                   selected === tab && styles.selectedButton,
@@ -247,6 +257,38 @@ export default function Home() {
               </TouchableOpacity>
             ))}
           </ScrollView>
+          <Modal
+              visible={visible}
+              transparent={false}
+              animationType="slide"
+              onRequestClose={() => setVisible(false)}
+            >
+              <View style={{ flex: 1, backgroundColor: "white", padding: 20 }}>
+                <View
+                  style={{
+                    flexDirection: "row",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                  }}
+                >
+                  <TouchableOpacity onPress={() => setVisible(false)}>
+                    <Ionicons name="close" size={28} color="black" />
+                  </TouchableOpacity>
+
+                  <TouchableOpacity onPress={() => setVisible(false)}>
+                    <Image
+                      source={require("../../assets/images/Settings.png")}
+                      style={{ width: 30, height: 30, marginLeft: 20 }}
+                    />
+                  </TouchableOpacity>
+                </View>
+
+                {activeTab === "Buy Material" && <BuyMaterialContent />}
+                {activeTab === "Natural Resources" && <NaturalResourcesContent />}
+                {activeTab === "Post a Request" && <PostRequestContent />}
+                {activeTab === "Track My Delivery" && <TrackDeliveryContent />}
+              </View>
+            </Modal>
         </View>
 
         {/* Cards Row */}
