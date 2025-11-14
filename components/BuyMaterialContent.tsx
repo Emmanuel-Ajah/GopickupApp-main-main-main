@@ -1,5 +1,5 @@
 import React from "react";
-import { ScrollView, Text } from "react-native";
+import { ScrollView, Text, View } from "react-native";
 import Products from "./ProductItems";
 export default function BuyMaterialContent() {
   return (
