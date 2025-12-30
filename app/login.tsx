@@ -1,9 +1,11 @@
-import GoogleLogInButton from "@/components/GoogleLogInButton";
+import Ionicons from "@expo/vector-icons/Ionicons";
+import { BlurView } from "expo-blur";
 import { useRouter } from "expo-router";
-import { useState } from "react";
+import React, { useState } from "react";
 import {
-  Alert,
+  Dimensions,
   Image,
+  ScrollView,
   StatusBar,
   StyleSheet,
   Text,
@@ -11,193 +13,288 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-export default function Login() {
+
+const { width } = Dimensions.get("window");
+
+export default function LoginScreen() {
   const router = useRouter();
-  
+  const [focusedField, setFocusedField] = useState<string | null>(null);
 
-  
-
-  
-  return (
-    <View
-      style={{
-        // justifyContent: "center",
-        alignItems: "center",
-        backgroundColor: "#439D25",
-        flex: 1,
-      }}
-    >
-      <StatusBar hidden={true} />
-      <View style={Styles.centered}>
-        <Image
-          source={require("../assets/images/GoPickUpWhite .png")}
-          style={{ width: 190.74, height: 76 }}
+  const InputField = ({ label, icon, placeholder, keyboardType = "default", secureTextEntry = false, fieldId }: any) => (
+    <View style={Styles.inputGroup}>
+      <Text style={Styles.label}>{label}</Text>
+      <View style={[
+        Styles.inputContainer,
+        focusedField === fieldId && Styles.inputContainerFocused
+      ]}>
+        <Ionicons name={icon} size={20} color={focusedField === fieldId ? "#FFF" : "#FFFFFF80"} style={Styles.inputIcon} />
+        <TextInput
+          style={Styles.input}
+          placeholder={placeholder}
+          placeholderTextColor="#FFFFFF60"
+          keyboardType={keyboardType}
+          secureTextEntry={secureTextEntry}
+          cursorColor="#FFF"
+          onFocus={() => setFocusedField(fieldId)}
+          onBlur={() => setFocusedField(null)}
         />
-        <View style={Styles.LoginContainer}>
-          <View style={Styles.MainLogin}>
-            <View style={{ width: "90%" }}>
-              <Text
-                style={{
-                  marginBottom: 22,
-                  fontWeight: "700",
-                  fontSize: 22.52,
-                  marginTop: 15,
-                  color: "white",
-                }}
-              >
-                Login
-              </Text>
-              <View>
-                <Text style={{ color: "white" }}>Email:</Text>
-                <TextInput
-                  // value={email}
-                  // onChangeText={setEmail}
-                  style={{
-                    height: 40,
-                    borderColor: "white",
-                    borderBottomWidth: 0.25,
-                    width: "100%",
-                  }}
-                />
-              </View>
-              <View>
-                <Text style={{ marginTop: 22, color: "white" }}>Password:</Text>
-                <TextInput
-                  secureTextEntry
-                  // value={password}
-                  // onChangeText={setPassword}
-                  style={{
-                    height: 40,
-                    borderColor: "white",
-                    borderBottomWidth: 0.25,
-                    width: "100%",
-                  }}
-                />
-              </View>
-            </View>
-            <TouchableOpacity
-              style={{
-                marginTop: 22,
-              }}
-            >
-              <Text style={{ color: "white", fontWeight: "700", fontSize: 9 }}>
-                Forget Password
-              </Text>
-            </TouchableOpacity>
-            <GoogleLogInButton
-              onPress={() => {
-                // TODO: Implement Google sign-in logic here
-                console.log("Google Sign-In pressed");
-              }}
-            />
-            <View
-              style={{
-                flexDirection: "row",
-                justifyContent: "flex-start",
-                alignItems: "center",
-                marginBottom: 20,
-              }}
-            >
-              <TouchableOpacity
-                onPress={() => {
-                  // handleLogin();
-                }}
-                style={{
-                  marginTop: 22,
-                  backgroundColor: "white",
-                  width: 134,
-                  height: 50,
-                  borderRadius: 100,
-                  justifyContent: "center",
-                  alignItems: "center",
-                  // marginLeft: 30,
-                  flexDirection: "row",
-                }}
-              >
-                <Image
-                  source={require("../assets/images/mynaui_face-id-solid.png")}
-                  style={{ width: 20, height: 20, tintColor: "#439D25" }}
-                />{" "}
-                <Text
-                  style={{
-                    color: "#439D25",
-                    fontWeight: "700",
-                    fontSize: 19.11,
-                    marginLeft: 5,
-                  }}
-                >
-                  Face ID
-                </Text>
-              </TouchableOpacity>
+      </View>
+    </View>
+  );
 
-                <TouchableOpacity
-                onPress={() => {
-                  router.push("/info2");
-                }}
-                style={{
-                  marginTop: 22,
-                  backgroundColor: "#439D25",
-                  width: 134,
-                  height: 50,
-                  borderRadius: 100,
-                  borderWidth: 1,
-                  borderColor: "white",
-                  justifyContent: "center",
-                  alignItems: "center",
-                  marginLeft: 10,
-                }}
-                >
-                <Text
-                  style={{ color: "white", fontWeight: "700", fontSize: 19.11 }}
-                >
-                  Login
-                </Text>
-                </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-      </View>
-      <View
-        style={{
-          position: "absolute",
-          bottom: 0,
-          width: "100%",
-          height: 100,
-          alignItems: "center",
-          justifyContent: "center",
-        }}
+  return (
+    <View style={Styles.mainContainer}>
+      <StatusBar barStyle="light-content" />
+
+      {/* Decorative Background Elements */}
+      <View style={[Styles.blob, Styles.blob1]} />
+      <View style={[Styles.blob, Styles.blob2]} />
+
+      <ScrollView
+        contentContainerStyle={Styles.scrollContent}
+        showsVerticalScrollIndicator={false}
       >
-        <Text style={{ color: "#424441BD", opacity: 0.8, fontWeight: 700 }}>
-          Keep Moving
-        </Text>
-      </View>
+        <View style={Styles.logoContainer}>
+          <Image
+            source={require("../assets/images/GoPickUpWhite .png")}
+            style={Styles.logo}
+            resizeMode="contain"
+          />
+        </View>
+
+        <BlurView intensity={20} tint="light" style={Styles.card}>
+          <View style={Styles.headerSection}>
+            <Text style={Styles.title}>Login</Text>
+            <Text style={Styles.subtitle}>Welcome back! Please enter your details.</Text>
+          </View>
+
+          <InputField
+            label="Email Address"
+            icon="mail-outline"
+            placeholder="example@mail.com"
+            keyboardType="email-address"
+            fieldId="email"
+          />
+          <InputField
+            label="Password"
+            icon="lock-closed-outline"
+            placeholder="••••••••"
+            secureTextEntry
+            fieldId="password"
+          />
+
+          <View style={Styles.actionSection}>
+            <TouchableOpacity style={Styles.forgotPassword} onPress={() => { }}>
+              <Text style={Styles.forgotPasswordText}>Forgot Password?</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={Styles.googleButton} activeOpacity={0.8}>
+              <Image
+                source={require("../assets/images/GoogleLogo.png")}
+                style={Styles.googleIcon}
+              />
+              <Text style={Styles.googleText}>Continue with Google</Text>
+            </TouchableOpacity>
+          </View>
+
+          <TouchableOpacity
+            style={Styles.loginButton}
+            onPress={() => router.push("/tabs/home")}
+            activeOpacity={0.9}
+          >
+            <Text style={Styles.loginButtonText}>Login</Text>
+            <Ionicons name="arrow-forward" size={20} color="#439D25" />
+          </TouchableOpacity>
+
+          <TouchableOpacity style={Styles.signupLink} onPress={() => router.push("/signup")}>
+            <Text style={Styles.signupLinkText}>Don't have an account? <Text style={Styles.signupLinkBold}>Sign Up</Text></Text>
+          </TouchableOpacity>
+        </BlurView>
+
+        <View style={Styles.footer}>
+          <Text style={Styles.footerText}>KEEP MOVING</Text>
+          <View style={Styles.footerLine} />
+        </View>
+      </ScrollView>
     </View>
   );
 }
 
 const Styles = StyleSheet.create({
-  centered: {
-    alignItems: "center",
-    marginTop: 140,
+  mainContainer: {
+    flex: 1,
+    backgroundColor: "#2E6B19", // Deeper, more professional green
   },
-  LoginContainer: {
+  logoContainer: {
+    marginBottom: 40,
     marginTop: 20,
-    width: 309,
-    height: 281.4,
+    alignItems: "center",
   },
-  MainLogin: {
-    width: 305,
-    // height: 281,
+  logo: {
+    width: 200,
+    height: 80,
+  },
+  blob: {
+    position: "absolute",
+    width: 300,
+    height: 300,
+    borderRadius: 150,
     backgroundColor: "#439D25",
-    borderRadius: 10,
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    shadowColor: "black",
-    shadowOffset: { width: 4, height: 4 },
-    elevation: 5,
-    marginHorizontal: "auto",
-    marginTop: 50,
-    // paddingVertical: 20,
+    opacity: 0.2,
+  },
+  blob1: {
+    top: -100,
+    right: -100,
+  },
+  blob2: {
+    bottom: -100,
+    left: -100,
+  },
+  scrollContent: {
+    flexGrow: 1,
+    alignItems: "center",
+    paddingVertical: 40,
     paddingHorizontal: 20,
+  },
+  card: {
+    width: width > 500 ? 450 : "100%",
+    borderRadius: 30,
+    paddingHorizontal: 30,
+    paddingVertical: 40,
+    overflow: "hidden",
+    borderWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.2)",
+    marginBottom: 40,
+  },
+  headerSection: {
+    marginBottom: 30,
+  },
+  title: {
+    fontSize: 32,
+    fontWeight: "800",
+    color: "#FFFFFF",
+    letterSpacing: -0.5,
+  },
+  subtitle: {
+    fontSize: 14,
+    color: "rgba(255, 255, 255, 0.7)",
+    marginTop: 5,
+    fontWeight: "500",
+  },
+  inputGroup: {
+    marginBottom: 20,
+  },
+  label: {
+    color: "rgba(255, 255, 255, 0.9)",
+    fontSize: 13,
+    fontWeight: "600",
+    marginBottom: 8,
+    marginLeft: 4,
+  },
+  inputContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "rgba(255, 255, 255, 0.1)",
+    borderRadius: 15,
+    paddingHorizontal: 15,
+    height: 55,
+    borderWidth: 1,
+    borderColor: "transparent",
+  },
+  inputContainerFocused: {
+    backgroundColor: "rgba(255, 255, 255, 0.15)",
+    borderColor: "rgba(255, 255, 255, 0.4)",
+  },
+  inputIcon: {
+    marginRight: 10,
+  },
+  input: {
+    flex: 1,
+    color: "#FFFFFF",
+    fontSize: 15,
+    fontWeight: "500",
+  },
+  actionSection: {
+    marginTop: 10,
+    gap: 15,
+  },
+  forgotPassword: {
+    alignSelf: "flex-end",
+  },
+  forgotPasswordText: {
+    color: "rgba(255, 255, 255, 0.8)",
+    fontSize: 13,
+    fontWeight: "600",
+  },
+  googleButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "rgba(255, 255, 255, 0.1)",
+    borderRadius: 15,
+    paddingVertical: 14,
+    borderWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.2)",
+  },
+  googleText: {
+    color: "#FFFFFF",
+    fontSize: 15,
+    fontWeight: "600",
+    marginLeft: 12,
+  },
+  googleIcon: {
+    width: 20,
+    height: 20,
+  },
+  loginButton: {
+    backgroundColor: "#FFFFFF",
+    height: 60,
+    borderRadius: 18,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 25,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.1,
+    shadowRadius: 20,
+    elevation: 5,
+  },
+  loginButtonText: {
+    fontSize: 18,
+    fontWeight: "800",
+    color: "#439D25",
+    marginRight: 10,
+  },
+  signupLink: {
+    marginTop: 25,
+    alignItems: "center",
+  },
+  signupLinkText: {
+    color: "rgba(255, 255, 255, 0.7)",
+    fontSize: 14,
+  },
+  signupLinkBold: {
+    color: "#FFFFFF",
+    fontWeight: "700",
+  },
+  footer: {
+    alignItems: "center",
+    paddingBottom: 20,
+  },
+  footerText: {
+    color: "#FFFFFF",
+    fontSize: 14,
+    fontWeight: "900",
+    letterSpacing: 4,
+    opacity: 0.6,
+  },
+  footerLine: {
+    width: 40,
+    height: 3,
+    backgroundColor: "#FFFFFF",
+    marginTop: 10,
+    borderRadius: 2,
+    opacity: 0.3,
   },
 });

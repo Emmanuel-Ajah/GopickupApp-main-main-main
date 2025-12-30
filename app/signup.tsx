@@ -1,6 +1,11 @@
-import React from "react";
-
+import Ionicons from "@expo/vector-icons/Ionicons";
+import { BlurView } from "expo-blur";
+import { useRouter } from "expo-router";
+import React, { useState } from "react";
 import {
+  Dimensions,
+  Image,
+  ScrollView,
   StatusBar,
   StyleSheet,
   Text,
@@ -9,100 +14,261 @@ import {
   View,
 } from "react-native";
 
-export default function Login() {
-  return (
-    <View
-      style={{
-        flex: 1,
-        // justifyContent: "center",
-        alignItems: "center",
-        backgroundColor: "#439D25",
-      }}
-    >
-      <StatusBar hidden={true} />
-      <View
-        style={[
-          Styles.container,
-          { marginTop: 100, paddingHorizontal: 30, paddingVertical: 30 },
-        ]}
-      >
-        <Text
-          style={{
-            fontWeight: "700",
-            fontSize: 22,
-            color: "white",
-            marginBottom: 20,
-          }}
-        >
-          Sign in
-        </Text>
-        <View>
-          <Text style={{ color: "white" }}>Name:</Text>
-          <TextInput style={Styles.input} />
-        </View>
-        <View>
-          <Text style={{ color: "white" }}>Email:</Text>
-          <TextInput style={Styles.input} />
-        </View>
-        <View>
-          <Text style={{ color: "white" }}>Phone No: +234</Text>
-          <TextInput style={Styles.input} />
-        </View>
-        <View>
-          <Text style={{ color: "white" }}>Date of Birth:</Text>
-          <TextInput style={Styles.input} />
-        </View>
-        <View>
-          <Text style={{ color: "white" }}>BVN:</Text>
-          <TextInput style={Styles.input} />
-        </View>
-        <View>
-          <Text style={{ color: "white" }}>Forget Password:</Text>
-          <TextInput style={Styles.input} />
-        </View>
-        <View style={{ justifyContent: "center", alignItems: "flex-end" }}>
-          <TouchableOpacity
-          style={{
-            marginTop: 30,
-            justifyContent: "center",
-            alignItems: "center",
-            backgroundColor: "white",
-            paddingVertical: 10,
-            borderRadius: 100,
-            width: 134,
-            height: 50,
-          }}
-        >
-          <Text style={{ fontSize: 19.11, fontWeight:900, color:'#439D25' }}>Sign in</Text>
-        </TouchableOpacity>
-        </View>
+const { width } = Dimensions.get("window");
+
+export default function SignupScreen() {
+  const router = useRouter();
+  const [focusedField, setFocusedField] = useState<string | null>(null);
+
+  const InputField = ({ label, icon, placeholder, keyboardType = "default", secureTextEntry = false, fieldId }: any) => (
+    <View style={Styles.inputGroup}>
+      <Text style={Styles.label}>{label}</Text>
+      <View style={[
+        Styles.inputContainer,
+        focusedField === fieldId && Styles.inputContainerFocused
+      ]}>
+        <Ionicons name={icon} size={20} color={focusedField === fieldId ? "#FFF" : "#FFFFFF80"} style={Styles.inputIcon} />
+        <TextInput
+          style={Styles.input}
+          placeholder={placeholder}
+          placeholderTextColor="#FFFFFF60"
+          keyboardType={keyboardType}
+          secureTextEntry={secureTextEntry}
+          cursorColor="#FFF"
+          onFocus={() => setFocusedField(fieldId)}
+          onBlur={() => setFocusedField(null)}
+        />
       </View>
+    </View>
+  );
+
+  return (
+    <View style={Styles.mainContainer}>
+      <StatusBar barStyle="light-content" />
+
+      {/* Decorative Background Elements */}
+      <View style={[Styles.blob, Styles.blob1]} />
+      <View style={[Styles.blob, Styles.blob2]} />
+
+      <ScrollView
+        contentContainerStyle={Styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        <BlurView intensity={20} tint="light" style={Styles.card}>
+          <View style={Styles.headerSection}>
+            <Text style={Styles.title}>Create Account</Text>
+            <Text style={Styles.subtitle}>Sign up to get started with GoPickup</Text>
+          </View>
+
+          <InputField label="Full Name" icon="person-outline" placeholder="Enter your full name" fieldId="name" />
+          <InputField label="Email Address" icon="mail-outline" placeholder="example@mail.com" keyboardType="email-address" fieldId="email" />
+          <InputField label="Phone Number" icon="call-outline" placeholder="+234 ..." keyboardType="phone-pad" fieldId="phone" />
+          <InputField label="Date of Birth" icon="calendar-outline" placeholder="DD / MM / YYYY" fieldId="dob" />
+          <InputField label="BVN" icon="shield-checkmark-outline" placeholder="11-digit BVN" keyboardType="number-pad" fieldId="bvn" />
+
+          <View style={Styles.actionSection}>
+            <TouchableOpacity style={Styles.forgotPassword} onPress={() => { }}>
+              <Text style={Styles.forgotPasswordText}>Forgot Password?</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={Styles.googleButton} activeOpacity={0.8}>
+              <Image
+                source={require("../assets/images/GoogleLogo.png")}
+                style={Styles.googleIcon}
+              />
+              <Text style={Styles.googleText}>Continue with Google</Text>
+            </TouchableOpacity>
+          </View>
+
+          <TouchableOpacity
+            style={Styles.signUpButton}
+            onPress={() => router.push("/login")}
+            activeOpacity={0.9}
+          >
+            <Text style={Styles.signUpButtonText}>Sign In</Text>
+            <Ionicons name="arrow-forward" size={20} color="#439D25" />
+          </TouchableOpacity>
+
+          <TouchableOpacity style={Styles.loginLink} onPress={() => router.push("/login")}>
+            <Text style={Styles.loginLinkText}>Already have an account? <Text style={Styles.loginLinkBold}>Login</Text></Text>
+          </TouchableOpacity>
+        </BlurView>
+
+        <View style={Styles.footer}>
+          <Text style={Styles.footerText}>KEEP MOVING</Text>
+          <View style={Styles.footerLine} />
+        </View>
+      </ScrollView>
     </View>
   );
 }
 
 const Styles = StyleSheet.create({
-  container: {
+  mainContainer: {
+    flex: 1,
+    backgroundColor: "#2E6B19", // Deeper, more professional green
+  },
+  blob: {
+    position: "absolute",
+    width: 300,
+    height: 300,
+    borderRadius: 150,
     backgroundColor: "#439D25",
-    // borderRadius: 10,
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    shadowColor: "black",
-    shadowOffset: { width: 1, height: 1 },
-    elevation: 5,
-    rowGap: 28,
-    marginHorizontal: "auto",
-    marginTop: 50,
-    // paddingVertical: 20,
-    // paddingHorizontal: 20,
-    width: "90%",
+    opacity: 0.2,
+  },
+  blob1: {
+    top: -100,
+    right: -100,
+  },
+  blob2: {
+    bottom: -100,
+    left: -100,
+  },
+  scrollContent: {
+    flexGrow: 1,
+    alignItems: "center",
+    paddingVertical: 40,
+    paddingHorizontal: 20,
+  },
+  card: {
+    width: width > 500 ? 450 : "100%",
+    borderRadius: 30,
+    paddingHorizontal: 30,
+    paddingVertical: 40,
+    overflow: "hidden",
+    borderWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.2)",
+    marginBottom: 40,
+  },
+  headerSection: {
+    marginBottom: 30,
+  },
+  title: {
+    fontSize: 32,
+    fontWeight: "800",
+    color: "#FFFFFF",
+    letterSpacing: -0.5,
+  },
+  subtitle: {
+    fontSize: 14,
+    color: "rgba(255, 255, 255, 0.7)",
+    marginTop: 5,
+    fontWeight: "500",
+  },
+  inputGroup: {
+    marginBottom: 20,
+  },
+  label: {
+    color: "rgba(255, 255, 255, 0.9)",
+    fontSize: 13,
+    fontWeight: "600",
+    marginBottom: 8,
+    marginLeft: 4,
+  },
+  inputContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "rgba(255, 255, 255, 0.1)",
+    borderRadius: 15,
+    paddingHorizontal: 15,
+    height: 55,
+    borderWidth: 1,
+    borderColor: "transparent",
+  },
+  inputContainerFocused: {
+    backgroundColor: "rgba(255, 255, 255, 0.15)",
+    borderColor: "rgba(255, 255, 255, 0.4)",
+  },
+  inputIcon: {
+    marginRight: 10,
   },
   input: {
-    backgroundColor: "none",
+    flex: 1,
+    color: "#FFFFFF",
+    fontSize: 15,
+    fontWeight: "500",
+  },
+  actionSection: {
+    marginTop: 10,
+    gap: 15,
+  },
+  forgotPassword: {
+    alignSelf: "flex-end",
+  },
+  forgotPasswordText: {
+    color: "rgba(255, 255, 255, 0.8)",
+    fontSize: 13,
+    fontWeight: "600",
+  },
+  googleButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "rgba(255, 255, 255, 0.1)",
+    borderRadius: 15,
+    paddingVertical: 14,
+    borderWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.2)",
+  },
+  googleText: {
+    color: "#FFFFFF",
+    fontSize: 15,
+    fontWeight: "600",
+    marginLeft: 12,
+  },
+  googleIcon: {
+    width: 20,
     height: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: "white",
-    outline: "none",
-    marginTop: 5,
+  },
+  signUpButton: {
+    backgroundColor: "#FFFFFF",
+    height: 60,
+    borderRadius: 18,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 25,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.1,
+    shadowRadius: 20,
+    elevation: 5,
+  },
+  signUpButtonText: {
+    fontSize: 18,
+    fontWeight: "800",
+    color: "#439D25",
+    marginRight: 10,
+  },
+  loginLink: {
+    marginTop: 25,
+    alignItems: "center",
+  },
+  loginLinkText: {
+    color: "rgba(255, 255, 255, 0.7)",
+    fontSize: 14,
+  },
+  loginLinkBold: {
+    color: "#FFFFFF",
+    fontWeight: "700",
+  },
+  footer: {
+    alignItems: "center",
+    paddingBottom: 20,
+  },
+  footerText: {
+    color: "#FFFFFF",
+    fontSize: 14,
+    fontWeight: "900",
+    letterSpacing: 4,
+    opacity: 0.6,
+  },
+  footerLine: {
+    width: 40,
+    height: 3,
+    backgroundColor: "#FFFFFF",
+    marginTop: 10,
+    borderRadius: 2,
+    opacity: 0.3,
   },
 });

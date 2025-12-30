@@ -8,17 +8,10 @@ import {
   StyleSheet,
   Text,
   TouchableOpacity,
-  View,
+  View
 } from "react-native";
 
-let MapView, Marker, MapViewDirections;
-
-// Only import map packages on mobile (not web)
-if (Platform.OS !== "web") {
-  MapView = require("react-native-maps").default;
-  Marker = require("react-native-maps").Marker;
-  MapViewDirections = require("react-native-maps-directions").default;
-}
+import { NativeDirections, NativeMap, NativeMarker } from "@/components/maps/NativeMap";
 
 const GOOGLE_MAPS_APIKEY = "YOUR_API_KEY"; // Replace this
 
@@ -52,58 +45,43 @@ const MapScreen = () => {
           </View>
         </View>
 
-        {/* Map or Web Fallback */}
+        {/* Map */}
         <View style={styles.mapWrapper}>
-          {Platform.OS === "web" ? (
-            <View
-              style={{
-                height: 300,
-                alignItems: "center",
-                justifyContent: "center",
-                backgroundColor: "#F1F1F1",
-              }}
-            >
-              <Text style={{ color: "#555", fontWeight: "500" }}>
-                Map view is available only on mobile.
-              </Text>
-            </View>
-          ) : (
-            <MapView
-              style={styles.map}
-              initialRegion={{
-                latitude: origin.latitude,
-                longitude: origin.longitude,
-                latitudeDelta: 0.05,
-                longitudeDelta: 0.05,
-              }}
-            >
-              <MapViewDirections
-                origin={origin}
-                destination={destination}
-                apikey={GOOGLE_MAPS_APIKEY}
-                strokeWidth={4}
-                strokeColor="#439D25"
-              />
+          <NativeMap
+            style={styles.map}
+            initialRegion={{
+              latitude: origin.latitude,
+              longitude: origin.longitude,
+              latitudeDelta: 0.05,
+              longitudeDelta: 0.05,
+            }}
+          >
+            <NativeDirections
+              origin={origin}
+              destination={destination}
+              apikey={GOOGLE_MAPS_APIKEY}
+              strokeWidth={4}
+              strokeColor="#439D25"
+            />
 
-              <Marker coordinate={origin}>
-                <View style={styles.markerContainer}>
-                  <Image
-                    source={require("../../assets/images/myImage.jpg")}
-                    style={styles.markerImage}
-                  />
-                </View>
-              </Marker>
+            <NativeMarker coordinate={origin}>
+              <View style={styles.markerContainer}>
+                <Image
+                  source={require("../../assets/images/myImage.jpg")}
+                  style={styles.markerImage}
+                />
+              </View>
+            </NativeMarker>
 
-              <Marker coordinate={destination}>
-                <View style={styles.markerContainer}>
-                  <Image
-                    source={require("../../assets/images/myImage.jpg")}
-                    style={styles.markerImage}
-                  />
-                </View>
-              </Marker>
-            </MapView>
-          )}
+            <NativeMarker coordinate={destination}>
+              <View style={styles.markerContainer}>
+                <Image
+                  source={require("../../assets/images/myImage.jpg")}
+                  style={styles.markerImage}
+                />
+              </View>
+            </NativeMarker>
+          </NativeMap>
 
           {/* Route Info Bubble */}
           {Platform.OS !== "web" && (
@@ -161,7 +139,7 @@ const MapScreen = () => {
               borderRadius: 100,
             }}
           >
-            <Text style={{fontSize:15, fontWeight:'900', color:'white'}}>Track</Text>
+            <Text style={{ fontSize: 15, fontWeight: '900', color: 'white' }}>Track</Text>
           </TouchableOpacity>
         </View>
 
