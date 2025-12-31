@@ -1,4 +1,4 @@
-import Ionicons from "@expo/vector-icons/Ionicons";
+import { Ionicons } from "@expo/vector-icons";
 import React from "react";
 import {
   Image,
@@ -6,258 +6,365 @@ import {
   StatusBar,
   StyleSheet,
   Text,
-  TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
 
-const profile = () => {
+const Profile = () => {
   return (
-    <View style={{ flex: 1, backgroundColor: "#F8F9F8" }}>
-      {/* Header */}
-      <View
-        style={{
-          flexDirection: "row",
-          justifyContent: "space-between",
-          alignItems: "center",
-          padding: 20,
-          backgroundColor: "white",
-          shadowColor: "#000",
-          shadowOffset: { width: 0, height: 2 },
-          shadowOpacity: 0.1,
-          shadowRadius: 6,
-          elevation: 3,
-        }}
-      >
-        <Text style={{ fontSize: 30.91, fontWeight: "bold" }}>Profile</Text>
-        <View style={{ flexDirection: "row", alignItems: "center" }}>
-          <TouchableOpacity>
-            <Ionicons name="ellipsis-vertical" size={28} color="black" />
-          </TouchableOpacity>
-        </View>
-      </View>
-      {/* Header close*/}
+    <View style={styles.mainContainer}>
+      <StatusBar barStyle="dark-content" />
 
-      <View style={{ alignItems: "center", marginTop: 20 }}>
-        <View
-          style={{
-            borderWidth: 1,
-            width: 366,
-            height: 64,
-            paddingLeft: 23,
-            borderRadius: 39,
-            flexDirection: "row",
-            justifyContent: "flex-start",
-            alignItems: "center",
-            backgroundColor: "white",
-          }}
-        >
+      {/* Header */}
+      <View style={styles.header}>
+        <Text style={styles.headerTitle}>Profile</Text>
+        <TouchableOpacity>
+          <Ionicons name="ellipsis-vertical" size={24} color="#000" />
+        </TouchableOpacity>
+      </View>
+
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.scrollContent}
+      >
+        {/* Top Profile Card */}
+        <View style={styles.profileCard}>
           <Image
             source={require("../../assets/images/myImage.jpg")}
-            style={{
-              width: 45,
-              height: 45,
-              borderRadius: 100,
-              marginRight: 20,
-            }}
+            style={styles.profileImage}
           />
-          <View>
-            <Text style={{ color: "#1E1E1E", fontWeight: "600" }}>
-              John Doe
-            </Text>
-            <View style={{ flexDirection: "row" }}>
-              <Text
-                style={{
-                  color: "white",
-                  backgroundColor: "#439D25",
-                  fontSize: 15,
-                  // height: 11.23,
-                  // width: 37.93,
-                  textAlign: "center",
-                  paddingHorizontal: 4,
-                  borderRadius: 100,
-                  fontWeight: "600",
-                }}
-              >
-                User ID
-              </Text>
-              <Text style={{ color: "#1E1E1E", fontWeight: "300", marginLeft: 4 }}>D422Q7827</Text>
+          <View style={styles.profileInfo}>
+            <Text style={styles.profileName}>Azih Monica</Text>
+            <View style={styles.idBadgeContainer}>
+              <View style={styles.idBadge}>
+                <Text style={styles.idBadgeText}>User ID</Text>
+              </View>
+              <Text style={styles.idText}>D422Q7827</Text>
             </View>
           </View>
         </View>
-      </View>
-      
-      <View
-        style={{ marginTop: 4, flexDirection: "row", gap: 10, marginLeft: 20, padding: 10 }}
-      >
-        <Text style={{ fontWeight: "600", color: "#374151" }}>
-          Account Info
-        </Text>
-      </View>
-      <ScrollView contentContainerStyle={styles.container}>
-        {/* Name */}
-        <View style={styles.row}>
-          <Text style={styles.label}>Name:</Text>
-          <TextInput style={[styles.value, { width: "70%", outline:'none', borderWidth:0 }]} />
-        </View>
-        <View style={styles.divider} />
 
-        {/* Phone */}
-        <View style={styles.row}>
-          <Text style={styles.label}>Phone No:</Text>
-          <TextInput style={[styles.value, { width: "70%", height:20, outline:'none', borderWidth:0 }]} />
-        </View>
-        <View style={styles.divider} />
-
-        {/* Location */}
-        <View style={styles.row}>
-          <Text style={styles.label}>Location:</Text>
-          <TextInput style={[styles.value, { width: "70%", height:20, outline:'none', borderWidth:0 }]} />
-        </View>
-        <View style={styles.divider} />
-
-        {/* Email */}
-        <View style={styles.row}>
-          <Text style={styles.label}>Email:</Text>
-          <TextInput style={[styles.value, { width: "70%", height:20, outline:'none', borderWidth:0 }]} />
-        </View>
-        <View style={styles.divider} />
-
-        {/* Last Delivery */}
-        <View style={styles.row}>
-          <Text style={styles.label}>Last Delivery:</Text>
-          <TextInput style={[styles.value, { width: "70%", height:20, outline:'none', borderWidth:0 }]} />
+        {/* Account Info Title */}
+        <View style={styles.sectionHeader}>
+          <Ionicons name="person-outline" size={24} color="#000" />
+          <Text style={styles.sectionTitle}>Account Info</Text>
         </View>
 
-        {/* Item Delivered */}
-        <Text style={styles.subText}>
-          <Text style={{ fontWeight: "600" }}>Item delivered:</Text> 2 trips of
-          coal
-        </Text>
+        {/* Info Card */}
+        <View style={styles.infoCard}>
+          <View style={styles.infoRow}>
+            <Text style={styles.label}>Name:</Text>
+            <Text style={styles.value}>Azih Monica</Text>
+          </View>
+          <View style={styles.divider} />
 
-        {/* Total Delivery */}
-        <View style={styles.deliveryBox}>
-          <Text style={styles.deliveryText}>
-            Total Delivery: <Text style={styles.deliveryCount}>30</Text>{" "}
-            <Text style={styles.successText}>Successful</Text>
+          <View style={styles.infoRow}>
+            <Text style={styles.label}>Phone No:</Text>
+            <Text style={styles.value}>+234 000 000 0000</Text>
+          </View>
+          <View style={styles.divider} />
+
+          <View style={styles.infoRow}>
+            <Text style={styles.label}>Location:</Text>
+            <Text style={styles.value}>Nigeria, Abuja</Text>
+          </View>
+          <View style={styles.divider} />
+
+          <View style={styles.infoRow}>
+            <Text style={styles.label}>Email:</Text>
+            <Text style={styles.value}>Azihmonica@gmail.com</Text>
+          </View>
+          <View style={styles.divider} />
+
+          <View style={[styles.infoRow, { marginTop: 15 }]}>
+            <Text style={styles.subLabel}>Last Delivery:</Text>
+            <Text style={styles.subValue}>May 6th, 2025</Text>
+          </View>
+          <Text style={styles.itemDelivered}>
+            <Text style={{ fontWeight: "600" }}>Item delivered:</Text> 2 trips of coal
           </Text>
-        </View>
 
-        {/* Warning */}
-        <View style={styles.warningBox}>
-          {/* <Feather name="alert-triangle" size={18} color="#EAB308" /> */}
-          <Ionicons name="warning" size={28} color="black" />
+          <View style={styles.totalDeliveryContainer}>
+            <View style={styles.totalDeliveryPill}>
+              <Text style={styles.totalDeliveryText}>
+                Total Delivery: <Text style={styles.totalDeliveryCount}>30</Text>
+              </Text>
+              <View style={styles.successBadge}>
+                <Text style={styles.successText}>Successful</Text>
+              </View>
+            </View>
+          </View>
 
-          <Text>You can only edit your profile once a month.</Text>
-        </View>
+          <View style={styles.warningContainer}>
+            <Ionicons name="warning" size={20} color="#EAB308" />
+            <Text style={styles.warningText}>
+              You Can Only Edit Your Profile Once a month.
+            </Text>
+          </View>
 
-        {/* Delete Account */}
-        <TouchableOpacity style={styles.deleteBtn}>
-          {/* <MaterialIcons name="delete-outline" size={20} color="red" /> */}
-          <Ionicons name="trash" size={20} color="orange" />
-          <Text style={styles.deleteText}>Delete Account</Text>
-        </TouchableOpacity>
-
-        {/* Edit Button */}
-        <View style={{ alignItems: "flex-end", marginBottom: 30, marginRight: 20 }}>
-          <TouchableOpacity style={styles.editBtn}>
-            <Text style={styles.editText}>Edit</Text>
+          <TouchableOpacity style={styles.deleteContainer}>
+            <Ionicons name="trash-outline" size={20} color="#FF3B30" />
+            <Text style={styles.deleteText}>Delete Account</Text>
           </TouchableOpacity>
+
+          <View style={styles.editBtnWrapper}>
+            <TouchableOpacity style={styles.editBtn}>
+              <Text style={styles.editBtnText}>Edit</Text>
+            </TouchableOpacity>
+          </View>
         </View>
+
+        {/* Refer a Friend Banner */}
+        <TouchableOpacity style={styles.referCard}>
+          <Image
+            source={require("../../assets/images/Futures 1.png")}
+            style={styles.referImage}
+          />
+          <View style={styles.referInfo}>
+            <Text style={styles.referTitle}>Refer a friend</Text>
+            <Text style={styles.referSub}>And get Bonus</Text>
+          </View>
+        </TouchableOpacity>
       </ScrollView>
-      <StatusBar hidden={true} />
+
+      {/* Spacing for Tab Bar */}
+      <View style={{ height: 100 }} />
     </View>
   );
 };
 
-export default profile;
-
 const styles = StyleSheet.create({
-  container: {
-    padding: 30,
-    backgroundColor: "#fff",
-    flexGrow: 1,
+  mainContainer: {
+    flex: 1,
+    backgroundColor: "#F8FBF8",
   },
-  row: {
+  header: {
     flexDirection: "row",
-    justifyContent: "flex-start",
+    justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 9,
+    paddingHorizontal: 20,
+    paddingTop: 60,
+    paddingBottom: 20,
+    backgroundColor: "transparent",
+  },
+  headerTitle: {
+    fontSize: 28,
+    fontWeight: "800",
+    color: "#000",
+  },
+  scrollContent: {
+    paddingHorizontal: 20,
+    paddingBottom: 20,
+  },
+  profileCard: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 50,
+    padding: 10,
+    paddingHorizontal: 15,
+    flexDirection: "row",
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: "#E0E0E0",
+    marginTop: 10,
+    alignSelf: "center",
+    width: "100%",
+  },
+  profileImage: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    borderWidth: 1,
+    borderColor: "#E0E0E0",
+  },
+  profileInfo: {
+    marginLeft: 15,
+  },
+  profileName: {
+    fontSize: 20,
+    fontWeight: "800",
+    color: "#000",
+  },
+  idBadgeContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 4,
+  },
+  idBadge: {
+    backgroundColor: "#439D25",
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 5,
+  },
+  idBadgeText: {
+    color: "#FFFFFF",
+    fontSize: 10,
+    fontWeight: "900",
+  },
+  idText: {
+    fontSize: 10,
+    color: "#606060",
+    marginLeft: 6,
+    fontWeight: "700",
+  },
+  sectionHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 30,
+    marginBottom: 15,
+  },
+  sectionTitle: {
+    fontSize: 20,
+    fontWeight: "800",
+    color: "#000",
+    marginLeft: 10,
+  },
+  infoCard: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 20,
+    padding: 20,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.05,
+    shadowRadius: 10,
+    elevation: 3,
+  },
+  infoRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 12,
   },
   label: {
-    fontWeight: "700",
     fontSize: 15,
+    fontWeight: "800",
+    color: "#000",
+    width: 80,
   },
   value: {
     fontSize: 15,
-    color: "#333",
-    marginLeft: 10,
+    color: "#000",
+    fontWeight: "500",
+    flex: 1,
   },
   divider: {
     height: 1,
-    backgroundColor: "#eee",
-    marginVertical: 5,
+    backgroundColor: "#F0F0F0",
   },
-  subText: {
-    marginTop: 6,
-    fontSize: 14,
-    color: "#444",
+  subLabel: {
+    fontSize: 15,
+    fontWeight: "500",
+    color: "#606060",
   },
-  deliveryBox: {
-    backgroundColor: "#ECFDF5",
-    padding: 8,
-    borderRadius: 10,
-    marginVertical: 20,
-    width: "60%",
+  subValue: {
+    fontSize: 15,
+    fontWeight: "800",
+    color: "#606060",
+    marginLeft: 15,
   },
-  deliveryText: {
+  itemDelivered: {
+    fontSize: 11,
+    color: "#606060",
+    marginTop: 5,
+  },
+  totalDeliveryContainer: {
+    marginTop: 20,
+  },
+  totalDeliveryPill: {
+    backgroundColor: "#F0F9EF",
+    borderRadius: 15,
+    paddingHorizontal: 15,
+    paddingVertical: 8,
+    flexDirection: "row",
+    alignItems: "center",
+    alignSelf: "flex-start",
+  },
+  totalDeliveryText: {
+    fontSize: 15,
     fontWeight: "700",
-    textAlign: "left",
+    color: "#606060",
   },
-  deliveryCount: {
+  totalDeliveryCount: {
     fontSize: 18,
     color: "#000",
+    fontWeight: "900",
+  },
+  successBadge: {
+    backgroundColor: "#E4F4E2",
+    paddingHorizontal: 10,
+    paddingVertical: 2,
+    borderRadius: 10,
+    marginLeft: 10,
   },
   successText: {
-    color: "#22C55E",
-    fontWeight: "600",
+    color: "#439D25",
+    fontSize: 10,
+    fontWeight: "800",
   },
-  warningBox: {
+  warningContainer: {
     flexDirection: "row",
     alignItems: "center",
-    // backgroundColor: "#FFFBEB",
-    // padding: 10,
-    borderRadius: 8,
-    marginBottom: 25,
+    marginTop: 25,
   },
   warningText: {
+    fontSize: 10,
+    color: "#606060",
     marginLeft: 8,
-    color: "#B45309",
-    fontSize: 13,
-    flex: 1,
+    fontWeight: "700",
   },
-  deleteBtn: {
+  deleteContainer: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "flex-start",
-    marginBottom: 30,
-    // marginTop: ,
+    marginTop: 40,
   },
   deleteText: {
-    color: "red",
-    fontWeight: "600",
-    marginLeft: 6,
+    color: "#439D25",
+    fontSize: 15,
+    fontWeight: "800",
+    marginLeft: 10,
+  },
+  editBtnWrapper: {
+    alignItems: "flex-end",
+    marginTop: -35,
   },
   editBtn: {
-    backgroundColor: "#16A34A",
+    backgroundColor: "#439D25",
+    borderRadius: 25,
+    paddingHorizontal: 35,
     paddingVertical: 12,
-    borderRadius: 30,
-    alignItems: "center",
-    width: 84,
   },
-  editText: {
-    color: "#fff",
-    fontWeight: "700",
+  editBtnText: {
+    color: "#FFFFFF",
     fontSize: 16,
+    fontWeight: "800",
+  },
+  referCard: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 20,
+    padding: 15,
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 25,
+    borderWidth: 1,
+    borderColor: "#F0F0F0",
+  },
+  referImage: {
+    width: 60,
+    height: 60,
+    resizeMode: "contain",
+  },
+  referInfo: {
+    marginLeft: 100,
+  },
+  referTitle: {
+    fontSize: 18,
+    fontWeight: "900",
+    color: "#439D25",
+  },
+  referSub: {
+    fontSize: 15,
+    fontWeight: "800",
+    color: "#000",
+    marginTop: 2,
   },
 });
+
+export default Profile;

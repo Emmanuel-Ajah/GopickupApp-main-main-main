@@ -1,24 +1,40 @@
 import React from "react";
-import { ScrollView, Text } from "react-native";
+import { ScrollView, StyleSheet, Text, View } from "react-native";
 import Items from "./Items";
 
 export default function NaturalResourcesContent() {
+  const resources = [
+    { name: "Coal", price: "N 7,300,000 per trip" },
+    { name: "Quarry Materials", price: "N 9,600 per ton" },
+    { name: "Sand & Gravel", price: "N 2,500 per ton" },
+    { name: "Crushed Stones", price: "N 3,200 per ton" },
+    { name: "Laterite", price: "N 1,800 per ton" },
+  ];
+
   return (
-    <>
-      <Text
-        style={{
-          fontSize: 20,
-          marginBottom: 10,
-          fontWeight: 700,
-        }}
-      >
-        Natural Resources
-      </Text>
-      <ScrollView>
-        <Items />
-        <Items />
-        <Items />
+    <View style={styles.container}>
+      <Text style={styles.title}>Natural Resources</Text>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
+        {resources.map((item, index) => (
+          <Items key={index} name={item.name} price={item.price} />
+        ))}
       </ScrollView>
-    </>
+    </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: "800",
+    color: "#000",
+    marginBottom: 20,
+    marginTop: 10,
+  },
+  scrollContent: {
+    paddingBottom: 20,
+  },
+});

@@ -1,6 +1,10 @@
-import Items from "@/components/Items";
-import Ionicons from "@expo/vector-icons/Ionicons";
-import React, { useState } from "react";
+import BookingDetailsContent from '@/components/BookingDetailsContent'
+import BuyMaterialContent from '@/components/BuyMaterialContent'
+import NaturalResourcesContent from '@/components/NaturalResourcesContent'
+import PostRequestContent from '@/components/PostRequestContent'
+import TrackDeliveryContent from '@/components/TrackDeliveryContent'
+import Ionicons from "@expo/vector-icons/Ionicons"
+import React, { useState } from "react"
 import {
   Image,
   Modal,
@@ -11,17 +15,12 @@ import {
   TextInput,
   TouchableOpacity,
   View,
-} from "react-native";
-
-import BuyMaterialContent from '@/components/BuyMaterialContent'
-import NaturalResourcesContent from '@/components/NaturalResourcesContent'
-import PostRequestContent from '@/components/PostRequestContent'
-import TrackDeliveryContent from '@/components/TrackDeliveryContent'
+} from "react-native"
 
 export default function Home() {
   const [selected, setSelected] = useState("Buy Material");
   const [visible, setVisible] = useState(false);
-  const [activeTab, setActiveTab] = useState(null);
+  const [activeTab, setActiveTab] = useState<string | null>(null);
 
   const tabs = [
     "Buy Material",
@@ -29,435 +28,545 @@ export default function Home() {
     "Post a Request",
     "Track My Delivery",
   ];
+
+  const handleTabPress = (tab: string) => {
+    setSelected(tab);
+    setActiveTab(tab);
+    setVisible(true);
+  };
+
   return (
-    <View style={{ flex: 1, backgroundColor: "#F8F9F8" }}>
-      <StatusBar hidden={true} />
+    <View style={styles.mainContainer}>
+      <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
+
       {/* Header */}
-      <View
-        style={{
-          flexDirection: "row",
-          justifyContent: "space-around",
-          alignItems: "center",
-          paddingTop: 20,
-        }}
-      >
-        <Text style={{ fontSize: 30.91, fontWeight: "bold" }}>Home</Text>
-        <View style={{ flexDirection: "row", alignItems: "center" }}>
-          <Image
-            source={require("../../assets/images/myImage.jpg")}
-            style={{
-              width: 25,
-              height: 25,
-              borderRadius: 100,
-              marginRight: 20,
-            }}
-          />
-          <View>
-            <Text>Azih Monica</Text>
-            <View style={{ flexDirection: "row", alignItems: "center" }}>
-              <Text
-                style={{
-                  backgroundColor: "#439D25",
-                  fontSize: 10,
-                  marginRight: 10,
-                  textAlign: "center",
-                  paddingHorizontal: 8,
-                  color: "white",
-                  borderRadius: 5,
-                }}
-              >
-                User ID
-              </Text>
-              <Text>D422Q7827</Text>
+      <View style={styles.header}>
+        <Text style={styles.headerTitle}>Home</Text>
+        <View style={styles.headerRight}>
+          <View style={styles.profileSection}>
+            <Image
+              source={require("../../assets/images/myImage.jpg")}
+              style={styles.profileImage}
+            />
+            <View style={styles.userInfo}>
+              <Text style={styles.userName}>Azih Monica</Text>
+              <View style={styles.idBadge}>
+                <Text style={styles.idLabel}>User ID</Text>
+                <Text style={styles.idValue}>D422Q7827</Text>
+              </View>
             </View>
           </View>
-          <TouchableOpacity>
-            <Image
-              source={require("../../assets/images/Settings.png")}
-              style={{
-                width: 20,
-                height: 20,
-                marginLeft: 20,
-              }}
-            />
+          <TouchableOpacity style={styles.notificationBtn}>
+            <Ionicons name="notifications-outline" size={28} color="#000" />
+            <View style={styles.notificationDot} />
           </TouchableOpacity>
         </View>
       </View>
 
-      {/* ✅ Scrollable content */}
       <ScrollView
-        style={{ flex: 1, marginHorizontal: 15, marginTop: 20 }}
+        style={styles.content}
         showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 100 }}
       >
-        <TextInput
-          style={{
-            width: "100%",
-            height: 50,
-            borderRadius: 27,
-            borderWidth: 2,
-            paddingHorizontal: 30,
-            marginTop: 10,
-            borderColor: "#439D25",
-          }}
-          placeholder="Search"
-          cursorColor={"#439D25"}
-          placeholderTextColor={"black"}
-        />
+        {/* Search Bar */}
+        <View style={styles.searchContainer}>
+          <TextInput
+            style={styles.searchInput}
+            placeholder="Search"
+            placeholderTextColor="#A0A0A0"
+          />
+          <TouchableOpacity style={styles.searchButton}>
+            <Ionicons name="search" size={20} color="white" />
+          </TouchableOpacity>
+        </View>
 
         {/* Coal Card */}
-        <View
-          style={{
-            backgroundColor: "#439D250D",
-            width: "100%",
-            height: 126,
-            flexDirection: "row",
-            alignItems: "center",
-            justifyContent: "space-around",
-            marginTop: 10,
-          }}
-        >
+        <View style={styles.coalCard}>
           <View>
-            <Text style={{ fontWeight: "900", marginBottom: 10 }}>Coal</Text>
-            <Text>Available</Text>
+            <Text style={styles.coalTitle}>Coal</Text>
+            <Text style={styles.coalSubtitle}>Available</Text>
             <TouchableOpacity
-              style={{
-                backgroundColor: "black",
-                borderRadius: 30,
-                alignItems: "center",
-                justifyContent: "center",
-                width: 84,
-                height: 36,
-                marginTop: 10,
+              style={styles.buyButton}
+              onPress={() => {
+                setActiveTab("Natural Resources");
+                setVisible(true);
               }}
-              onPress={() => setVisible(true)}
             >
-              <Text style={{ color: "white" }}>Buy</Text>
+              <Text style={styles.buyText}>Buy</Text>
             </TouchableOpacity>
           </View>
-          {/* Modal Begining */}
-          <Modal
-            visible={visible}
-            transparent={false} // make it full screen
-            animationType="slide"
-            onRequestClose={() => setVisible(false)}
-          >
-            <View
-              style={{
-                flex: 1,
-                backgroundColor: "white", // solid background, not transparent
-                padding: 20,
-              }}
-            >
-              {/* Header */}
-              <View
-                style={{
-                  flexDirection: "row",
-                  justifyContent: "space-between",
-                }}
-              >
-                <TouchableOpacity onPress={() => setVisible(false)}>
-                  <Ionicons name="close" size={28} color="black" />
-                </TouchableOpacity>
-
-                <TouchableOpacity onPress={() => setVisible(false)}>
-                  <Image
-                    source={require("../../assets/images/Settings.png")}
-                    style={{
-                      width: 30,
-                      height: 30,
-                      marginLeft: 20,
-                    }}
-                  />
-                </TouchableOpacity>
-              </View>
-
-              {/* Content */}
-              <Text style={{ fontSize: 20, marginBottom: 10, fontWeight: 700 }}>
-                Natural Resources
-              </Text>
-              <ScrollView>
-                <Items />
-                <Items />
-                <Items />
-                <Items />
-                <Items />
-                <Items />
-                <Items />
-                <Items />
-                <Items />
-              </ScrollView>
-              {/* Footer */}
-              <TouchableOpacity
-                onPress={() => setVisible(false)}
-                style={{
-                  backgroundColor: "#439D25",
-                  padding: 15,
-                  borderRadius: 12,
-                  alignItems: "center",
-                }}
-              >
-                <Text
-                  style={{ color: "white", fontWeight: "600", fontSize: 16 }}
-                >
-                  Confirm
-                </Text>
-              </TouchableOpacity>
-            </View>
-          </Modal>
-
-          {/* Modal End */}
-
           <Image
             source={require("../../assets/images/Rock.png")}
-            style={{
-              width: 184,
-              height: 111,
-              marginLeft: 20,
-            }}
+            style={styles.coalImage}
           />
         </View>
 
         {/* GoMarket Banner */}
-        <View style={{ marginTop: 20 }}>
+        <TouchableOpacity style={styles.bannerContainer}>
           <Image
             source={require("../../assets/images/GoMarket.png")}
-            style={{
-              width: "100%",
-              height: 101,
-              borderRadius: 10,
-            }}
+            style={styles.bannerImage}
+            resizeMode="cover"
           />
-        </View>
+        </TouchableOpacity>
 
         {/* Tabs */}
-        <View style={{ marginTop: 20 }}>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.scrollContainer}
-          >
+        <View style={styles.tabsContainer}>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
             {tabs.map((tab) => (
               <TouchableOpacity
                 key={tab}
-                onPress={() => {
-                  setSelected(tab);
-                  setActiveTab(tab);
-                  setVisible(true);
-                }}
+                onPress={() => handleTabPress(tab)}
                 style={[
-                  styles.button,
-                  selected === tab && styles.selectedButton,
+                  styles.tabButton,
+                  selected === tab && styles.selectedTabButton,
                 ]}
               >
                 <Text
-                  style={[styles.text, selected === tab && styles.selectedText]}
+                  style={[
+                    styles.tabText,
+                    selected === tab && styles.selectedTabText,
+                  ]}
                 >
                   {tab}
                 </Text>
               </TouchableOpacity>
             ))}
           </ScrollView>
-          <Modal
-              visible={visible}
-              transparent={false}
-              animationType="slide"
-              onRequestClose={() => setVisible(false)}
-            >
-              <View style={{ flex: 1, backgroundColor: "white", padding: 20 }}>
-                <View
-                  style={{
-                    flexDirection: "row",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                  }}
-                >
-                  <TouchableOpacity onPress={() => setVisible(false)}>
-                    <Ionicons name="close" size={28} color="black" />
-                  </TouchableOpacity>
-
-                  <TouchableOpacity onPress={() => setVisible(false)}>
-                    <Image
-                      source={require("../../assets/images/Settings.png")}
-                      style={{ width: 30, height: 30, marginLeft: 20 }}
-                    />
-                  </TouchableOpacity>
-                </View>
-
-                {activeTab === "Buy Material" && <BuyMaterialContent />}
-                {activeTab === "Natural Resources" && <NaturalResourcesContent />}
-                {activeTab === "Post a Request" && <PostRequestContent />}
-                {activeTab === "Track My Delivery" && <TrackDeliveryContent />}
-              </View>
-            </Modal>
         </View>
 
         {/* Cards Row */}
-        <View
-          style={{
-            flexDirection: "row",
-            marginTop: 30,
-            justifyContent: "space-between",
-          }}
-        >
-          <TouchableOpacity style={styles.card}>
-            <View
-              style={{ flexDirection: "row", justifyContent: "space-between" }}
-            >
-              <Text style={{ fontWeight: "700", fontSize: 15 }}>
-                Ready to {"\n"}Ship?
-              </Text>
-              <Image
-                source={require("../../assets/images/Location Logo.png")}
-                style={{ width: 38, height: 38 }}
-              />
+        <View style={styles.gridRow}>
+          <TouchableOpacity
+            style={styles.gridCard}
+            onPress={() => {
+              setActiveTab("Post a Request");
+              setVisible(true);
+            }}
+          >
+            <View style={styles.gridCardHeader}>
+              <Text style={styles.gridCardTitle}>Ready to{"\n"}Ship?</Text>
+              <View style={styles.iconBg}>
+                <Ionicons name="location-outline" size={20} color="#439D25" />
+              </View>
             </View>
-            <Text style={{ marginTop: 10, fontWeight: "700", fontSize: 15 }}>
-              Post a load
-            </Text>
-            <Text style={{ fontWeight: "400", fontSize: 12 }}>
-              Delivery and Pickup{"\n"}anywhere in Nigeria.
+            <Text style={styles.gridCardSub}>Post a load</Text>
+            <Text style={styles.gridCardDesc}>
+              Delivery and Pickup anywhere in Nigeria.
             </Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.card}>
-            <View
-              style={{ flexDirection: "row", justifyContent: "space-between" }}
-            >
-              <Text style={{ fontWeight: "700", fontSize: 15 }}>
-                Book a {"\n"}driver
-              </Text>
-              <Image
-                source={require("../../assets/images/Van.png")}
-                style={{ width: 38, height: 38 }}
-              />
+          <TouchableOpacity
+            style={styles.gridCard}
+            onPress={() => {
+              setActiveTab("Booking Details");
+              setVisible(true);
+            }}
+          >
+            <View style={styles.gridCardHeader}>
+              <Text style={styles.gridCardTitle}>Book a{"\n"}truck driver</Text>
+              <View style={styles.iconBg}>
+                <Ionicons name="bus-outline" size={20} color="#439D25" />
+              </View>
             </View>
-            <Text style={{ marginTop: 10, fontWeight: "700", fontSize: 12 }}>
-              Our Dispatch Equipment
-            </Text>
-            <Text style={{ fontWeight: "400", fontSize: 12 }}>
+            <Text style={styles.gridCardSub}>Our Dispatch Equipment</Text>
+            <Text style={styles.gridCardDesc}>
               Van, Pick Up, Truck, Flat bed, Trailer and Tipper.
             </Text>
           </TouchableOpacity>
         </View>
 
         {/* Register Vendor Card */}
-        <TouchableOpacity>
-          <View style={styles.vendorCard}>
-            <Image
-              source={require("../../assets/images/Futures 1.png")}
-              style={{ width: 68.94, height: 62.85, marginRight: 10 }}
-            />
-            <View>
-              <Text style={{ fontSize: 13, fontWeight: "800" }}>
-                Register as a building material vendor.
-              </Text>
-              <Text style={{ fontSize: 11, fontWeight: "400" }}>
-                Begin your journey to great business values
-              </Text>
-            </View>
+        <TouchableOpacity style={styles.vendorCard}>
+          <Image
+            source={require("../../assets/images/Futures 1.png")}
+            style={styles.vendorImage}
+          />
+          <View style={styles.vendorInfo}>
+            <Text style={styles.vendorTitle}>
+              Register as a building material vendor.
+            </Text>
+            <Text style={styles.vendorSub}>
+              Begin your journey to great business values
+            </Text>
           </View>
         </TouchableOpacity>
+
         <Image
           source={require("../../assets/images/Truck GoPick 1.png")}
-          style={{
-            width: "100%",
-
-            height: 183,
-            marginTop: 20,
-            borderTopLeftRadius: 10,
-            borderTopRightRadius: 12,
-          }}
+          style={styles.bottomTruckImage}
         />
 
-        <View
-          style={{
-            flexDirection: "row",
-            justifyContent: "flex-start",
-            alignItems: "center",
-            width: "100%",
-            height: 71,
-            backgroundColor: "#CDEBC9",
-            padding: 20,
-          }}
-        >
-          <View
-            style={{
-              borderWidth: 0.98,
-              borderColor: "white",
-              width: "100%",
-              flexDirection: "row",
-              padding: 5,
-            }}
-          >
+        {/* Driver Section */}
+        <View style={styles.driverSection}>
+          <View style={styles.driverBorder}>
             <Image
               source={require("../../assets/images/Futures 1.png")}
-              style={{
-                width: 36.227294921875,
-                height: 36.227294921875,
-                marginLeft: 13,
-              }}
+              style={styles.driverIcon}
             />
-
-            <View style={{ marginLeft: 15 }}>
-              <Text style={{ fontSize: 11, fontWeight: "700" }}>
-                Are you a Driver?
-              </Text>
-              <Text style={{ fontSize: 12, fontWeight: "700" }}>
-                Register to drive with Go pickup
-              </Text>
+            <View style={styles.driverTextContainer}>
+              <Text style={styles.driverQuestion}>Are you a Driver?</Text>
+              <Text style={styles.driverAction}>Register to drive with Go pickup</Text>
             </View>
           </View>
         </View>
       </ScrollView>
+
+      {/* Content Modal */}
+      <Modal
+        visible={visible}
+        transparent={false}
+        animationType="slide"
+        onRequestClose={() => setVisible(false)}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalHeader}>
+            <TouchableOpacity onPress={() => setVisible(false)}>
+              <Ionicons name="close" size={28} color="black" />
+            </TouchableOpacity>
+            <TouchableOpacity>
+              <Ionicons name="ellipsis-vertical" size={24} color="black" />
+            </TouchableOpacity>
+          </View>
+
+          {activeTab === "Buy Material" && <BuyMaterialContent />}
+          {activeTab === "Natural Resources" && <NaturalResourcesContent />}
+          {activeTab === "Post a Request" && <PostRequestContent />}
+          {activeTab === "Track My Delivery" && <TrackDeliveryContent />}
+          {activeTab === "Booking Details" && <BookingDetailsContent />}
+
+          {/* Fallback for Coal Card click if not strictly setting activeTab */}
+          {!activeTab && <NaturalResourcesContent />}
+
+          {activeTab !== "Post a Request" && activeTab !== "Booking Details" && (
+            <TouchableOpacity
+              onPress={() => setVisible(false)}
+              style={styles.confirmButton}
+            >
+              <Text style={styles.confirmText}>Confirm</Text>
+            </TouchableOpacity>
+          )}
+        </View>
+      </Modal>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  scrollContainer: {
-    paddingHorizontal: 10,
-    alignItems: "center",
+  mainContainer: {
+    flex: 1,
+    backgroundColor: "#F8FBF8",
   },
-  button: {
-    backgroundColor: "#439D2521",
-    borderRadius: 20,
-    paddingVertical: 8,
-    paddingHorizontal: 15,
-    marginRight: 10,
-  },
-  selectedButton: {
-    borderWidth: 2,
-    borderColor: "#439D25",
-  },
-  text: {
-    fontSize: 14,
-    color: "#000",
-    fontWeight: "500",
-  },
-  selectedText: {
-    fontWeight: "bold",
-  },
-  card: {
-    backgroundColor: "#439D2517",
-    width: 169,
-    height: 125,
-    padding: 15,
-    borderRadius: 10,
-  },
-  vendorCard: {
-    width: "100%",
-    height: 112.85,
-    padding: 20,
-    backgroundColor: "white",
+  header: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    borderRadius: 12,
+    paddingHorizontal: 20,
+    paddingTop: 60,
+    paddingBottom: 20,
+    backgroundColor: "#FFFFFF",
+  },
+  headerTitle: {
+    fontSize: 28,
+    fontWeight: "800",
+    color: "#000",
+  },
+  headerRight: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  profileSection: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  profileImage: {
+    width: 35,
+    height: 35,
+    borderRadius: 17.5,
+    borderWidth: 1,
+    borderColor: "#E0E0E0",
+  },
+  userInfo: {
+    marginLeft: 8,
+    marginRight: 15,
+  },
+  userName: {
+    fontSize: 13,
+    fontWeight: "700",
+    color: "#000",
+  },
+  idBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 2,
+  },
+  idLabel: {
+    backgroundColor: "#439D25",
+    color: "white",
+    fontSize: 8,
+    fontWeight: "800",
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+    overflow: "hidden",
+  },
+  idValue: {
+    fontSize: 9,
+    color: "#606060",
+    marginLeft: 4,
+    fontWeight: "600",
+  },
+  notificationBtn: {
+    position: "relative",
+  },
+  notificationDot: {
+    position: "absolute",
+    top: 2,
+    right: 4,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: "#FF3B30",
+    borderWidth: 1.5,
+    borderColor: "white",
+  },
+  content: {
+    flex: 1,
+    paddingHorizontal: 15,
+  },
+  searchContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#FFFFFF",
+    borderRadius: 30,
+    paddingLeft: 20,
+    paddingRight: 6,
+    height: 54,
+    borderWidth: 1,
+    borderColor: "#E0E0E0",
+    marginTop: 10,
+  },
+  searchInput: {
+    flex: 1,
+    fontSize: 15,
+    color: "#000",
+  },
+  searchButton: {
+    backgroundColor: "#439D25",
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  coalCard: {
+    backgroundColor: "#EFF7EE",
+    borderRadius: 20,
+    padding: 20,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginTop: 20,
+  },
+  coalTitle: {
+    fontSize: 18,
+    fontWeight: "800",
+    color: "#000",
+  },
+  coalSubtitle: {
+    fontSize: 14,
+    color: "#606060",
+    marginTop: 2,
+  },
+  buyButton: {
+    backgroundColor: "#000000",
+    borderRadius: 20,
+    paddingHorizontal: 25,
+    paddingVertical: 10,
+    marginTop: 15,
+    alignSelf: "flex-start",
+  },
+  buyText: {
+    color: "white",
+    fontWeight: "700",
+    fontSize: 14,
+  },
+  coalImage: {
+    width: 160,
+    height: 100,
+    resizeMode: "contain",
+  },
+  bannerContainer: {
+    marginTop: 20,
+    borderRadius: 15,
+    overflow: "hidden",
+  },
+  bannerImage: {
+    width: "100%",
+    height: 110,
+  },
+  tabsContainer: {
+    marginTop: 25,
+  },
+  tabButton: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 20,
+    paddingVertical: 10,
+    paddingHorizontal: 18,
+    marginRight: 10,
+    borderWidth: 1,
+    borderColor: "#E0E0E0",
+  },
+  selectedTabButton: {
+    borderColor: "#439D25",
+    backgroundColor: "#F0F9EF",
+  },
+  tabText: {
+    fontSize: 13,
+    color: "#606060",
+    fontWeight: "600",
+  },
+  selectedTabText: {
+    color: "#439D25",
+    fontWeight: "700",
+  },
+  gridRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: 25,
+  },
+  gridCard: {
+    backgroundColor: "#EFF7EE",
+    width: "48%",
+    borderRadius: 20,
+    padding: 15,
+  },
+  gridCardHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+  },
+  gridCardTitle: {
+    fontSize: 15,
+    fontWeight: "800",
+    color: "#000",
+  },
+  iconBg: {
+    backgroundColor: "#D9EBD7",
+    width: 34,
+    height: 34,
+    borderRadius: 10,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  gridCardSub: {
+    fontSize: 13,
+    fontWeight: "700",
+    color: "#000",
+    marginTop: 12,
+  },
+  gridCardDesc: {
+    fontSize: 11,
+    color: "#606060",
+    marginTop: 4,
+    lineHeight: 14,
+  },
+  vendorCard: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 20,
+    padding: 15,
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 25,
+    borderWidth: 1,
+    borderColor: "#F0F0F0",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 6,
-    elevation: 3,
+    shadowOpacity: 0.03,
+    shadowRadius: 10,
+    elevation: 2,
+  },
+  vendorImage: {
+    width: 60,
+    height: 60,
+    resizeMode: "contain",
+  },
+  vendorInfo: {
+    flex: 1,
+    marginLeft: 15,
+  },
+  vendorTitle: {
+    fontSize: 13,
+    fontWeight: "800",
+    color: "#000",
+  },
+  vendorSub: {
+    fontSize: 11,
+    color: "#606060",
+    marginTop: 2,
+  },
+  bottomTruckImage: {
+    width: "100%",
+    height: 160,
+    borderRadius: 20,
+    marginTop: 25,
+    resizeMode: "cover",
+  },
+  driverSection: {
+    marginTop: 25,
+    backgroundColor: "#CDEBC9",
+    padding: 15,
+    borderRadius: 12,
+  },
+  driverBorder: {
+    borderWidth: 1,
+    borderColor: "white",
+    borderStyle: "dashed",
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 10,
+    borderRadius: 8,
+  },
+  driverIcon: {
+    width: 40,
+    height: 40,
+    resizeMode: "contain",
+  },
+  driverTextContainer: {
+    marginLeft: 15,
+  },
+  driverQuestion: {
+    fontSize: 12,
+    fontWeight: "700",
+    color: "#000",
+  },
+  driverAction: {
+    fontSize: 13,
+    fontWeight: "700",
+    color: "#000",
+    marginTop: 2,
+  },
+  modalContainer: {
+    flex: 1,
+    backgroundColor: "white",
+    padding: 20,
+  },
+  modalHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 20,
+  },
+  confirmButton: {
+    backgroundColor: "#439D25",
+    padding: 16,
+    borderRadius: 15,
+    alignItems: "center",
     marginTop: 20,
+  },
+  confirmText: {
+    color: "white",
+    fontWeight: "700",
+    fontSize: 16,
   },
 });
