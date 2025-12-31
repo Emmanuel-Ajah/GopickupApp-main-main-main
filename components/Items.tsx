@@ -1,82 +1,106 @@
+import Ionicons from "@expo/vector-icons/Ionicons";
 import React from "react";
-import { Image, Text, TouchableOpacity, View } from "react-native";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
-const Items = () => {
+interface ItemProps {
+  name: string;
+  price: string;
+}
+
+const Items: React.FC<ItemProps> = ({ name, price }) => {
   return (
-    <View style={{ marginTop: 30, flex: 1 }}>
-      <View
-        style={{
-          backgroundColor: "white",
-          padding: 10,
-          borderRadius: 12,
-          shadowColor: "#000",
-          shadowOffset: { width: 0, height: 2 },
-          shadowOpacity: 0.1,
-          shadowRadius: 6,
-          elevation: 3,
-        }}
-      >
-        <View
-          style={{
-            borderWidth: 0.98,
-            borderColor: "#C4C4C4",
-            padding: 10,
-            borderRadius: 12,
-          }}
-        >
-          <View
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-            }}
-          >
-            <Text style={{ fontSize: 17.57, fontWeight: 700 }}>Coal</Text>
-            <TouchableOpacity>
-              <Image
-                source={require("../assets/images/Drop Down.png")}
-                style={{
-                  width: 27.72929573059082,
-                  height: 27.72929573059082,
-                  marginLeft: 20,
-                }}
-              />
-            </TouchableOpacity>
-          </View>
-          <View
-            style={{
-              // backgroundColor: "red",
-              flexDirection: "row",
-              justifyContent: "space-between",
-              alignItems: "center",
-              marginTop: 10,
-            }}
-          >
-            <View>
-              <Text>Available</Text>
-              <Text>N 7,300,000 per trip</Text>
-            </View>
-            <View>
-              <TouchableOpacity
-                style={{
-                  backgroundColor: "#439D25",
-                  borderRadius: 12,
-                  padding: 10,
-                  borderColor: "white",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  flexDirection: "row",
-                }}
-              >
-                <Text style={{ color: "white", fontWeight: "600" }}>
-                  Add to Chart
-                </Text>
-              </TouchableOpacity>
-            </View>
-          </View>
+    <View style={styles.cardContainer}>
+      <View style={styles.cardHeader}>
+        <View style={styles.titleSection}>
+          <Text style={styles.itemName}>{name}</Text>
+          <TouchableOpacity style={styles.arrowButton}>
+            <Ionicons name="arrow-forward" size={16} color="white" />
+          </TouchableOpacity>
         </View>
+      </View>
+
+      <View style={styles.cardBody}>
+        <View style={styles.priceSection}>
+          <Text style={styles.availableLabel}>Available</Text>
+          <Text style={styles.priceText}>{price}</Text>
+        </View>
+
+        <TouchableOpacity style={styles.addToChartBtn}>
+          <Text style={styles.addToChartText}>Add to Chart</Text>
+        </TouchableOpacity>
       </View>
     </View>
   );
 };
+
+const styles = StyleSheet.create({
+  cardContainer: {
+    backgroundColor: "white",
+    borderRadius: 15,
+    padding: 20,
+    marginBottom: 20,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.05,
+    shadowRadius: 10,
+    elevation: 3,
+    borderWidth: 1,
+    borderColor: "#F0F0F0",
+  },
+  cardHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 15,
+  },
+  titleSection: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  itemName: {
+    fontSize: 20,
+    fontWeight: "800",
+    color: "#000",
+    marginRight: 10,
+  },
+  arrowButton: {
+    backgroundColor: "#000",
+    width: 26,
+    height: 26,
+    borderRadius: 13,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  cardBody: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-end",
+  },
+  priceSection: {
+    flex: 1,
+  },
+  availableLabel: {
+    fontSize: 12,
+    color: "#808080",
+    marginBottom: 4,
+    fontWeight: "600",
+  },
+  priceText: {
+    fontSize: 15,
+    fontWeight: "800",
+    color: "#439D25",
+  },
+  addToChartBtn: {
+    backgroundColor: "#439D25",
+    borderRadius: 20,
+    paddingHorizontal: 18,
+    paddingVertical: 10,
+  },
+  addToChartText: {
+    color: "white",
+    fontSize: 13,
+    fontWeight: "700",
+  },
+});
 
 export default Items;
