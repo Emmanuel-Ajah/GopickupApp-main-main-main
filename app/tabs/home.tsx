@@ -4,6 +4,7 @@ import NaturalResourcesContent from '@/components/NaturalResourcesContent'
 import PostRequestContent from '@/components/PostRequestContent'
 import TrackDeliveryContent from '@/components/TrackDeliveryContent'
 import Ionicons from "@expo/vector-icons/Ionicons"
+import { useRouter } from "expo-router"
 import React, { useState } from "react"
 import {
   Image,
@@ -18,6 +19,7 @@ import {
 } from "react-native"
 
 export default function Home() {
+  const router = useRouter();
   const [selected, setSelected] = useState("Buy Material");
   const [visible, setVisible] = useState(false);
   const [activeTab, setActiveTab] = useState<string | null>(null);
@@ -56,7 +58,10 @@ export default function Home() {
               </View>
             </View>
           </View>
-          <TouchableOpacity style={styles.notificationBtn}>
+          <TouchableOpacity
+            style={styles.notificationBtn}
+            onPress={() => router.push("/tabs/notifications")}
+          >
             <Ionicons name="notifications-outline" size={28} color="#000" />
             <View style={styles.notificationDot} />
           </TouchableOpacity>

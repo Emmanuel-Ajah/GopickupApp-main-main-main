@@ -1,301 +1,349 @@
-import Ionicons from "@expo/vector-icons/Ionicons";
+import { Ionicons } from "@expo/vector-icons";
 import React from "react";
 import {
-  Image,
-  Platform,
   ScrollView,
   StatusBar,
   StyleSheet,
   Text,
   TouchableOpacity,
-  View
+  View,
 } from "react-native";
 
-import { NativeDirections, NativeMap, NativeMarker } from "@/components/maps/NativeMap";
-
-const GOOGLE_MAPS_APIKEY = "YOUR_API_KEY"; // Replace this
-
 const MapScreen = () => {
-  const origin = { latitude: 6.5244, longitude: 3.3792 };
-  const destination = { latitude: 6.465422, longitude: 3.406448 };
+  const timelineData = [
+    {
+      id: 1,
+      title: "Order Received",
+      description: "waiting for vendor release your material.",
+      time: "12:30 PM",
+      status: "completed",
+    },
+    {
+      id: 2,
+      title: "Preparing your order",
+      description: "Your goods will be ready in 1hr.",
+      time: "12:50 PM",
+      status: "completed",
+    },
+    {
+      id: 3,
+      title: "Driver Receives Materials",
+      description: "Your goods has been assigned to driver.",
+      time: "01:50 PM",
+      status: "completed",
+    },
+    {
+      id: 4,
+      title: "Driver Documentation",
+      description: "Drive is in touch with Go Pickup agent.",
+      time: "",
+      status: "pending",
+    },
+    {
+      id: 5,
+      title: "Driver has left mining location.",
+      description: "Your materials is on it way.",
+      time: "",
+      status: "pending",
+    },
+    {
+      id: 6,
+      title: "Driver Delivers goods at client's location.",
+      description: "Good delivered.",
+      time: "",
+      status: "pending",
+    },
+  ];
 
   return (
-    <ScrollView style={styles.screen}>
-      <View>
-        {/* Header */}
-        <View style={styles.header}>
-          <Text style={styles.headerTitle}>Map</Text>
-          <TouchableOpacity>
-            <Ionicons name="ellipsis-vertical" size={26} color="#1E1E1E" />
-          </TouchableOpacity>
-        </View>
+    <View style={styles.mainContainer}>
+      <StatusBar barStyle="dark-content" />
 
-        {/* User Card */}
-        <View style={styles.userCard}>
-          <Image
-            source={require("../../assets/images/myImage.jpg")}
-            style={styles.userImage}
-          />
-          <View>
-            <Text style={styles.userName}>Azih Monica</Text>
-            <View style={styles.userIdRow}>
-              <Text style={styles.userIdBadge}>User ID</Text>
-              <Text style={styles.userIdText}>D422Q7827</Text>
-            </View>
-          </View>
-        </View>
-
-        {/* Map */}
-        <View style={styles.mapWrapper}>
-          <NativeMap
-            style={styles.map}
-            initialRegion={{
-              latitude: origin.latitude,
-              longitude: origin.longitude,
-              latitudeDelta: 0.05,
-              longitudeDelta: 0.05,
-            }}
-          >
-            <NativeDirections
-              origin={origin}
-              destination={destination}
-              apikey={GOOGLE_MAPS_APIKEY}
-              strokeWidth={4}
-              strokeColor="#439D25"
-            />
-
-            <NativeMarker coordinate={origin}>
-              <View style={styles.markerContainer}>
-                <Image
-                  source={require("../../assets/images/myImage.jpg")}
-                  style={styles.markerImage}
-                />
-              </View>
-            </NativeMarker>
-
-            <NativeMarker coordinate={destination}>
-              <View style={styles.markerContainer}>
-                <Image
-                  source={require("../../assets/images/myImage.jpg")}
-                  style={styles.markerImage}
-                />
-              </View>
-            </NativeMarker>
-          </NativeMap>
-
-          {/* Route Info Bubble */}
-          {Platform.OS !== "web" && (
-            <View style={styles.infoBubble}>
-              <Text style={styles.infoTime}>40 mins</Text>
-            </View>
-          )}
-        </View>
-
-        {/* Status */}
-        <View style={styles.statusContainer}>
-          <View>
-            <Text style={styles.sectionTitle}>Status</Text>
-            <View style={{ marginTop: 6 }}>
-              <Text style={styles.statusItem}>📦 Delivered</Text>
-              <Text style={styles.receivedText}>Received ✔</Text>
-            </View>
-          </View>
-
-          <View>
-            <Text style={styles.sectionTitle}>Rate Service</Text>
-            <View style={{ flexDirection: "row", marginTop: 6 }}>
-              {Array(5)
-                .fill(0)
-                .map((_, i) => (
-                  <Ionicons
-                    key={i}
-                    name="star-outline"
-                    size={22}
-                    color="#000"
-                    style={{ marginRight: 3 }}
-                  />
-                ))}
-            </View>
-          </View>
-        </View>
-
-        {/* Delivery Details */}
-        <View style={styles.detailsContainer}>
-          <Text style={styles.sectionTitle}>Delivery details</Text>
-          <Text style={styles.detailsText}>
-            Time: <Text style={styles.detailsBold}>03:37pm</Text>
-          </Text>
-          <Text style={styles.detailsText}>
-            Route: <Text style={styles.detailsBold}>Wuse → Asokoro</Text>
-          </Text>
-        </View>
-
-        <View style={{ alignItems: "flex-end", marginRight: 20 }}>
-          <TouchableOpacity
-            style={{
-              backgroundColor: "#439D25",
-              paddingHorizontal: 20,
-              paddingVertical: 8,
-              borderRadius: 100,
-            }}
-          >
-            <Text style={{ fontSize: 15, fontWeight: '900', color: 'white' }}>Track</Text>
-          </TouchableOpacity>
-        </View>
-
-        <StatusBar hidden />
+      {/* Header */}
+      <View style={styles.header}>
+        <Text style={styles.headerTitle}>Map</Text>
+        <TouchableOpacity>
+          <Ionicons name="ellipsis-vertical" size={24} color="#000" />
+        </TouchableOpacity>
       </View>
-    </ScrollView>
+
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.scrollContent}
+      >
+        {/* Monica status card */}
+        <View style={styles.overviewCard}>
+          <Text style={styles.overviewName}>Monica</Text>
+          <Text style={styles.overviewStatus}>
+            Driver is on their way to deliver your material.
+          </Text>
+        </View>
+
+        {/* Timeline Section */}
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTitle}>Delivery info per time</Text>
+        </View>
+
+        <View style={styles.timelineContainer}>
+          {timelineData.map((item, index) => (
+            <View key={item.id} style={styles.timelineItem}>
+              {/* Timeline Line & Dot */}
+              <View style={styles.timelineLeft}>
+                <View
+                  style={[
+                    styles.dot,
+                    item.status === 'completed' ? styles.dotCompleted : styles.dotPending
+                  ]}
+                >
+                  {item.status === 'completed' && (
+                    <Ionicons name="checkmark" size={14} color="white" />
+                  )}
+                </View>
+                {index !== timelineData.length - 1 && (
+                  <View style={[styles.line, item.status === 'completed' ? styles.lineCompleted : styles.linePending]} />
+                )}
+              </View>
+
+              {/* Timeline Content */}
+              <View style={styles.timelineBody}>
+                <View style={styles.timelineRow}>
+                  <View style={styles.textColumn}>
+                    <Text
+                      style={[
+                        styles.itemTitle,
+                        item.status === 'pending' && styles.pendingText
+                      ]}
+                    >
+                      {item.title}
+                    </Text>
+                    <Text
+                      style={[
+                        styles.itemDesc,
+                        item.status === 'pending' && styles.pendingTextLight
+                      ]}
+                    >
+                      {item.description}
+                    </Text>
+                  </View>
+                  {item.time !== "" && (
+                    <Text style={styles.itemTime}>{item.time}</Text>
+                  )}
+                </View>
+              </View>
+            </View>
+          ))}
+        </View>
+
+        {/* Shipment Detail Grid */}
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTitle}>Shipment detail</Text>
+        </View>
+
+        <View style={styles.detailGrid}>
+          <View style={styles.detailCard}>
+            <View style={styles.cardHeader}>
+              <View style={styles.iconCircleYellow}>
+                <Text style={styles.iconText}>!</Text>
+              </View>
+              <Text style={styles.cardCount}>2</Text>
+            </View>
+            <Text style={styles.cardLabel}>Delivery Update</Text>
+          </View>
+
+          <View style={styles.detailCard}>
+            <View style={styles.cardHeader}>
+              <View style={styles.iconCircleBlue}>
+                <Text style={styles.iconText}>!</Text>
+              </View>
+              <Text style={styles.cardCount}>0</Text>
+            </View>
+            <Text style={styles.cardLabel}>Exceptions</Text>
+          </View>
+        </View>
+
+        <View style={{ height: 100 }} />
+      </ScrollView>
+    </View>
   );
 };
 
-export default MapScreen;
-
 const styles = StyleSheet.create({
-  screen: {
+  mainContainer: {
     flex: 1,
-    backgroundColor: "#F9FAFB",
+    backgroundColor: "#F8FBF8",
   },
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    paddingHorizontal: 22,
-    paddingVertical: 16,
-    backgroundColor: "white",
-    borderBottomWidth: 0.3,
-    borderBottomColor: "#E5E5E5",
+    paddingHorizontal: 20,
+    paddingTop: 60,
+    paddingBottom: 20,
+    backgroundColor: "#FFFFFF",
   },
   headerTitle: {
     fontSize: 28,
-    fontWeight: "700",
-    color: "#1E1E1E",
+    fontWeight: "800",
+    color: "#000",
   },
-  userCard: {
-    flexDirection: "row",
-    alignItems: "center",
-    alignSelf: "center",
-    width: "90%",
-    height: 65,
-    backgroundColor: "white",
-    borderRadius: 40,
-    marginTop: 15,
+  scrollContent: {
     paddingHorizontal: 20,
-    borderWidth: 1,
-    borderColor: "#E0E0E0",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 5,
-    elevation: 2,
+    paddingBottom: 20,
   },
-  userImage: {
-    width: 45,
-    height: 45,
-    borderRadius: 100,
-    marginRight: 15,
-  },
-  userName: {
-    color: "#1E1E1E",
-    fontSize: 16,
-    fontWeight: "600",
-  },
-  userIdRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginTop: 3,
-  },
-  userIdBadge: {
-    color: "white",
-    backgroundColor: "#439D25",
-    fontSize: 12,
-    paddingHorizontal: 6,
-    borderRadius: 10,
-    overflow: "hidden",
-    fontWeight: "600",
-  },
-  userIdText: {
-    color: "#1E1E1E",
-    fontWeight: "400",
-    marginLeft: 6,
-    fontSize: 13,
-  },
-  mapWrapper: {
-    flex: 1,
-    marginHorizontal: 20,
-    marginTop: 20,
+  overviewCard: {
+    backgroundColor: "#FFFFFF",
     borderRadius: 20,
-    overflow: "hidden",
+    padding: 25,
+    marginTop: 20,
     shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowOffset: { width: 0, height: 2 },
-    shadowRadius: 6,
-    elevation: 4,
-  },
-  map: {
-    width: "100%",
-    height: 300,
-  },
-  markerContainer: {
-    backgroundColor: "white",
-    borderRadius: 30,
-    padding: 4,
-    shadowColor: "#000",
-    shadowOpacity: 0.15,
-    shadowRadius: 5,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.05,
+    shadowRadius: 10,
     elevation: 3,
   },
-  markerImage: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+  overviewName: {
+    fontSize: 22,
+    fontWeight: "900",
+    color: "#000",
   },
-  infoBubble: {
-    position: "absolute",
-    top: 100,
-    left: 120,
-    backgroundColor: "#000",
-    paddingVertical: 5,
-    paddingHorizontal: 10,
-    borderRadius: 8,
+  overviewStatus: {
+    fontSize: 14,
+    color: "#808080",
+    marginTop: 6,
+    fontWeight: "500",
   },
-  infoTime: {
-    color: "white",
-    fontWeight: "700",
-    fontSize: 13,
-  },
-  statusContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingHorizontal: 25,
-    marginTop: 15,
+  sectionHeader: {
+    marginTop: 30,
+    marginBottom: 15,
   },
   sectionTitle: {
-    fontSize: 16,
-    fontWeight: "700",
-    color: "#1E1E1E",
+    fontSize: 18,
+    fontWeight: "900",
+    color: "#000",
   },
-  statusItem: {
-    fontWeight: "600",
-    color: "#1E1E1E",
+  timelineContainer: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 20,
+    padding: 20,
+    paddingBottom: 40,
   },
-  receivedText: {
-    color: "#439D25",
-    fontWeight: "600",
-    marginTop: 2,
+  timelineItem: {
+    flexDirection: "row",
+    minHeight: 80,
   },
-  detailsContainer: {
-    paddingHorizontal: 25,
-    marginTop: 10,
+  timelineLeft: {
+    alignItems: "center",
+    width: 30,
+    marginRight: 15,
   },
-  detailsText: {
-    color: "#555",
-    fontSize: 14,
+  dot: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    alignItems: "center",
+    justifyContent: "center",
+    zIndex: 1,
+  },
+  dotCompleted: {
+    backgroundColor: "#439D25",
+  },
+  dotPending: {
+    backgroundColor: "#C0C0C0",
+  },
+  line: {
+    flex: 1,
+    width: 2,
+    marginTop: -2,
+    marginBottom: -2,
+  },
+  lineCompleted: {
+    backgroundColor: "#439D25",
+  },
+  linePending: {
+    backgroundColor: "#F0F0F0",
+  },
+  timelineBody: {
+    flex: 1,
+  },
+  timelineRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+  },
+  textColumn: {
+    flex: 1,
+    paddingRight: 10,
+  },
+  itemTitle: {
+    fontSize: 15,
+    fontWeight: "800",
+    color: "#000",
+  },
+  itemDesc: {
+    fontSize: 12,
+    color: "#808080",
     marginTop: 4,
+    lineHeight: 16,
+    fontWeight: "500",
   },
-  detailsBold: {
-    fontWeight: "bold",
-    color: "#1E1E1E",
+  itemTime: {
+    fontSize: 13,
+    fontWeight: "800",
+    color: "#000",
+  },
+  pendingText: {
+    color: "#C0C0C0",
+  },
+  pendingTextLight: {
+    color: "#DBDBDB",
+  },
+  detailGrid: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
+  detailCard: {
+    backgroundColor: "#F4F4F4",
+    borderRadius: 15,
+    padding: 15,
+    width: "48%",
+  },
+  cardHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 8,
+  },
+  iconCircleYellow: {
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    backgroundColor: "#EAB308",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  iconCircleBlue: {
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    backgroundColor: "#2563EB",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  iconText: {
+    color: "white",
+    fontSize: 14,
+    fontWeight: "900",
+  },
+  cardCount: {
+    fontSize: 18,
+    fontWeight: "900",
+    color: "#000",
+    marginLeft: 10,
+  },
+  cardLabel: {
+    fontSize: 16,
+    fontWeight: "900",
+    color: "#000",
   },
 });
+
+export default MapScreen;
