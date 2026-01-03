@@ -2,7 +2,7 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { BlurView } from "expo-blur";
 import { useRouter } from "expo-router";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -23,6 +23,12 @@ const { width } = Dimensions.get("window");
 export default function LoginScreen() {
   const router = useRouter();
   const [focusedField, setFocusedField] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (typeof document !== 'undefined') {
+      document.body.style.backgroundColor = '#2E6B19';
+    }
+  }, []);
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -82,6 +88,7 @@ export default function LoginScreen() {
       <View style={[Styles.blob, Styles.blob2]} />
 
       <ScrollView
+        style={Styles.scrollView}
         contentContainerStyle={Styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
@@ -165,7 +172,11 @@ export default function LoginScreen() {
 const Styles = StyleSheet.create({
   mainContainer: {
     flex: 1,
-    backgroundColor: "#2E6B19", // Deeper, more professional green
+    backgroundColor: "#2E6B19",
+  },
+  scrollView: {
+    flex: 1,
+    backgroundColor: "#2E6B19",
   },
   logoContainer: {
     marginBottom: 40,
@@ -178,11 +189,12 @@ const Styles = StyleSheet.create({
   },
   blob: {
     position: "absolute",
-    width: 300,
-    height: 300,
-    borderRadius: 150,
+    width: 350,
+    height: 350,
+    borderRadius: 175,
     backgroundColor: "#439D25",
-    opacity: 0.2,
+    opacity: 0.3,
+    filter: "blur(60px)",
   },
   blob1: {
     top: -100,
@@ -194,19 +206,21 @@ const Styles = StyleSheet.create({
   },
   scrollContent: {
     flexGrow: 1,
+    minHeight: Dimensions.get("window").height,
     alignItems: "center",
     paddingVertical: 40,
     paddingHorizontal: 20,
+    backgroundColor: "#2E6B19",
   },
   card: {
     width: width > 500 ? 450 : "100%",
     borderRadius: 30,
-    paddingHorizontal: 30,
-    paddingVertical: 40,
-    overflow: "hidden",
+    paddingHorizontal: 25,
+    paddingVertical: 35,
     borderWidth: 1,
     borderColor: "rgba(255, 255, 255, 0.2)",
     marginBottom: 40,
+    backgroundColor: "rgba(255, 255, 255, 0.05)",
   },
   headerSection: {
     marginBottom: 30,
