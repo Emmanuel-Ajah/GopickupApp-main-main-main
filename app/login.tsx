@@ -1,8 +1,11 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { BlurView } from "expo-blur";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
+  ActivityIndicator,
+  Alert,
   Dimensions,
   Image,
   ScrollView,
@@ -13,14 +16,40 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { loginUser } from "./api/api";
 
 const { width } = Dimensions.get("window");
 
 export default function LoginScreen() {
   const router = useRouter();
   const [focusedField, setFocusedField] = useState<string | null>(null);
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
+  });
+  const [loading, setLoading] = useState(false);
 
-  const InputField = ({ label, icon, placeholder, keyboardType = "default", secureTextEntry = false, fieldId }: any) => (
+  const handleLogin = async () => {
+    if (!formData.email || !formData.password) {
+      Alert.alert("Error", "Please enter both email and password");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const response = await loginUser(formData);
+      const { token } = response.data;
+      await AsyncStorage.setItem("token", token);
+      router.push("/tabs/home");
+    } catch (error: any) {
+      const message = error.response?.data?.message || "Invalid email or password";
+      Alert.alert("Login Failed", message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const InputField = ({ label, icon, placeholder, keyboardType = "default", secureTextEntry = false, fieldId, value, onChangeText }: any) => (
     <View style={Styles.inputGroup}>
       <Text style={Styles.label}>{label}</Text>
       <View style={[
@@ -37,6 +66,8 @@ export default function LoginScreen() {
           cursorColor="#FFF"
           onFocus={() => setFocusedField(fieldId)}
           onBlur={() => setFocusedField(null)}
+          value={value}
+          onChangeText={onChangeText}
         />
       </View>
     </View>
@@ -74,6 +105,8 @@ export default function LoginScreen() {
             placeholder="example@mail.com"
             keyboardType="email-address"
             fieldId="email"
+            value={formData.email}
+            onChangeText={(text: string) => setFormData({ ...formData, email: text })}
           />
           <InputField
             label="Password"
@@ -81,6 +114,8 @@ export default function LoginScreen() {
             placeholder="••••••••"
             secureTextEntry
             fieldId="password"
+            value={formData.password}
+            onChangeText={(text: string) => setFormData({ ...formData, password: text })}
           />
 
           <View style={Styles.actionSection}>
@@ -99,11 +134,18 @@ export default function LoginScreen() {
 
           <TouchableOpacity
             style={Styles.loginButton}
-            onPress={() => router.push("/tabs/home")}
+            onPress={handleLogin}
             activeOpacity={0.9}
+            disabled={loading}
           >
-            <Text style={Styles.loginButtonText}>Login</Text>
-            <Ionicons name="arrow-forward" size={20} color="#439D25" />
+            {loading ? (
+              <ActivityIndicator color="#439D25" />
+            ) : (
+              <>
+                <Text style={Styles.loginButtonText}>Login</Text>
+                <Ionicons name="arrow-forward" size={20} color="#439D25" />
+              </>
+            )}
           </TouchableOpacity>
 
           <TouchableOpacity style={Styles.signupLink} onPress={() => router.push("/signup")}>

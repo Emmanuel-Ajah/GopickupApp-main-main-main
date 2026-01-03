@@ -1,8 +1,10 @@
-import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import axios from "axios";
+
+const BASE_URL = "http://localhost:5000/api/auth";
 
 const API = axios.create({
-  baseURL: "http://192.168.0.255:5000/api/auth", // replace with your local IP
+  baseURL: BASE_URL,
 });
 
 // attach token automatically

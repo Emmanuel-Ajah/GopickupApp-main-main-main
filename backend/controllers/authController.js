@@ -6,7 +6,7 @@ const jwt = require('jsonwebtoken');
 // @access  Public
 exports.registerUser = async (req, res) => {
     try {
-        const { name, email, password } = req.body;
+        const { name, email, password, phone, dob, bvn } = req.body;
 
         // Check if user exists
         const userExists = await User.findOne({ email });
@@ -20,6 +20,9 @@ exports.registerUser = async (req, res) => {
             name,
             email,
             password,
+            phone,
+            dob,
+            bvn,
             userId: 'D' + Math.floor(10000000 + Math.random() * 90000000), // Random ID matching mockup format
         });
 

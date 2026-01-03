@@ -21,6 +21,15 @@ const userSchema = new mongoose.Schema({
         minlength: 6,
         select: false,
     },
+    phone: {
+        type: String,
+    },
+    dob: {
+        type: String,
+    },
+    bvn: {
+        type: String,
+    },
     userId: {
         type: String,
         unique: true,

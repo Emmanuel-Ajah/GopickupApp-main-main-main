@@ -3,6 +3,8 @@ import { BlurView } from "expo-blur";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
+  ActivityIndicator,
+  Alert,
   Dimensions,
   Image,
   ScrollView,
@@ -13,14 +15,43 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { registerUser } from "./api/api";
 
 const { width } = Dimensions.get("window");
 
 export default function SignupScreen() {
   const router = useRouter();
   const [focusedField, setFocusedField] = useState<string | null>(null);
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    dob: "",
+    bvn: "",
+    password: "",
+  });
+  const [loading, setLoading] = useState(false);
 
-  const InputField = ({ label, icon, placeholder, keyboardType = "default", secureTextEntry = false, fieldId }: any) => (
+  const handleSignup = async () => {
+    if (!formData.email || !formData.password || !formData.name) {
+      Alert.alert("Error", "Please fill in all required fields (Name, Email, Password)");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const response = await registerUser(formData);
+      Alert.alert("Success", "Account created successfully!");
+      router.push("/login");
+    } catch (error: any) {
+      const message = error.response?.data?.message || "Something went wrong";
+      Alert.alert("Registration Failed", message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const InputField = ({ label, icon, placeholder, keyboardType = "default", secureTextEntry = false, fieldId, value, onChangeText }: any) => (
     <View style={Styles.inputGroup}>
       <Text style={Styles.label}>{label}</Text>
       <View style={[
@@ -37,6 +68,8 @@ export default function SignupScreen() {
           cursorColor="#FFF"
           onFocus={() => setFocusedField(fieldId)}
           onBlur={() => setFocusedField(null)}
+          value={value}
+          onChangeText={onChangeText}
         />
       </View>
     </View>
@@ -60,11 +93,12 @@ export default function SignupScreen() {
             <Text style={Styles.subtitle}>Sign up to get started with GoPickup</Text>
           </View>
 
-          <InputField label="Full Name" icon="person-outline" placeholder="Enter your full name" fieldId="name" />
-          <InputField label="Email Address" icon="mail-outline" placeholder="example@mail.com" keyboardType="email-address" fieldId="email" />
-          <InputField label="Phone Number" icon="call-outline" placeholder="+234 ..." keyboardType="phone-pad" fieldId="phone" />
-          <InputField label="Date of Birth" icon="calendar-outline" placeholder="DD / MM / YYYY" fieldId="dob" />
-          <InputField label="BVN" icon="shield-checkmark-outline" placeholder="11-digit BVN" keyboardType="number-pad" fieldId="bvn" />
+          <InputField label="Full Name" icon="person-outline" placeholder="Enter your full name" fieldId="name" value={formData.name} onChangeText={(text: string) => setFormData({ ...formData, name: text })} />
+          <InputField label="Email Address" icon="mail-outline" placeholder="example@mail.com" keyboardType="email-address" fieldId="email" value={formData.email} onChangeText={(text: string) => setFormData({ ...formData, email: text })} />
+          <InputField label="Phone Number" icon="call-outline" placeholder="+234 ..." keyboardType="phone-pad" fieldId="phone" value={formData.phone} onChangeText={(text: string) => setFormData({ ...formData, phone: text })} />
+          <InputField label="Date of Birth" icon="calendar-outline" placeholder="DD / MM / YYYY" fieldId="dob" value={formData.dob} onChangeText={(text: string) => setFormData({ ...formData, dob: text })} />
+          <InputField label="BVN" icon="shield-checkmark-outline" placeholder="11-digit BVN" keyboardType="number-pad" fieldId="bvn" value={formData.bvn} onChangeText={(text: string) => setFormData({ ...formData, bvn: text })} />
+          <InputField label="Password" icon="lock-closed-outline" placeholder="••••••••" secureTextEntry={true} fieldId="password" value={formData.password} onChangeText={(text: string) => setFormData({ ...formData, password: text })} />
 
           <View style={Styles.actionSection}>
             <TouchableOpacity style={Styles.forgotPassword} onPress={() => { }}>
@@ -82,11 +116,18 @@ export default function SignupScreen() {
 
           <TouchableOpacity
             style={Styles.signUpButton}
-            onPress={() => router.push("/login")}
+            onPress={handleSignup}
             activeOpacity={0.9}
+            disabled={loading}
           >
-            <Text style={Styles.signUpButtonText}>Sign In</Text>
-            <Ionicons name="arrow-forward" size={20} color="#439D25" />
+            {loading ? (
+              <ActivityIndicator color="#439D25" />
+            ) : (
+              <>
+                <Text style={Styles.signUpButtonText}>Sign Up</Text>
+                <Ionicons name="arrow-forward" size={20} color="#439D25" />
+              </>
+            )}
           </TouchableOpacity>
 
           <TouchableOpacity style={Styles.loginLink} onPress={() => router.push("/login")}>
