@@ -8,13 +8,15 @@ import {
   Alert,
   Dimensions,
   Image,
+  KeyboardAvoidingView,
+  Platform,
   ScrollView,
   StatusBar,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
-  View,
+  View
 } from "react-native";
 import { loginUser } from "./api/api";
 
@@ -55,29 +57,7 @@ export default function LoginScreen() {
     }
   };
 
-  const InputField = ({ label, icon, placeholder, keyboardType = "default", secureTextEntry = false, fieldId, value, onChangeText }: any) => (
-    <View style={Styles.inputGroup}>
-      <Text style={Styles.label}>{label}</Text>
-      <View style={[
-        Styles.inputContainer,
-        focusedField === fieldId && Styles.inputContainerFocused
-      ]}>
-        <Ionicons name={icon} size={20} color={focusedField === fieldId ? "#FFF" : "#FFFFFF80"} style={Styles.inputIcon} />
-        <TextInput
-          style={Styles.input}
-          placeholder={placeholder}
-          placeholderTextColor="#FFFFFF60"
-          keyboardType={keyboardType}
-          secureTextEntry={secureTextEntry}
-          cursorColor="#FFF"
-          onFocus={() => setFocusedField(fieldId)}
-          onBlur={() => setFocusedField(null)}
-          value={value}
-          onChangeText={onChangeText}
-        />
-      </View>
-    </View>
-  );
+
 
   return (
     <View style={Styles.mainContainer}>
@@ -87,87 +67,122 @@ export default function LoginScreen() {
       <View style={[Styles.blob, Styles.blob1]} />
       <View style={[Styles.blob, Styles.blob2]} />
 
-      <ScrollView
-        style={Styles.scrollView}
-        contentContainerStyle={Styles.scrollContent}
-        showsVerticalScrollIndicator={false}
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        style={{ flex: 1 }}
       >
-        <View style={Styles.logoContainer}>
-          <Image
-            source={require("../assets/images/GoPickUpWhite .png")}
-            style={Styles.logo}
-            resizeMode="contain"
-          />
-        </View>
-
-        <BlurView intensity={20} tint="light" style={Styles.card}>
-          <View style={Styles.headerSection}>
-            <Text style={Styles.title}>Login</Text>
-            <Text style={Styles.subtitle}>Welcome back! Please enter your details.</Text>
+        <ScrollView
+          style={Styles.scrollView}
+          contentContainerStyle={Styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+        >
+          <View style={Styles.logoContainer}>
+            <Image
+              source={require("../assets/images/GoPickUpWhite .png")}
+              style={Styles.logo}
+              resizeMode="contain"
+            />
           </View>
 
-          <InputField
-            label="Email Address"
-            icon="mail-outline"
-            placeholder="example@mail.com"
-            keyboardType="email-address"
-            fieldId="email"
-            value={formData.email}
-            onChangeText={(text: string) => setFormData({ ...formData, email: text })}
-          />
-          <InputField
-            label="Password"
-            icon="lock-closed-outline"
-            placeholder="••••••••"
-            secureTextEntry
-            fieldId="password"
-            value={formData.password}
-            onChangeText={(text: string) => setFormData({ ...formData, password: text })}
-          />
+          <BlurView intensity={20} tint="light" style={Styles.card}>
+            <View style={Styles.headerSection}>
+              <Text style={Styles.title}>Login</Text>
+              <Text style={Styles.subtitle}>Welcome back! Please enter your details.</Text>
+            </View>
 
-          <View style={Styles.actionSection}>
-            <TouchableOpacity style={Styles.forgotPassword} onPress={() => { }}>
-              <Text style={Styles.forgotPasswordText}>Forgot Password?</Text>
+            <InputField
+              label="Email Address"
+              icon="mail-outline"
+              placeholder="example@mail.com"
+              keyboardType="email-address"
+              fieldId="email"
+              value={formData.email}
+              onChangeText={(text: string) => setFormData({ ...formData, email: text })}
+              autoCapitalize="none"
+              focusedField={focusedField}
+              setFocusedField={setFocusedField}
+            />
+            <InputField
+              label="Password"
+              icon="lock-closed-outline"
+              placeholder="••••••••"
+              secureTextEntry
+              fieldId="password"
+              value={formData.password}
+              onChangeText={(text: string) => setFormData({ ...formData, password: text })}
+              focusedField={focusedField}
+              setFocusedField={setFocusedField}
+            />
+
+            <View style={Styles.actionSection}>
+              <TouchableOpacity style={Styles.forgotPassword} onPress={() => { }}>
+                <Text style={Styles.forgotPasswordText}>Forgot Password?</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity style={Styles.googleButton} activeOpacity={0.8}>
+                <Image
+                  source={require("../assets/images/GoogleLogo.png")}
+                  style={Styles.googleIcon}
+                />
+                <Text style={Styles.googleText}>Continue with Google</Text>
+              </TouchableOpacity>
+            </View>
+
+            <TouchableOpacity
+              style={Styles.loginButton}
+              onPress={handleLogin}
+              activeOpacity={0.9}
+              disabled={loading}
+            >
+              {loading ? (
+                <ActivityIndicator color="#439D25" />
+              ) : (
+                <>
+                  <Text style={Styles.loginButtonText}>Login</Text>
+                  <Ionicons name="arrow-forward" size={20} color="#439D25" />
+                </>
+              )}
             </TouchableOpacity>
 
-            <TouchableOpacity style={Styles.googleButton} activeOpacity={0.8}>
-              <Image
-                source={require("../assets/images/GoogleLogo.png")}
-                style={Styles.googleIcon}
-              />
-              <Text style={Styles.googleText}>Continue with Google</Text>
+            <TouchableOpacity style={Styles.signupLink} onPress={() => router.push("/signup")}>
+              <Text style={Styles.signupLinkText}>Don't have an account? <Text style={Styles.signupLinkBold}>Sign Up</Text></Text>
             </TouchableOpacity>
+          </BlurView>
+
+          <View style={Styles.footer}>
+            <Text style={Styles.footerText}>KEEP MOVING</Text>
+            <View style={Styles.footerLine} />
           </View>
-
-          <TouchableOpacity
-            style={Styles.loginButton}
-            onPress={handleLogin}
-            activeOpacity={0.9}
-            disabled={loading}
-          >
-            {loading ? (
-              <ActivityIndicator color="#439D25" />
-            ) : (
-              <>
-                <Text style={Styles.loginButtonText}>Login</Text>
-                <Ionicons name="arrow-forward" size={20} color="#439D25" />
-              </>
-            )}
-          </TouchableOpacity>
-
-          <TouchableOpacity style={Styles.signupLink} onPress={() => router.push("/signup")}>
-            <Text style={Styles.signupLinkText}>Don't have an account? <Text style={Styles.signupLinkBold}>Sign Up</Text></Text>
-          </TouchableOpacity>
-        </BlurView>
-
-        <View style={Styles.footer}>
-          <Text style={Styles.footerText}>KEEP MOVING</Text>
-          <View style={Styles.footerLine} />
-        </View>
-      </ScrollView>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </View>
   );
 }
+
+const InputField = ({ label, icon, placeholder, keyboardType = "default", secureTextEntry = false, fieldId, value, onChangeText, autoCapitalize = "sentences", focusedField, setFocusedField }: any) => (
+  <View style={Styles.inputGroup}>
+    <Text style={Styles.label}>{label}</Text>
+    <View style={[
+      Styles.inputContainer,
+      focusedField === fieldId && Styles.inputContainerFocused
+    ]}>
+      <Ionicons name={icon} size={20} color={focusedField === fieldId ? "#FFF" : "#FFFFFF80"} style={Styles.inputIcon} />
+      <TextInput
+        style={Styles.input}
+        placeholder={placeholder}
+        placeholderTextColor="#FFFFFF80"
+        keyboardType={keyboardType}
+        secureTextEntry={secureTextEntry}
+        cursorColor="#FFF"
+        onFocus={() => setFocusedField(fieldId)}
+        onBlur={() => setFocusedField(null)}
+        value={value}
+        onChangeText={onChangeText}
+        autoCapitalize={autoCapitalize}
+      />
+    </View>
+  </View>
+);
 
 const Styles = StyleSheet.create({
   mainContainer: {
@@ -250,7 +265,7 @@ const Styles = StyleSheet.create({
   inputContainer: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "rgba(255, 255, 255, 0.1)",
+    backgroundColor: "rgba(255, 255, 255, 0.15)", // Increased visibility
     borderRadius: 15,
     paddingHorizontal: 15,
     height: 55,

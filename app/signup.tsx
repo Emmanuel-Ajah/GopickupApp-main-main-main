@@ -7,13 +7,15 @@ import {
   Alert,
   Dimensions,
   Image,
+  KeyboardAvoidingView,
+  Platform,
   ScrollView,
   StatusBar,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
-  View,
+  View
 } from "react-native";
 import { registerUser } from "./api/api";
 
@@ -57,30 +59,6 @@ export default function SignupScreen() {
     }
   };
 
-  const InputField = ({ label, icon, placeholder, keyboardType = "default", secureTextEntry = false, fieldId, value, onChangeText }: any) => (
-    <View style={Styles.inputGroup}>
-      <Text style={Styles.label}>{label}</Text>
-      <View style={[
-        Styles.inputContainer,
-        focusedField === fieldId && Styles.inputContainerFocused
-      ]}>
-        <Ionicons name={icon} size={20} color={focusedField === fieldId ? "#FFF" : "#FFFFFF80"} style={Styles.inputIcon} />
-        <TextInput
-          style={Styles.input}
-          placeholder={placeholder}
-          placeholderTextColor="#FFFFFF60"
-          keyboardType={keyboardType}
-          secureTextEntry={secureTextEntry}
-          cursorColor="#FFF"
-          onFocus={() => setFocusedField(fieldId)}
-          onBlur={() => setFocusedField(null)}
-          value={value}
-          onChangeText={onChangeText}
-        />
-      </View>
-    </View>
-  );
-
   return (
     <View style={Styles.mainContainer}>
       <StatusBar barStyle="light-content" />
@@ -89,67 +67,97 @@ export default function SignupScreen() {
       <View style={[Styles.blob, Styles.blob1]} />
       <View style={[Styles.blob, Styles.blob2]} />
 
-      <ScrollView
-        style={Styles.scrollView}
-        contentContainerStyle={Styles.scrollContent}
-        showsVerticalScrollIndicator={false}
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        style={{ flex: 1 }}
       >
-        <BlurView intensity={20} tint="light" style={Styles.card}>
-          <View style={Styles.headerSection}>
-            <Text style={Styles.title}>Create Account</Text>
-            <Text style={Styles.subtitle}>Sign up to get started with GoPickup</Text>
-          </View>
+        <ScrollView
+          style={Styles.scrollView}
+          contentContainerStyle={Styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+        >
+          <BlurView intensity={20} tint="light" style={Styles.card}>
+            <View style={Styles.headerSection}>
+              <Text style={Styles.title}>Create Account</Text>
+              <Text style={Styles.subtitle}>Sign up to get started with GoPickup</Text>
+            </View>
 
-          <InputField label="Full Name" icon="person-outline" placeholder="Enter your full name" fieldId="name" value={formData.name} onChangeText={(text: string) => setFormData({ ...formData, name: text })} />
-          <InputField label="Email Address" icon="mail-outline" placeholder="example@mail.com" keyboardType="email-address" fieldId="email" value={formData.email} onChangeText={(text: string) => setFormData({ ...formData, email: text })} />
-          <InputField label="Phone Number" icon="call-outline" placeholder="+234 ..." keyboardType="phone-pad" fieldId="phone" value={formData.phone} onChangeText={(text: string) => setFormData({ ...formData, phone: text })} />
-          <InputField label="Date of Birth" icon="calendar-outline" placeholder="DD / MM / YYYY" fieldId="dob" value={formData.dob} onChangeText={(text: string) => setFormData({ ...formData, dob: text })} />
-          <InputField label="BVN" icon="shield-checkmark-outline" placeholder="11-digit BVN" keyboardType="number-pad" fieldId="bvn" value={formData.bvn} onChangeText={(text: string) => setFormData({ ...formData, bvn: text })} />
-          <InputField label="Password" icon="lock-closed-outline" placeholder="••••••••" secureTextEntry={true} fieldId="password" value={formData.password} onChangeText={(text: string) => setFormData({ ...formData, password: text })} />
+            <InputField label="Full Name" icon="person-outline" placeholder="Enter your full name" fieldId="name" value={formData.name} onChangeText={(text: string) => setFormData({ ...formData, name: text })} focusedField={focusedField} setFocusedField={setFocusedField} />
+            <InputField label="Email Address" icon="mail-outline" placeholder="example@mail.com" keyboardType="email-address" fieldId="email" value={formData.email} onChangeText={(text: string) => setFormData({ ...formData, email: text })} autoCapitalize="none" focusedField={focusedField} setFocusedField={setFocusedField} />
+            <InputField label="Phone Number" icon="call-outline" placeholder="+234 ..." keyboardType="phone-pad" fieldId="phone" value={formData.phone} onChangeText={(text: string) => setFormData({ ...formData, phone: text })} focusedField={focusedField} setFocusedField={setFocusedField} />
+            <InputField label="Date of Birth" icon="calendar-outline" placeholder="DD / MM / YYYY" fieldId="dob" value={formData.dob} onChangeText={(text: string) => setFormData({ ...formData, dob: text })} focusedField={focusedField} setFocusedField={setFocusedField} />
+            <InputField label="BVN" icon="shield-checkmark-outline" placeholder="11-digit BVN" keyboardType="number-pad" fieldId="bvn" value={formData.bvn} onChangeText={(text: string) => setFormData({ ...formData, bvn: text })} focusedField={focusedField} setFocusedField={setFocusedField} />
+            <InputField label="Password" icon="lock-closed-outline" placeholder="••••••••" secureTextEntry={true} fieldId="password" value={formData.password} onChangeText={(text: string) => setFormData({ ...formData, password: text })} focusedField={focusedField} setFocusedField={setFocusedField} />
 
-          <View style={Styles.actionSection}>
-            <TouchableOpacity style={Styles.forgotPassword} onPress={() => { }}>
-              <Text style={Styles.forgotPasswordText}>Forgot Password?</Text>
+            <View style={Styles.actionSection}>
+              <TouchableOpacity style={Styles.forgotPassword} onPress={() => { }}>
+                <Text style={Styles.forgotPasswordText}>Forgot Password?</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity style={Styles.googleButton} activeOpacity={0.8}>
+                <Image
+                  source={require("../assets/images/GoogleLogo.png")}
+                  style={Styles.googleIcon}
+                />
+                <Text style={Styles.googleText}>Continue with Google</Text>
+              </TouchableOpacity>
+            </View>
+
+            <TouchableOpacity
+              style={Styles.signUpButton}
+              onPress={handleSignup}
+              activeOpacity={0.9}
+              disabled={loading}
+            >
+              {loading ? (
+                <ActivityIndicator color="#439D25" />
+              ) : (
+                <>
+                  <Text style={Styles.signUpButtonText}>Sign Up</Text>
+                  <Ionicons name="arrow-forward" size={20} color="#439D25" />
+                </>
+              )}
             </TouchableOpacity>
 
-            <TouchableOpacity style={Styles.googleButton} activeOpacity={0.8}>
-              <Image
-                source={require("../assets/images/GoogleLogo.png")}
-                style={Styles.googleIcon}
-              />
-              <Text style={Styles.googleText}>Continue with Google</Text>
+            <TouchableOpacity style={Styles.loginLink} onPress={() => router.push("/login")}>
+              <Text style={Styles.loginLinkText}>Already have an account? <Text style={Styles.loginLinkBold}>Login</Text></Text>
             </TouchableOpacity>
+          </BlurView>
+
+          <View style={Styles.footer}>
+            <Text style={Styles.footerText}>KEEP MOVING</Text>
+            <View style={Styles.footerLine} />
           </View>
-
-          <TouchableOpacity
-            style={Styles.signUpButton}
-            onPress={handleSignup}
-            activeOpacity={0.9}
-            disabled={loading}
-          >
-            {loading ? (
-              <ActivityIndicator color="#439D25" />
-            ) : (
-              <>
-                <Text style={Styles.signUpButtonText}>Sign Up</Text>
-                <Ionicons name="arrow-forward" size={20} color="#439D25" />
-              </>
-            )}
-          </TouchableOpacity>
-
-          <TouchableOpacity style={Styles.loginLink} onPress={() => router.push("/login")}>
-            <Text style={Styles.loginLinkText}>Already have an account? <Text style={Styles.loginLinkBold}>Login</Text></Text>
-          </TouchableOpacity>
-        </BlurView>
-
-        <View style={Styles.footer}>
-          <Text style={Styles.footerText}>KEEP MOVING</Text>
-          <View style={Styles.footerLine} />
-        </View>
-      </ScrollView>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </View>
   );
 }
+
+const InputField = ({ label, icon, placeholder, keyboardType = "default", secureTextEntry = false, fieldId, value, onChangeText, autoCapitalize = "sentences", focusedField, setFocusedField }: any) => (
+  <View style={Styles.inputGroup}>
+    <Text style={Styles.label}>{label}</Text>
+    <View style={[
+      Styles.inputContainer,
+      focusedField === fieldId && Styles.inputContainerFocused
+    ]}>
+      <Ionicons name={icon} size={20} color={focusedField === fieldId ? "#FFF" : "#FFFFFF80"} style={Styles.inputIcon} />
+      <TextInput
+        style={Styles.input}
+        placeholder={placeholder}
+        placeholderTextColor="#FFFFFF80"
+        keyboardType={keyboardType}
+        secureTextEntry={secureTextEntry}
+        cursorColor="#FFF"
+        onFocus={() => setFocusedField(fieldId)}
+        onBlur={() => setFocusedField(null)}
+        value={value}
+        onChangeText={onChangeText}
+        autoCapitalize={autoCapitalize}
+      />
+    </View>
+  </View>
+);
 
 const Styles = StyleSheet.create({
   mainContainer: {
@@ -223,7 +231,7 @@ const Styles = StyleSheet.create({
   inputContainer: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "rgba(255, 255, 255, 0.1)",
+    backgroundColor: "rgba(255, 255, 255, 0.15)", // Increased visibility
     borderRadius: 15,
     paddingHorizontal: 15,
     height: 55,

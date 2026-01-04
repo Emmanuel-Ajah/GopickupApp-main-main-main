@@ -22,14 +22,27 @@ else
     echo "❌ Registration endpoint failed!"
 fi
 
-echo -e "\nTesting User Login..."
-curl -s -X POST $BASE_URL/login \
+echo -e "\nTesting User Login and Capturing Token..."
+LOGIN_RESPONSE=$(curl -s -X POST $BASE_URL/login \
   -H "Content-Type: application/json" \
-  -d '{"email": "test@example.com", "password": "password123"}' \
-  | grep "token"
+  -d '{"email": "test@example.com", "password": "password123"}')
 
-if [ $? -eq 0 ]; then
-    echo "✅ Login endpoint connected!"
+TOKEN=$(echo $LOGIN_RESPONSE | grep -o '"token":"[^"]*' | cut -d'"' -f4)
+
+if [ ! -z "$TOKEN" ]; then
+    echo "✅ Login successful, token captured!"
+    
+    echo -e "\nTesting /me Endpoint (Authenticated)..."
+    ME_RESPONSE=$(curl -s -X GET $BASE_URL/me \
+      -H "Authorization: Bearer $TOKEN")
+    
+    echo $ME_RESPONSE | grep -E "name|email|userId"
+    
+    if [ $? -eq 0 ]; then
+        echo "✅ /me endpoint verified with authentication!"
+    else
+        echo "❌ /me endpoint verification failed!"
+    fi
 else
-    echo "❌ Login endpoint failed!"
+    echo "❌ Login failed, could not capture token for /me test!"
 fi
