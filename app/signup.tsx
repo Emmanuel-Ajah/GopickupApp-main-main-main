@@ -143,7 +143,7 @@ const InputField = ({ label, icon, placeholder, keyboardType = "default", secure
     ]}>
       <Ionicons name={icon} size={20} color={focusedField === fieldId ? "#FFF" : "#FFFFFF80"} style={Styles.inputIcon} />
       <TextInput
-        style={Styles.input}
+        style={[Styles.input, Platform.OS === "web" && ({ outlineStyle: "none" } as any)]}
         placeholder={placeholder}
         placeholderTextColor="#FFFFFF80"
         keyboardType={keyboardType}
