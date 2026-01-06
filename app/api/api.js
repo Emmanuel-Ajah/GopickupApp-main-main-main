@@ -1,7 +1,7 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
 
-const BASE_URL = "http://localhost:5000/api/auth";
+const BASE_URL = "https://backend.gopickup.com.ng/api/auth";
 
 const API = axios.create({
   baseURL: BASE_URL,
