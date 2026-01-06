@@ -34,8 +34,6 @@ export default function SignupScreen() {
     name: "",
     email: "",
     phone: "",
-    dob: "",
-    bvn: "",
     password: "",
   });
   const [loading, setLoading] = useState(false);
@@ -85,8 +83,6 @@ export default function SignupScreen() {
             <InputField label="Full Name" icon="person-outline" placeholder="Enter your full name" fieldId="name" value={formData.name} onChangeText={(text: string) => setFormData({ ...formData, name: text })} focusedField={focusedField} setFocusedField={setFocusedField} />
             <InputField label="Email Address" icon="mail-outline" placeholder="example@mail.com" keyboardType="email-address" fieldId="email" value={formData.email} onChangeText={(text: string) => setFormData({ ...formData, email: text })} autoCapitalize="none" focusedField={focusedField} setFocusedField={setFocusedField} />
             <InputField label="Phone Number" icon="call-outline" placeholder="+234 ..." keyboardType="phone-pad" fieldId="phone" value={formData.phone} onChangeText={(text: string) => setFormData({ ...formData, phone: text })} focusedField={focusedField} setFocusedField={setFocusedField} />
-            <InputField label="Date of Birth" icon="calendar-outline" placeholder="DD / MM / YYYY" fieldId="dob" value={formData.dob} onChangeText={(text: string) => setFormData({ ...formData, dob: text })} focusedField={focusedField} setFocusedField={setFocusedField} />
-            <InputField label="BVN" icon="shield-checkmark-outline" placeholder="11-digit BVN" keyboardType="number-pad" fieldId="bvn" value={formData.bvn} onChangeText={(text: string) => setFormData({ ...formData, bvn: text })} focusedField={focusedField} setFocusedField={setFocusedField} />
             <InputField label="Password" icon="lock-closed-outline" placeholder="••••••••" secureTextEntry={true} fieldId="password" value={formData.password} onChangeText={(text: string) => setFormData({ ...formData, password: text })} focusedField={focusedField} setFocusedField={setFocusedField} />
 
             <View style={Styles.actionSection}>
