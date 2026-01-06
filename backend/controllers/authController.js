@@ -23,7 +23,7 @@ exports.registerUser = async (req, res) => {
             phone,
             dob,
             bvn,
-            userId: 'D' + Math.floor(10000000 + Math.random() * 90000000), // Random ID matching mockup format
+            userId: 'USER' + Math.floor(10000000 + Math.random() * 90000000), // Random ID matching mockup format
         });
 
         if (user) {
