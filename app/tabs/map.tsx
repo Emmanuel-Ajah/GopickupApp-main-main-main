@@ -1,5 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
-import React from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import React, { useEffect, useState } from "react";
 import {
   ScrollView,
   StatusBar,
@@ -10,6 +11,18 @@ import {
 } from "react-native";
 
 const MapScreen = () => {
+  const [user, setUser] = useState<any>(null);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      const userData = await AsyncStorage.getItem("user");
+      if (userData) {
+        setUser(JSON.parse(userData));
+      }
+    };
+    fetchUser();
+  }, []);
+
   const timelineData = [
     {
       id: 1,
@@ -73,7 +86,7 @@ const MapScreen = () => {
       >
         {/* Monica status card */}
         <View style={styles.overviewCard}>
-          <Text style={styles.overviewName}>Monica</Text>
+          <Text style={styles.overviewName}>{user?.name || "User"}</Text>
           <Text style={styles.overviewStatus}>
             Driver is on their way to deliver your material.
           </Text>

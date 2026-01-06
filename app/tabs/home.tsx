@@ -1,11 +1,7 @@
-import BookingDetailsContent from '@/components/BookingDetailsContent'
-import BuyMaterialContent from '@/components/BuyMaterialContent'
-import NaturalResourcesContent from '@/components/NaturalResourcesContent'
-import PostRequestContent from '@/components/PostRequestContent'
-import TrackDeliveryContent from '@/components/TrackDeliveryContent'
 import Ionicons from "@expo/vector-icons/Ionicons"
+import AsyncStorage from "@react-native-async-storage/async-storage"
 import { useRouter } from "expo-router"
-import React, { useState } from "react"
+import React, { useEffect, useState } from "react"
 import {
   Image,
   Modal,
@@ -17,12 +13,28 @@ import {
   TouchableOpacity,
   View,
 } from "react-native"
+import BookingDetailsContent from '../../components/BookingDetailsContent'
+import BuyMaterialContent from '../../components/BuyMaterialContent'
+import NaturalResourcesContent from '../../components/NaturalResourcesContent'
+import PostRequestContent from '../../components/PostRequestContent'
+import TrackDeliveryContent from '../../components/TrackDeliveryContent'
 
 export default function Home() {
   const router = useRouter();
   const [selected, setSelected] = useState("Buy Material");
   const [visible, setVisible] = useState(false);
   const [activeTab, setActiveTab] = useState<string | null>(null);
+  const [user, setUser] = useState<any>(null);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      const userData = await AsyncStorage.getItem("user");
+      if (userData) {
+        setUser(JSON.parse(userData));
+      }
+    };
+    fetchUser();
+  }, []);
 
   const tabs = [
     "Buy Material",
@@ -46,15 +58,21 @@ export default function Home() {
         <Text style={styles.headerTitle}>Home</Text>
         <View style={styles.headerRight}>
           <View style={styles.profileSection}>
-            <Image
-              source={require("../../assets/images/myImage.jpg")}
-              style={styles.profileImage}
-            />
+            {user?.image ? (
+              <Image
+                source={{ uri: user.image }}
+                style={styles.profileImage}
+              />
+            ) : (
+              <View style={[styles.profileImage, { backgroundColor: '#E0E0E0', justifyContent: 'center', alignItems: 'center' }]}>
+                <Ionicons name="person" size={20} color="#606060" />
+              </View>
+            )}
             <View style={styles.userInfo}>
-              <Text style={styles.userName}>Azih Monica</Text>
+              <Text style={styles.userName}>{user?.name || "Guest"}</Text>
               <View style={styles.idBadge}>
                 <Text style={styles.idLabel}>User ID</Text>
-                <Text style={styles.idValue}>D422Q7827</Text>
+                <Text style={styles.idValue}>{user?.userId || "..."}</Text>
               </View>
             </View>
           </View>

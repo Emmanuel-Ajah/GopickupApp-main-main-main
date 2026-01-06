@@ -46,8 +46,9 @@ export default function LoginScreen() {
     setLoading(true);
     try {
       const response = await loginUser(formData);
-      const { token } = response.data;
+      const { token, ...userData } = response.data;
       await AsyncStorage.setItem("token", token);
+      await AsyncStorage.setItem("user", JSON.stringify(userData));
       router.push("/tabs/home");
     } catch (error: any) {
       const message = error.response?.data?.message || "Invalid email or password";

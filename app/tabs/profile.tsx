@@ -1,5 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
-import React from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import React, { useEffect, useState } from "react";
 import {
   Image,
   ScrollView,
@@ -11,6 +12,18 @@ import {
 } from "react-native";
 
 const Profile = () => {
+  const [user, setUser] = useState<any>(null);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      const userData = await AsyncStorage.getItem("user");
+      if (userData) {
+        setUser(JSON.parse(userData));
+      }
+    };
+    fetchUser();
+  }, []);
+
   return (
     <View style={styles.mainContainer}>
       <StatusBar barStyle="dark-content" />
@@ -29,17 +42,23 @@ const Profile = () => {
       >
         {/* Top Profile Card */}
         <View style={styles.profileCard}>
-          <Image
-            source={require("../../assets/images/myImage.jpg")}
-            style={styles.profileImage}
-          />
+          {user?.image ? (
+            <Image
+              source={{ uri: user.image }}
+              style={styles.profileImage}
+            />
+          ) : (
+            <View style={[styles.profileImage, { backgroundColor: '#F0F0F0', justifyContent: 'center', alignItems: 'center' }]}>
+              <Ionicons name="person" size={30} color="#A0A0A0" />
+            </View>
+          )}
           <View style={styles.profileInfo}>
-            <Text style={styles.profileName}>Azih Monica</Text>
+            <Text style={styles.profileName}>{user?.name || "User"}</Text>
             <View style={styles.idBadgeContainer}>
               <View style={styles.idBadge}>
                 <Text style={styles.idBadgeText}>User ID</Text>
               </View>
-              <Text style={styles.idText}>D422Q7827</Text>
+              <Text style={styles.idText}>{user?.userId || "..."}</Text>
             </View>
           </View>
         </View>
@@ -54,13 +73,13 @@ const Profile = () => {
         <View style={styles.infoCard}>
           <View style={styles.infoRow}>
             <Text style={styles.label}>Name:</Text>
-            <Text style={styles.value}>Azih Monica</Text>
+            <Text style={styles.value}>{user?.name || "-"}</Text>
           </View>
           <View style={styles.divider} />
 
           <View style={styles.infoRow}>
             <Text style={styles.label}>Phone No:</Text>
-            <Text style={styles.value}>+234 000 000 0000</Text>
+            <Text style={styles.value}>{user?.phone || "-"}</Text>
           </View>
           <View style={styles.divider} />
 
@@ -72,7 +91,7 @@ const Profile = () => {
 
           <View style={styles.infoRow}>
             <Text style={styles.label}>Email:</Text>
-            <Text style={styles.value}>Azihmonica@gmail.com</Text>
+            <Text style={styles.value}>{user?.email || "-"}</Text>
           </View>
           <View style={styles.divider} />
 
