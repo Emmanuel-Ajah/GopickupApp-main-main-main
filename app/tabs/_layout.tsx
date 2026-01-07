@@ -79,7 +79,6 @@ export default function TabsLayout() {
         options={{
           title: "Home",
           href: role === "admin" ? null : "/tabs/home",
-          tabBarButton: role === "admin" ? () => null : undefined,
         }}
       />
       <Tabs.Screen
@@ -87,7 +86,6 @@ export default function TabsLayout() {
         options={{
           title: "Dashboard",
           href: (role === "admin" ? "/tabs/admin_home" : null) as any,
-          tabBarButton: role === "admin" ? undefined : () => null,
         }}
       />
       <Tabs.Screen
@@ -103,12 +101,11 @@ export default function TabsLayout() {
         options={{
           title: "Map",
           href: role === "admin" ? null : "/tabs/map",
-          tabBarButton: role === "admin" ? () => null : undefined,
         }}
       />
 
-      <Tabs.Screen name="explore" options={{ href: null, tabBarButton: () => null }} />
-      <Tabs.Screen name="notifications" options={{ href: null, tabBarButton: () => null }} />
+      <Tabs.Screen name="explore" options={{ href: null }} />
+      <Tabs.Screen name="notifications" options={{ href: null }} />
     </Tabs>
   );
 }
