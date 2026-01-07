@@ -79,6 +79,9 @@ export default function TabsLayout() {
           <Tabs.Screen name="admin_home" options={{ title: "Dashboard" }} />
           <Tabs.Screen name="chat" options={{ title: "Messages" }} />
           <Tabs.Screen name="profile" options={{ title: "Profile" }} />
+          {/* Hide user screens */}
+          <Tabs.Screen name="home" options={{ href: null }} />
+          <Tabs.Screen name="map" options={{ href: null }} />
         </>
       ) : (
         <>
@@ -86,6 +89,8 @@ export default function TabsLayout() {
           <Tabs.Screen name="chat" options={{ title: "Chat" }} />
           <Tabs.Screen name="profile" options={{ title: "Profile" }} />
           <Tabs.Screen name="map" options={{ title: "Map" }} />
+          {/* Hide admin screens */}
+          <Tabs.Screen name="admin_home" options={{ href: null }} />
         </>
       )}
 
