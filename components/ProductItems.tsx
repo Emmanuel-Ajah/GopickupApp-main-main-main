@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 interface ProductProps {
@@ -7,10 +7,19 @@ interface ProductProps {
   size: string;
   price: string;
   available: boolean;
-  onAddToCart: () => void;
+  onAddToCart: (quantity: number) => void;
 }
 
 const ProductItems: React.FC<ProductProps> = ({ image, title, size, price, available, onAddToCart }) => {
+  const [quantity, setQuantity] = useState(1);
+
+  const increment = () => setQuantity((prev) => prev + 1);
+  const decrement = () => setQuantity((prev) => (prev > 1 ? prev - 1 : 1));
+
+  // Extract numeric price for calculations (e.g., "N 5,500" -> 5500)
+  const numericPrice = parseInt(price.replace(/[^0-9]/g, ""), 10) || 0;
+  const totalPrice = numericPrice * quantity;
+
   return (
     <View style={styles.card}>
       <View style={styles.contentRow}>
@@ -31,8 +40,23 @@ const ProductItems: React.FC<ProductProps> = ({ image, title, size, price, avail
         {/* Right Column */}
         <View style={styles.rightColumn}>
           <Text style={styles.specText}>{size}</Text>
-          <TouchableOpacity style={styles.addButton} onPress={onAddToCart}>
-            <Text style={styles.addButtonText}>Add to Chart</Text>
+
+          {/* Quantity Selector */}
+          <View style={styles.quantityContainer}>
+            <TouchableOpacity onPress={decrement} style={styles.qtyBtn}>
+              <Text style={styles.qtyBtnText}>-</Text>
+            </TouchableOpacity>
+            <Text style={styles.qtyText}>{quantity}</Text>
+            <TouchableOpacity onPress={increment} style={styles.qtyBtn}>
+              <Text style={styles.qtyBtnText}>+</Text>
+            </TouchableOpacity>
+          </View>
+
+          <TouchableOpacity
+            style={styles.addButton}
+            onPress={() => onAddToCart(quantity)}
+          >
+            <Text style={styles.addButtonText}>Add {quantity > 1 ? `N ${totalPrice.toLocaleString()}` : ""}</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -109,11 +133,38 @@ const styles = StyleSheet.create({
     textAlign: "right",
     marginTop: 10,
   },
+  qtyBtn: {
+    backgroundColor: "#EFF7EE",
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    justifyContent: "center",
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: "#439D25",
+  },
+  qtyBtnText: {
+    color: "#439D25",
+    fontSize: 18,
+    fontWeight: "700",
+  },
+  qtyText: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: "#000",
+  },
+  quantityContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    marginBottom: 10,
+  },
   addButton: {
     backgroundColor: "#439D25",
     borderRadius: 20,
     paddingVertical: 10,
-    paddingHorizontal: 15,
+    paddingHorizontal: 20,
+    minWidth: 100,
   },
   addButtonText: {
     color: "white",

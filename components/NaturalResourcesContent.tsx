@@ -12,7 +12,7 @@ export default function NaturalResourcesContent({ onAddToCart }: { onAddToCart: 
       <Text style={styles.title}>Natural Resources</Text>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
         {resources.map((item, index) => (
-          <Items key={index} name={item.name} price={item.price} onAddToCart={() => onAddToCart(item)} />
+          <Items key={index} name={item.name} price={item.price} onAddToCart={(qty) => onAddToCart({ ...item, quantity: qty })} />
         ))}
       </ScrollView>
     </View>

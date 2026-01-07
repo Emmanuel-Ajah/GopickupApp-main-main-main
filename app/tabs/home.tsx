@@ -49,7 +49,7 @@ export default function Home() {
 
   const onAddToCart = (item: any) => {
     setCart([...cart, item]);
-    alert(`${item.title || item.name} added to cart!`);
+    alert(`${item.quantity > 1 ? `${item.quantity}x ` : ""}${item.title || item.name} added to cart!`);
   };
 
   const handleConfirmOrder = async () => {
@@ -64,7 +64,7 @@ export default function Home() {
         items: cart.map(item => ({
           name: item.title || item.name,
           size: item.size || "",
-          quantity: 1,
+          quantity: item.quantity || 1,
           price: item.price
         })),
         totalAmount: 0,

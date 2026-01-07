@@ -1,14 +1,23 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
-import React from "react";
+import React, { useState } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 interface ItemProps {
   name: string;
   price: string;
-  onAddToCart: () => void;
+  onAddToCart: (quantity: number) => void;
 }
 
 const Items: React.FC<ItemProps> = ({ name, price, onAddToCart }) => {
+  const [quantity, setQuantity] = useState(1);
+
+  const increment = () => setQuantity((prev) => prev + 1);
+  const decrement = () => setQuantity((prev) => (prev > 1 ? prev - 1 : 1));
+
+  // Extract numeric price for calculations
+  const numericPrice = parseInt(price.replace(/[^0-9]/g, ""), 10) || 0;
+  const totalPrice = numericPrice * quantity;
+
   return (
     <View style={styles.cardContainer}>
       <View style={styles.cardHeader}>
@@ -26,9 +35,21 @@ const Items: React.FC<ItemProps> = ({ name, price, onAddToCart }) => {
           <Text style={styles.priceText}>{price}</Text>
         </View>
 
-        <TouchableOpacity style={styles.addToChartBtn} onPress={onAddToCart}>
-          <Text style={styles.addToChartText}>Add to Chart</Text>
-        </TouchableOpacity>
+        <View style={styles.rightSection}>
+          <View style={styles.quantityContainer}>
+            <TouchableOpacity onPress={decrement} style={styles.qtyBtn}>
+              <Text style={styles.qtyBtnText}>-</Text>
+            </TouchableOpacity>
+            <Text style={styles.qtyText}>{quantity}</Text>
+            <TouchableOpacity onPress={increment} style={styles.qtyBtn}>
+              <Text style={styles.qtyBtnText}>+</Text>
+            </TouchableOpacity>
+          </View>
+
+          <TouchableOpacity style={styles.addToChartBtn} onPress={() => onAddToCart(quantity)}>
+            <Text style={styles.addToChartText}>Add {quantity > 1 ? `N ${totalPrice.toLocaleString()}` : ""}</Text>
+          </TouchableOpacity>
+        </View>
       </View>
     </View>
   );
@@ -80,6 +101,35 @@ const styles = StyleSheet.create({
   priceSection: {
     flex: 1,
   },
+  rightSection: {
+    alignItems: "flex-end",
+  },
+  quantityContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    marginBottom: 10,
+  },
+  qtyBtn: {
+    backgroundColor: "#EFF7EE",
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    justifyContent: "center",
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: "#439D25",
+  },
+  qtyBtnText: {
+    color: "#439D25",
+    fontSize: 18,
+    fontWeight: "700",
+  },
+  qtyText: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: "#000",
+  },
   availableLabel: {
     fontSize: 12,
     color: "#808080",
@@ -96,11 +146,13 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     paddingHorizontal: 18,
     paddingVertical: 10,
+    minWidth: 100,
   },
   addToChartText: {
     color: "white",
     fontSize: 13,
     fontWeight: "700",
+    textAlign: "center",
   },
 });
 

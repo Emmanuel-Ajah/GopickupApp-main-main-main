@@ -32,6 +32,13 @@ export default function BuyMaterialContent({ onAddToCart }: { onAddToCart: (item
       available: true,
       image: require("../assets/images/Van.png"),
     },
+    {
+      title: "Hollow Blocks",
+      size: "6 inches",
+      price: "N 500 each",
+      available: true,
+      image: require("../assets/images/Van.png"),
+    },
   ];
 
   return (
@@ -46,7 +53,7 @@ export default function BuyMaterialContent({ onAddToCart }: { onAddToCart: (item
             size={item.size}
             price={item.price}
             available={item.available}
-            onAddToCart={() => onAddToCart(item)}
+            onAddToCart={(qty) => onAddToCart({ ...item, quantity: qty })}
           />
         ))}
       </ScrollView>
