@@ -5,24 +5,24 @@ const Order = require('../models/Order');
 // @access  Private
 const createOrder = async (req, res) => {
     try {
-        const { items, totalAmount, pickupLocation, deliveryLocation } = req.body;
+        const { items, totalAmount, pickupLocation, deliveryLocation, status } = req.body;
 
         if (!items || items.length === 0) {
             return res.status(400).json({ message: 'No order items' });
         }
 
         // Generate Tracking ID
-        // Format: #TRK- + 8 random alphanumeric characters
         const randomStr = Math.random().toString(36).substring(2, 10).toUpperCase();
         const trackingId = `#TRK-${randomStr}`;
 
         const order = await Order.create({
             user: req.user._id,
             items,
-            totalAmount,
+            totalAmount: totalAmount || 0,
             pickupLocation,
             deliveryLocation,
             trackingId,
+            status: status || 'Pending',
         });
 
         res.status(201).json(order);
@@ -31,37 +31,35 @@ const createOrder = async (req, res) => {
     }
 };
 
-// @desc    Get logged in user orders
-// @route   GET /api/orders/myorders
-// @access  Private
-const getMyOrders = async (req, res) => {
+// ... existing getMyOrders and getOrderById ...
+
+// @desc    Get all orders
+// @route   GET /api/orders
+// @access  Private/Admin
+const getAllOrders = async (req, res) => {
     try {
-        const orders = await Order.find({ user: req.user._id }).sort({ createdAt: -1 });
+        const orders = await Order.find({}).populate('user', 'name email').sort({ createdAt: -1 });
         res.json(orders);
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
 };
 
-// @desc    Get order by ID or Tracking ID
-// @route   GET /api/orders/:id
-// @access  Private
-const getOrderById = async (req, res) => {
+// @desc    Update order for negotiation
+// @route   PATCH /api/orders/:id/negotiate
+// @access  Private/Admin
+const negotiateOrder = async (req, res) => {
     try {
-        const { id } = req.params;
-        let order;
-
-        // Try finding by internal ID first if it looks like a Mongo ID, else by trackingId
-        if (id.match(/^[0-9a-fA-F]{24}$/)) {
-            order = await Order.findById(id).populate('user', 'name email');
-        }
-
-        if (!order) {
-            order = await Order.findOne({ trackingId: id }).populate('user', 'name email');
-        }
+        const { negotiatedPrice, status, paymentStatus } = req.body;
+        const order = await Order.findById(req.params.id);
 
         if (order) {
-            res.json(order);
+            order.negotiatedPrice = negotiatedPrice !== undefined ? negotiatedPrice : order.negotiatedPrice;
+            order.status = status || order.status;
+            order.paymentStatus = paymentStatus || order.paymentStatus;
+
+            const updatedOrder = await order.save();
+            res.json(updatedOrder);
         } else {
             res.status(404).json({ message: 'Order not found' });
         }
@@ -74,4 +72,6 @@ module.exports = {
     createOrder,
     getMyOrders,
     getOrderById,
+    getAllOrders,
+    negotiateOrder,
 };

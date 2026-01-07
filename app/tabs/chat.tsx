@@ -1,6 +1,8 @@
 import { Ionicons } from "@expo/vector-icons";
-import React from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import React, { useEffect, useState } from "react";
 import {
+    ActivityIndicator,
     Image,
     KeyboardAvoidingView,
     Platform,
@@ -12,40 +14,54 @@ import {
     TouchableOpacity,
     View,
 } from "react-native";
+import { getMessages, sendMessage } from "../api/api";
+
+const ADMIN_ID = "677d24f0c4068c07e0568f18"; // Placeholder Admin ID
 
 const Chat = () => {
-    const messages = [
-        {
-            id: 1,
-            text: "Hello, I just posted a load for 2 trips of coal. What's the best rate for this?",
-            sender: "user",
-            time: "08:23 AM",
-        },
-        {
-            id: 2,
-            text: "Welcome! I see your request. For that distance and volume, we're looking at N 150,000 per trip.",
-            sender: "agent",
-            time: "08:25 AM",
-        },
-        {
-            id: 3,
-            text: "That's a bit high. Can we do N 130,000? I have regular loads.",
-            sender: "user",
-            time: "08:26 AM",
-        },
-        {
-            id: 4,
-            text: "Let me check with the fleet manager... Okay, we can do N 135,000 as a special rate for you.",
-            sender: "agent",
-            time: "08:28 AM",
-        },
-        {
-            id: 5,
-            text: "Great! Send me the invoice and I'll make the payment.",
-            sender: "user",
-            time: "08:30 AM",
-        },
-    ];
+    const [messages, setMessages] = useState<any[]>([]);
+    const [inputText, setInputText] = useState("");
+    const [user, setUser] = useState<any>(null);
+    const [loading, setLoading] = useState(true);
+
+    const fetchMessages = async () => {
+        try {
+            const userData = await AsyncStorage.getItem("user");
+            if (userData) {
+                const parsedUser = JSON.parse(userData);
+                setUser(parsedUser);
+                const response = await getMessages(ADMIN_ID);
+                setMessages(response.data);
+            }
+        } catch (error) {
+            console.error("Error fetching messages:", error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchMessages();
+        // Poll for new messages every 5 seconds for simulation
+        const interval = setInterval(fetchMessages, 5000);
+        return () => clearInterval(interval);
+    }, []);
+
+    const handleSend = async () => {
+        if (!inputText.trim()) return;
+
+        try {
+            const data = {
+                recipientId: ADMIN_ID,
+                content: inputText,
+            };
+            await sendMessage(data);
+            setInputText("");
+            fetchMessages();
+        } catch (error) {
+            console.error("Send message error:", error);
+        }
+    };
 
     return (
         <View style={styles.container}>
@@ -89,39 +105,39 @@ const Chat = () => {
                     <Text style={styles.dateText}>Today</Text>
 
                     {/* Message List */}
-                    {messages.map((msg) => (
+                    {messages.map((msg: any, idx: number) => (
                         <View
-                            key={msg.id}
+                            key={msg._id || idx}
                             style={[
                                 styles.messageRow,
-                                msg.sender === "user" ? styles.userRow : styles.agentRow,
+                                msg.sender === user?._id ? styles.userRow : styles.agentRow,
                             ]}
                         >
                             <View
                                 style={[
                                     styles.bubble,
-                                    msg.sender === "user" ? styles.userBubble : styles.agentBubble,
-                                ]}
-                            >
+                                    msg.sender === user?._id ? styles.userBubble : styles.agentBubble,
+                                ]}>
                                 <Text
                                     style={[
                                         styles.messageText,
-                                        msg.sender === "user" ? styles.userText : styles.agentText,
-                                    ]}
-                                >
-                                    {msg.text}
+                                        msg.sender === user?._id ? styles.userText : styles.agentText,
+                                    ]}>
+                                    {msg.content}
                                 </Text>
                                 <Text
                                     style={[
                                         styles.timeText,
-                                        msg.sender === "user" ? styles.userTime : styles.agentTime,
-                                    ]}
-                                >
-                                    {msg.time}
+                                        msg.sender === user?._id ? styles.userTime : styles.agentTime,
+                                    ]}>
+                                    {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                 </Text>
                             </View>
                         </View>
                     ))}
+                    {loading && messages.length === 0 && (
+                        <ActivityIndicator size="small" color="#439D25" style={{ marginTop: 20 }} />
+                    )}
                 </ScrollView>
 
                 {/* Input Bar */}
@@ -131,6 +147,8 @@ const Chat = () => {
                             style={styles.input}
                             placeholder="Message"
                             placeholderTextColor="#A0A0A0"
+                            value={inputText}
+                            onChangeText={setInputText}
                         />
                         <View style={styles.inputIcons}>
                             <TouchableOpacity style={styles.iconCircle}>
@@ -141,7 +159,7 @@ const Chat = () => {
                             </TouchableOpacity>
                         </View>
                     </View>
-                    <TouchableOpacity style={styles.sendButton}>
+                    <TouchableOpacity style={styles.sendButton} onPress={handleSend}>
                         <Ionicons name="send" size={20} color="white" />
                     </TouchableOpacity>
                 </View>

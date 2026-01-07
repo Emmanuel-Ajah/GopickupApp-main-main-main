@@ -24,10 +24,12 @@ app.get('/', (req, res) => {
 const authRoutes = require('./routes/authRoutes');
 const orderRoutes = require('./routes/orderRoutes');
 const reviewRoutes = require('./routes/reviewRoutes');
+const messageRoutes = require('./routes/messageRoutes');
 
 app.use('/api/auth', authRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/reviews', reviewRoutes);
+app.use('/api/messages', messageRoutes);
 
 const PORT = process.env.PORT || 5000;
 

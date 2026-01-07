@@ -1,17 +1,61 @@
-import React from "react";
-import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import React, { useState } from "react";
+import { Modal, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 
 export default function BookingDetailsContent() {
+    const [showVehicleModal, setShowVehicleModal] = useState(false);
+    const [selectedVehicle, setSelectedVehicle] = useState<string | null>(null);
+
+    const vehicles = ["Van", "Pick Up", "Truck", "Flat bed", "Trailer", "Tipper"];
+
     return (
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.container}>
             <Text style={styles.mainTitle}>Booking Details</Text>
 
             <View style={styles.section}>
                 <Text style={styles.subHeader}>Let's get your goods moving</Text>
-                <TouchableOpacity style={styles.chooseBtn}>
-                    <Text style={styles.chooseBtnText}>Choose the right vehicle</Text>
+                <TouchableOpacity
+                    style={[styles.chooseBtn, selectedVehicle ? styles.selectedBtn : {}]}
+                    onPress={() => setShowVehicleModal(true)}
+                >
+                    <Text style={styles.chooseBtnText}>
+                        {selectedVehicle ? `Selected: ${selectedVehicle}` : "Choose the right vehicle"}
+                    </Text>
                 </TouchableOpacity>
             </View>
+
+            {/* Vehicle Selection Modal */}
+            <Modal
+                visible={showVehicleModal}
+                transparent={true}
+                animationType="fade"
+                onRequestClose={() => setShowVehicleModal(false)}
+            >
+                <TouchableOpacity
+                    style={styles.modalOverlay}
+                    activeOpacity={1}
+                    onPress={() => setShowVehicleModal(false)}
+                >
+                    <View style={styles.vehicleListContainer}>
+                        <Text style={styles.modalTitle}>Select Vehicle</Text>
+                        {vehicles.map((v) => (
+                            <TouchableOpacity
+                                key={v}
+                                style={styles.vehicleItem}
+                                onPress={() => {
+                                    setSelectedVehicle(v);
+                                    setShowVehicleModal(false);
+                                }}
+                            >
+                                <Text style={[styles.vehicleText, selectedVehicle === v && styles.selectedVehicleText]}>
+                                    {v}
+                                </Text>
+                                {selectedVehicle === v && <Ionicons name="checkmark-circle" size={20} color="#439D25" />}
+                            </TouchableOpacity>
+                        ))}
+                    </View>
+                </TouchableOpacity>
+            </Modal>
 
             {/* Pickup Section */}
             <View style={styles.fieldSection}>
@@ -140,15 +184,44 @@ const styles = StyleSheet.create({
         color: "#A0A0A0",
         fontWeight: "400",
     },
-    paymentRow: {
-        flexDirection: "row",
-        alignItems: "center",
-        paddingVertical: 12,
+    selectedBtn: {
+        backgroundColor: "#000",
     },
-    paymentText: {
-        fontSize: 14,
-        color: "#606060",
-        fontWeight: "600",
-        marginLeft: 12,
+    modalOverlay: {
+        flex: 1,
+        backgroundColor: "rgba(0,0,0,0.5)",
+        justifyContent: "center",
+        alignItems: "center",
+        padding: 20,
+    },
+    vehicleListContainer: {
+        backgroundColor: "white",
+        borderRadius: 20,
+        width: "100%",
+        padding: 20,
+        maxHeight: "80%",
+    },
+    modalTitle: {
+        fontSize: 18,
+        fontWeight: "800",
+        marginBottom: 20,
+        textAlign: "center",
+    },
+    vehicleItem: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center",
+        paddingVertical: 15,
+        borderBottomWidth: 1,
+        borderBottomColor: "#F0F0F0",
+    },
+    vehicleText: {
+        fontSize: 16,
+        color: "#000",
+        fontWeight: "500",
+    },
+    selectedVehicleText: {
+        color: "#439D25",
+        fontWeight: "700",
     },
 });

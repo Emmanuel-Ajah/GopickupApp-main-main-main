@@ -1,5 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
   Image,
@@ -8,12 +9,22 @@ import {
   StyleSheet,
   Text,
   TouchableOpacity,
-  View,
+  View
 } from "react-native";
 
 const Profile = () => {
   const [user, setUser] = useState<any>(null);
   const [reviews, setReviews] = useState<any[]>([]);
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    try {
+      await AsyncStorage.multiRemove(["token", "user"]);
+      router.replace("/login");
+    } catch (error) {
+      console.error("Error during logout:", error);
+    }
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -41,8 +52,8 @@ const Profile = () => {
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Profile</Text>
-        <TouchableOpacity>
-          <Ionicons name="ellipsis-vertical" size={24} color="#000" />
+        <TouchableOpacity onPress={handleLogout}>
+          <Ionicons name="log-out-outline" size={24} color="#FF3B30" />
         </TouchableOpacity>
       </View>
 
@@ -143,6 +154,7 @@ const Profile = () => {
           </View>
         </View>
 
+
         {/* My Reviews Section */}
         <View style={styles.sectionHeader}>
           <Ionicons name="star-outline" size={24} color="#000" />
@@ -191,6 +203,7 @@ const Profile = () => {
           </View>
         </TouchableOpacity>
       </ScrollView>
+
 
       {/* Spacing for Tab Bar */}
       <View style={{ height: 100 }} />
@@ -510,6 +523,22 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginTop: 10,
     paddingHorizontal: 20,
+  },
+  modalContainer: {
+    flex: 1,
+    backgroundColor: "white",
+    padding: 20,
+    paddingTop: 60,
+  },
+  modalHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 20,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: "800",
   },
 });
 

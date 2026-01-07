@@ -21,10 +21,18 @@ export const forgotPassword = (data) => API.post("/auth/forgot-password", data);
 export const googleLogin = (data) => API.post("/auth/google", data);
 
 // Orders
-export const createOrder = (data) => API.post("/orders", data);
+export const createOrder = (orderData) => API.post("/orders", orderData);
 export const getMyOrders = () => API.get("/orders/myorders");
-export const trackOrder = (id) => API.get(`/orders/${id}`);
+export const trackOrder = (trackingId) => API.get(`/orders/${trackingId}`);
+
+// Admin Orders
+export const getAdminOrders = () => API.get("/orders");
+export const negotiateOrder = (orderId, data) => API.patch(`/orders/${orderId}/negotiate`, data);
 
 // Reviews
-export const createReview = (data) => API.post("/reviews", data);
+export const createReview = (reviewData) => API.post("/reviews", reviewData);
 export const getMyReviews = () => API.get("/reviews/my");
+
+// Messages
+export const sendMessage = (messageData) => API.post("/messages", messageData);
+export const getMessages = (otherUserId) => API.get(`/messages/${otherUserId}`);

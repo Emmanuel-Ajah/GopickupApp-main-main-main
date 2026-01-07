@@ -15,6 +15,9 @@ exports.registerUser = async (req, res) => {
             return res.status(400).json({ message: 'User already exists' });
         }
 
+        // Check if this should be an admin
+        const role = email === process.env.ADMIN_EMAIL ? 'admin' : 'user';
+
         // Create user
         const user = await User.create({
             name,
@@ -23,6 +26,7 @@ exports.registerUser = async (req, res) => {
             phone,
             dob,
             bvn,
+            role,
             userId: 'USER' + Math.floor(10000000 + Math.random() * 90000000), // Random ID matching mockup format
         });
 
@@ -32,6 +36,7 @@ exports.registerUser = async (req, res) => {
                 name: user.name,
                 email: user.email,
                 userId: user.userId,
+                role: user.role,
                 token: generateToken(user._id),
             });
         } else {
@@ -58,6 +63,7 @@ exports.loginUser = async (req, res) => {
                 name: user.name,
                 email: user.email,
                 userId: user.userId,
+                role: user.role,
                 token: generateToken(user._id),
             });
         } else {

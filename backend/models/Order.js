@@ -26,9 +26,22 @@ const orderSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
+    totalItems: {
+        type: Number,
+        default: 1,
+    },
+    negotiatedPrice: {
+        type: Number,
+        default: 0,
+    },
+    paymentStatus: {
+        type: String,
+        enum: ['Unpaid', 'Paid'],
+        default: 'Unpaid',
+    },
     status: {
         type: String,
-        enum: ['Pending', 'Processing', 'In Transit', 'Delivered', 'Cancelled'],
+        enum: ['Pending', 'Pending Negotiation', 'Processing', 'In Transit', 'Delivered', 'Cancelled'],
         default: 'Pending',
     },
     trackingId: {
