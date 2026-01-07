@@ -5,9 +5,10 @@ import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 interface ItemProps {
   name: string;
   price: string;
+  onAddToCart: () => void;
 }
 
-const Items: React.FC<ItemProps> = ({ name, price }) => {
+const Items: React.FC<ItemProps> = ({ name, price, onAddToCart }) => {
   return (
     <View style={styles.cardContainer}>
       <View style={styles.cardHeader}>
@@ -25,7 +26,7 @@ const Items: React.FC<ItemProps> = ({ name, price }) => {
           <Text style={styles.priceText}>{price}</Text>
         </View>
 
-        <TouchableOpacity style={styles.addToChartBtn}>
+        <TouchableOpacity style={styles.addToChartBtn} onPress={onAddToCart}>
           <Text style={styles.addToChartText}>Add to Chart</Text>
         </TouchableOpacity>
       </View>

@@ -2,7 +2,7 @@ import React from "react";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 import Items from "./Items";
 
-export default function NaturalResourcesContent() {
+export default function NaturalResourcesContent({ onAddToCart }: { onAddToCart: (item: any) => void }) {
   const resources = [
     { name: "Coal", price: "N 7,300,000 per trip" },
   ];
@@ -12,7 +12,7 @@ export default function NaturalResourcesContent() {
       <Text style={styles.title}>Natural Resources</Text>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
         {resources.map((item, index) => (
-          <Items key={index} name={item.name} price={item.price} />
+          <Items key={index} name={item.name} price={item.price} onAddToCart={() => onAddToCart(item)} />
         ))}
       </ScrollView>
     </View>

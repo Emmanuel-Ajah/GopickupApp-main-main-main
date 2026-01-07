@@ -2,7 +2,7 @@ import React from "react";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 import Products from "./ProductItems";
 
-export default function BuyMaterialContent() {
+export default function BuyMaterialContent({ onAddToCart }: { onAddToCart: (item: any) => void }) {
   const products = [
     {
       title: "Dangote Cement",
@@ -46,6 +46,7 @@ export default function BuyMaterialContent() {
             size={item.size}
             price={item.price}
             available={item.available}
+            onAddToCart={() => onAddToCart(item)}
           />
         ))}
       </ScrollView>

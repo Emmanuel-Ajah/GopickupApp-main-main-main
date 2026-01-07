@@ -18,6 +18,7 @@ import BuyMaterialContent from '../../components/BuyMaterialContent'
 import NaturalResourcesContent from '../../components/NaturalResourcesContent'
 import QuarryMaterialsContent from '../../components/QuarryMaterialsContent'
 import TrackDeliveryContent from '../../components/TrackDeliveryContent'
+import { createOrder } from "../api/api"
 
 export default function Home() {
   const router = useRouter();
@@ -38,10 +39,50 @@ export default function Home() {
 
   const tabs = [
     "Buy Material",
+    "Quarry Materials",
     "Natural Resources",
-    "Post a Request",
     "Track My Delivery",
   ];
+
+  const [cart, setCart] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  const onAddToCart = (item: any) => {
+    setCart([...cart, item]);
+    alert(`${item.title || item.name} added to cart!`);
+  };
+
+  const handleConfirmOrder = async () => {
+    if (cart.length === 0) {
+      alert("Please add items to your cart before confirming.");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const orderData = {
+        items: cart.map(item => ({
+          name: item.title || item.name,
+          size: item.size || "",
+          quantity: 1,
+          price: item.price
+        })),
+        totalAmount: 0,
+        pickupLocation: "Mining Site",
+        deliveryLocation: "Customer Address",
+      };
+
+      const response = await createOrder(orderData);
+      alert(`Order Success! trackingId: ${response.data.trackingId}`);
+      setVisible(false);
+      setCart([]);
+    } catch (error: any) {
+      console.error("Order error:", error);
+      alert("Order Failed: " + (error.response?.data?.message || "Error"));
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleTabPress = (tab: string) => {
     setSelected(tab);
@@ -235,22 +276,25 @@ export default function Home() {
             </TouchableOpacity>
           </View>
           <ScrollView contentContainerStyle={{ paddingBottom: 20 }}>
-            {activeTab === "Buy Material" && <BuyMaterialContent />}
-            {activeTab === "Quarry Materials" && <QuarryMaterialsContent />}
-            {activeTab === "Natural Resources" && <NaturalResourcesContent />}
+            {activeTab === "Buy Material" && <BuyMaterialContent onAddToCart={onAddToCart} />}
+            {activeTab === "Quarry Materials" && <QuarryMaterialsContent onAddToCart={onAddToCart} />}
+            {activeTab === "Natural Resources" && <NaturalResourcesContent onAddToCart={onAddToCart} />}
             {activeTab === "Track My Delivery" && <TrackDeliveryContent />}
             {activeTab === "Booking Details" && <BookingDetailsContent />}
           </ScrollView>
 
           {/* Fallback for Coal Card click if not strictly setting activeTab */}
-          {!activeTab && <NaturalResourcesContent />}
+          {!activeTab && <NaturalResourcesContent onAddToCart={onAddToCart} />}
 
-          {activeTab !== "Booking Details" && (
+          {activeTab !== "Booking Details" && activeTab !== "Track My Delivery" && (
             <TouchableOpacity
-              onPress={() => setVisible(false)}
-              style={styles.confirmButton}
+              onPress={handleConfirmOrder}
+              disabled={loading}
+              style={[styles.confirmButton, { opacity: loading ? 0.7 : 1 }]}
             >
-              <Text style={styles.confirmText}>Confirm</Text>
+              <Text style={styles.confirmText}>
+                {loading ? "Processing..." : `Confirm Order (${cart.length} items)`}
+              </Text>
             </TouchableOpacity>
           )}
         </View>

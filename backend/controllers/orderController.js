@@ -43,12 +43,22 @@ const getMyOrders = async (req, res) => {
     }
 };
 
-// @desc    Get order by ID (internal ID or Tracking ID could be supported, sticking to ID for now)
+// @desc    Get order by ID or Tracking ID
 // @route   GET /api/orders/:id
 // @access  Private
 const getOrderById = async (req, res) => {
     try {
-        const order = await Order.findById(req.params.id).populate('user', 'name email');
+        const { id } = req.params;
+        let order;
+
+        // Try finding by internal ID first if it looks like a Mongo ID, else by trackingId
+        if (id.match(/^[0-9a-fA-F]{24}$/)) {
+            order = await Order.findById(id).populate('user', 'name email');
+        }
+
+        if (!order) {
+            order = await Order.findOne({ trackingId: id }).populate('user', 'name email');
+        }
 
         if (order) {
             res.json(order);

@@ -1,7 +1,7 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
 
-const BASE_URL = "https://backend.gopickup.com.ng/api/auth";
+const BASE_URL = "https://backend.gopickup.com.ng/api";
 
 const API = axios.create({
   baseURL: BASE_URL,
@@ -14,7 +14,13 @@ API.interceptors.request.use(async (config) => {
   return config;
 });
 
-export const registerUser = (data) => API.post("/register", data);
-export const loginUser = (data) => API.post("/login", data);
-export const forgotPassword = (data) => API.post("/forgot-password", data);
-export const googleLogin = (data) => API.post("/google", data);
+// Auth
+export const registerUser = (data) => API.post("/auth/register", data);
+export const loginUser = (data) => API.post("/auth/login", data);
+export const forgotPassword = (data) => API.post("/auth/forgot-password", data);
+export const googleLogin = (data) => API.post("/auth/google", data);
+
+// Orders
+export const createOrder = (data) => API.post("/orders", data);
+export const getMyOrders = () => API.get("/orders/myorders");
+export const trackOrder = (id) => API.get(`/orders/${id}`);

@@ -2,7 +2,7 @@ import React from "react";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 import Items from "./Items";
 
-export default function QuarryMaterialsContent() {
+export default function QuarryMaterialsContent({ onAddToCart }: { onAddToCart: (item: any) => void }) {
     const materials = [
         { name: "Pure Dust (Dust 1)", price: "N 9,600 per ton" },
         { name: "Stone Dust (Dust 2)", price: "N 9,600 per ton" },
@@ -19,7 +19,7 @@ export default function QuarryMaterialsContent() {
             <Text style={styles.title}>Quarry Materials</Text>
             <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
                 {materials.map((item, index) => (
-                    <Items key={index} name={item.name} price={item.price} />
+                    <Items key={index} name={item.name} price={item.price} onAddToCart={() => onAddToCart(item)} />
                 ))}
             </ScrollView>
         </View>

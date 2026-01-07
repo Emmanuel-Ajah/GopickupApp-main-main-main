@@ -7,9 +7,10 @@ interface ProductProps {
   size: string;
   price: string;
   available: boolean;
+  onAddToCart: () => void;
 }
 
-const ProductItems: React.FC<ProductProps> = ({ image, title, size, price, available }) => {
+const ProductItems: React.FC<ProductProps> = ({ image, title, size, price, available, onAddToCart }) => {
   return (
     <View style={styles.card}>
       <View style={styles.contentRow}>
@@ -30,7 +31,7 @@ const ProductItems: React.FC<ProductProps> = ({ image, title, size, price, avail
         {/* Right Column */}
         <View style={styles.rightColumn}>
           <Text style={styles.specText}>{size}</Text>
-          <TouchableOpacity style={styles.addButton}>
+          <TouchableOpacity style={styles.addButton} onPress={onAddToCart}>
             <Text style={styles.addButtonText}>Add to Chart</Text>
           </TouchableOpacity>
         </View>
