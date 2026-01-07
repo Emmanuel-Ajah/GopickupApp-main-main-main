@@ -9,15 +9,23 @@ export default function TabsLayout() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Reset background color for Web
+    if (typeof document !== 'undefined') {
+      document.body.style.backgroundColor = '#FFFFFF';
+    }
+
     const checkRole = async () => {
       try {
         const userData = await AsyncStorage.getItem("user");
         if (userData) {
           const user = JSON.parse(userData);
-          setRole(user.role);
+          setRole(user.role || "user");
+        } else {
+          setRole("user");
         }
       } catch (error) {
         console.error("Error checking role:", error);
+        setRole("user");
       } finally {
         setLoading(false);
       }
@@ -27,7 +35,7 @@ export default function TabsLayout() {
 
   if (loading) {
     return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "#FFFFFF" }}>
         <ActivityIndicator size="large" color="#439D25" />
       </View>
     );
@@ -35,7 +43,6 @@ export default function TabsLayout() {
 
   return (
     <Tabs
-      key={role}
       screenOptions={({ route }) => ({
         tabBarIcon: ({ color }) => {
           let iconName: React.ComponentProps<typeof Ionicons>["name"] =

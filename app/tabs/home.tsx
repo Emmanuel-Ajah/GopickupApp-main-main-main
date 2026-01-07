@@ -30,7 +30,13 @@ export default function Home() {
     const fetchUser = async () => {
       const userData = await AsyncStorage.getItem("user");
       if (userData) {
-        setUser(JSON.parse(userData));
+        const parsedUser = JSON.parse(userData);
+        setUser(parsedUser);
+
+        // Redirect if admin
+        if (parsedUser.role === "admin") {
+          router.replace("/tabs/admin_home" as any);
+        }
       }
     };
     fetchUser();
@@ -75,6 +81,7 @@ export default function Home() {
       setLoading(false);
     }
   };
+
 
   const handleConfirmOrder = async () => {
     if (cart.length === 0) {

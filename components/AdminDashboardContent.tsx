@@ -1,4 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import { ActivityIndicator, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { getAdminOrders, negotiateOrder, sendMessage } from "../app/api/api";
@@ -43,9 +44,13 @@ export default function AdminDashboardContent() {
         }
     };
 
+    const router = useRouter();
+
     const handleChatWithClient = async (userId: string) => {
-        // This is a placeholder for actual navigation logic
-        alert("Navigating to chat with client ID: " + userId);
+        router.push({
+            pathname: "/tabs/chat" as any,
+            params: { recipientId: userId }
+        });
     };
 
     if (loading) {

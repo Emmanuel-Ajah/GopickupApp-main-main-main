@@ -1,5 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useLocalSearchParams } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
     ActivityIndicator,
@@ -16,13 +17,15 @@ import {
 } from "react-native";
 import { getMessages, sendMessage } from "../api/api";
 
-const ADMIN_ID = "677d24f0c4068c07e0568f18"; // Placeholder Admin ID
+const ADMIN_ID = "677d24f0c4068c07e0568f18"; // Default Admin ID
 
 const Chat = () => {
+    const params = useLocalSearchParams();
     const [messages, setMessages] = useState<any[]>([]);
     const [inputText, setInputText] = useState("");
     const [user, setUser] = useState<any>(null);
     const [loading, setLoading] = useState(true);
+    const [targetRecipient, setTargetRecipient] = useState<string>(ADMIN_ID);
 
     const fetchMessages = async () => {
         try {
@@ -30,7 +33,14 @@ const Chat = () => {
             if (userData) {
                 const parsedUser = JSON.parse(userData);
                 setUser(parsedUser);
-                const response = await getMessages(ADMIN_ID);
+
+                let recipient = ADMIN_ID;
+                if (parsedUser.role === 'admin' && params.recipientId) {
+                    recipient = params.recipientId as string;
+                }
+                setTargetRecipient(recipient);
+
+                const response = await getMessages(recipient);
                 setMessages(response.data);
             }
         } catch (error) {
@@ -42,17 +52,16 @@ const Chat = () => {
 
     useEffect(() => {
         fetchMessages();
-        // Poll for new messages every 5 seconds for simulation
         const interval = setInterval(fetchMessages, 5000);
         return () => clearInterval(interval);
-    }, []);
+    }, [params.recipientId]); // Re-fetch if param changes
 
     const handleSend = async () => {
         if (!inputText.trim()) return;
 
         try {
             const data = {
-                recipientId: ADMIN_ID,
+                recipientId: targetRecipient,
                 content: inputText,
             };
             await sendMessage(data);
