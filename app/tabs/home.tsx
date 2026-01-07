@@ -16,7 +16,6 @@ import {
 import BookingDetailsContent from '../../components/BookingDetailsContent'
 import BuyMaterialContent from '../../components/BuyMaterialContent'
 import NaturalResourcesContent from '../../components/NaturalResourcesContent'
-import QuarryMaterialsContent from '../../components/QuarryMaterialsContent'
 import TrackDeliveryContent from '../../components/TrackDeliveryContent'
 import { createOrder } from "../api/api"
 
@@ -39,7 +38,6 @@ export default function Home() {
 
   const tabs = [
     "Buy Material",
-    "Quarry Materials",
     "Natural Resources",
     "Track My Delivery",
   ];
@@ -277,7 +275,6 @@ export default function Home() {
           </View>
           <ScrollView contentContainerStyle={{ paddingBottom: 20 }}>
             {activeTab === "Buy Material" && <BuyMaterialContent onAddToCart={onAddToCart} />}
-            {activeTab === "Quarry Materials" && <QuarryMaterialsContent onAddToCart={onAddToCart} />}
             {activeTab === "Natural Resources" && <NaturalResourcesContent onAddToCart={onAddToCart} />}
             {activeTab === "Track My Delivery" && <TrackDeliveryContent />}
             {activeTab === "Booking Details" && <BookingDetailsContent />}

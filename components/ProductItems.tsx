@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Image, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 
 interface ProductProps {
   image: any;
@@ -11,14 +11,20 @@ interface ProductProps {
 }
 
 const ProductItems: React.FC<ProductProps> = ({ image, title, size, price, available, onAddToCart }) => {
-  const [quantity, setQuantity] = useState(1);
+  const [quantity, setQuantity] = useState("1");
 
-  const increment = () => setQuantity((prev) => prev + 1);
-  const decrement = () => setQuantity((prev) => (prev > 1 ? prev - 1 : 1));
+  const increment = () => setQuantity((prev) => (parseInt(prev) + 1).toString());
+  const decrement = () => setQuantity((prev) => (parseInt(prev) > 1 ? (parseInt(prev) - 1).toString() : "1"));
+
+  const handleQtyChange = (val: string) => {
+    const cleaned = val.replace(/[^0-9]/g, "");
+    setQuantity(cleaned || "1");
+  };
 
   // Extract numeric price for calculations (e.g., "N 5,500" -> 5500)
   const numericPrice = parseInt(price.replace(/[^0-9]/g, ""), 10) || 0;
-  const totalPrice = numericPrice * quantity;
+  const qtyNum = parseInt(quantity) || 1;
+  const totalPrice = numericPrice * qtyNum;
 
   return (
     <View style={styles.card}>
@@ -46,7 +52,13 @@ const ProductItems: React.FC<ProductProps> = ({ image, title, size, price, avail
             <TouchableOpacity onPress={decrement} style={styles.qtyBtn}>
               <Text style={styles.qtyBtnText}>-</Text>
             </TouchableOpacity>
-            <Text style={styles.qtyText}>{quantity}</Text>
+            <TextInput
+              style={styles.qtyInput}
+              value={quantity}
+              onChangeText={handleQtyChange}
+              keyboardType="numeric"
+              maxLength={4}
+            />
             <TouchableOpacity onPress={increment} style={styles.qtyBtn}>
               <Text style={styles.qtyBtnText}>+</Text>
             </TouchableOpacity>
@@ -54,9 +66,9 @@ const ProductItems: React.FC<ProductProps> = ({ image, title, size, price, avail
 
           <TouchableOpacity
             style={styles.addButton}
-            onPress={() => onAddToCart(quantity)}
+            onPress={() => onAddToCart(qtyNum)}
           >
-            <Text style={styles.addButtonText}>Add {quantity > 1 ? `N ${totalPrice.toLocaleString()}` : ""}</Text>
+            <Text style={styles.addButtonText}>Add {qtyNum > 1 ? `N ${totalPrice.toLocaleString()} ` : ""}</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -148,10 +160,15 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "700",
   },
-  qtyText: {
+  qtyInput: {
     fontSize: 16,
     fontWeight: "700",
     color: "#000",
+    textAlign: "center",
+    width: 40,
+    backgroundColor: "#F5F5F5",
+    borderRadius: 5,
+    paddingVertical: 2,
   },
   quantityContainer: {
     flexDirection: "row",
