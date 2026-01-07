@@ -1,5 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
-import React from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useRouter } from "expo-router";
+import React, { useEffect, useState } from "react";
 import {
   Image,
   ScrollView,
@@ -7,10 +9,42 @@ import {
   StyleSheet,
   Text,
   TouchableOpacity,
-  View,
+  View
 } from "react-native";
 
 const Profile = () => {
+  const [user, setUser] = useState<any>(null);
+  const [reviews, setReviews] = useState<any[]>([]);
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    try {
+      await AsyncStorage.multiRemove(["token", "user"]);
+      router.replace("/login");
+    } catch (error) {
+      console.error("Error during logout:", error);
+    }
+  };
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const userData = await AsyncStorage.getItem("user");
+      if (userData) {
+        setUser(JSON.parse(userData));
+      }
+      try {
+        const { getMyReviews } = require("../api/api");
+        const response = await getMyReviews();
+        if (response.data.success) {
+          setReviews(response.data.data);
+        }
+      } catch (error) {
+        console.error("Error fetching reviews:", error);
+      }
+    };
+    fetchData();
+  }, []);
+
   return (
     <View style={styles.mainContainer}>
       <StatusBar barStyle="dark-content" />
@@ -18,8 +52,8 @@ const Profile = () => {
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Profile</Text>
-        <TouchableOpacity>
-          <Ionicons name="ellipsis-vertical" size={24} color="#000" />
+        <TouchableOpacity onPress={handleLogout}>
+          <Ionicons name="log-out-outline" size={24} color="#FF3B30" />
         </TouchableOpacity>
       </View>
 
@@ -29,17 +63,23 @@ const Profile = () => {
       >
         {/* Top Profile Card */}
         <View style={styles.profileCard}>
-          <Image
-            source={require("../../assets/images/myImage.jpg")}
-            style={styles.profileImage}
-          />
+          {user?.image ? (
+            <Image
+              source={{ uri: user.image }}
+              style={styles.profileImage}
+            />
+          ) : (
+            <View style={[styles.profileImage, { backgroundColor: '#F0F0F0', justifyContent: 'center', alignItems: 'center' }]}>
+              <Ionicons name="person" size={30} color="#A0A0A0" />
+            </View>
+          )}
           <View style={styles.profileInfo}>
-            <Text style={styles.profileName}>Azih Monica</Text>
+            <Text style={styles.profileName}>{user?.name || "User"}</Text>
             <View style={styles.idBadgeContainer}>
               <View style={styles.idBadge}>
                 <Text style={styles.idBadgeText}>User ID</Text>
               </View>
-              <Text style={styles.idText}>D422Q7827</Text>
+              <Text style={styles.idText}>{user?.userId || "..."}</Text>
             </View>
           </View>
         </View>
@@ -54,13 +94,13 @@ const Profile = () => {
         <View style={styles.infoCard}>
           <View style={styles.infoRow}>
             <Text style={styles.label}>Name:</Text>
-            <Text style={styles.value}>Azih Monica</Text>
+            <Text style={styles.value}>{user?.name || "-"}</Text>
           </View>
           <View style={styles.divider} />
 
           <View style={styles.infoRow}>
             <Text style={styles.label}>Phone No:</Text>
-            <Text style={styles.value}>+234 000 000 0000</Text>
+            <Text style={styles.value}>{user?.phone || "-"}</Text>
           </View>
           <View style={styles.divider} />
 
@@ -72,7 +112,7 @@ const Profile = () => {
 
           <View style={styles.infoRow}>
             <Text style={styles.label}>Email:</Text>
-            <Text style={styles.value}>Azihmonica@gmail.com</Text>
+            <Text style={styles.value}>{user?.email || "-"}</Text>
           </View>
           <View style={styles.divider} />
 
@@ -114,6 +154,43 @@ const Profile = () => {
           </View>
         </View>
 
+
+        {/* My Reviews Section */}
+        <View style={styles.sectionHeader}>
+          <Ionicons name="star-outline" size={24} color="#000" />
+          <Text style={styles.sectionTitle}>My Reviews</Text>
+        </View>
+
+        <View style={styles.reviewsCard}>
+          {reviews.length > 0 ? (
+            reviews.map((rev, idx) => (
+              <View key={rev._id || idx} style={styles.reviewItem}>
+                <View style={styles.reviewHeader}>
+                  <Text style={styles.reviewRider}>Rider: {rev.riderName}</Text>
+                  <View style={styles.ratingBadge}>
+                    <Text style={styles.ratingText}>{rev.rating} ★</Text>
+                  </View>
+                </View>
+                <Text style={styles.experienceText}>{rev.experience}</Text>
+                {rev.feedback ? <Text style={styles.feedbackText}>"{rev.feedback}"</Text> : null}
+                <View style={styles.tagBubbleContainer}>
+                  {rev.tags?.map((tag: string) => (
+                    <View key={tag} style={styles.tagBubble}>
+                      <Text style={styles.tagBubbleText}>{tag}</Text>
+                    </View>
+                  ))}
+                </View>
+                {idx < reviews.length - 1 && <View style={styles.reviewDivider} />}
+              </View>
+            ))
+          ) : (
+            <View style={styles.emptyReviews}>
+              <Ionicons name="chatbox-ellipses-outline" size={40} color="#CCC" />
+              <Text style={styles.emptyText}>No reviews yet. Rate your deliveries to see them here!</Text>
+            </View>
+          )}
+        </View>
+
         {/* Refer a Friend Banner */}
         <TouchableOpacity style={styles.referCard}>
           <Image
@@ -126,6 +203,7 @@ const Profile = () => {
           </View>
         </TouchableOpacity>
       </ScrollView>
+
 
       {/* Spacing for Tab Bar */}
       <View style={{ height: 100 }} />
@@ -364,6 +442,103 @@ const styles = StyleSheet.create({
     fontWeight: "800",
     color: "#000",
     marginTop: 2,
+  },
+  reviewsCard: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 20,
+    padding: 20,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.05,
+    shadowRadius: 10,
+    elevation: 3,
+    marginBottom: 10,
+    marginTop: 10,
+  },
+  reviewItem: {
+    marginBottom: 15,
+  },
+  reviewHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  reviewRider: {
+    fontSize: 14,
+    fontWeight: "700",
+    color: "#000",
+  },
+  ratingBadge: {
+    backgroundColor: "#EFF7EE",
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 5,
+  },
+  ratingText: {
+    color: "#439D25",
+    fontSize: 12,
+    fontWeight: "900",
+  },
+  experienceText: {
+    fontSize: 13,
+    fontWeight: "600",
+    color: "#DAA520",
+    marginTop: 4,
+  },
+  feedbackText: {
+    fontSize: 13,
+    color: "#606060",
+    fontStyle: "italic",
+    marginTop: 6,
+  },
+  tagBubbleContainer: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 6,
+    marginTop: 10,
+  },
+  tagBubble: {
+    backgroundColor: "#F5F5F5",
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 10,
+  },
+  tagBubbleText: {
+    fontSize: 10,
+    fontWeight: "600",
+    color: "#808080",
+  },
+  reviewDivider: {
+    height: 1,
+    backgroundColor: "#F0F0F0",
+    marginTop: 15,
+  },
+  emptyReviews: {
+    alignItems: "center",
+    paddingVertical: 20,
+  },
+  emptyText: {
+    fontSize: 13,
+    color: "#A0A0A0",
+    textAlign: "center",
+    marginTop: 10,
+    paddingHorizontal: 20,
+  },
+  modalContainer: {
+    flex: 1,
+    backgroundColor: "white",
+    padding: 20,
+    paddingTop: 60,
+  },
+  modalHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 20,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: "800",
   },
 });
 

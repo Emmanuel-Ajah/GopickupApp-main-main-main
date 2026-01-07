@@ -34,26 +34,39 @@ export default function SignupScreen() {
     name: "",
     email: "",
     phone: "",
-    dob: "",
-    bvn: "",
     password: "",
   });
   const [loading, setLoading] = useState(false);
 
   const handleSignup = async () => {
     if (!formData.email || !formData.password || !formData.name) {
-      Alert.alert("Error", "Please fill in all required fields (Name, Email, Password)");
+      if (Platform.OS === 'web') {
+        alert("Please fill in all required fields (Name, Email, Password)");
+      } else {
+        Alert.alert("Error", "Please fill in all required fields (Name, Email, Password)");
+      }
       return;
     }
 
     setLoading(true);
     try {
+      console.log("Attempting signup with:", formData);
       const response = await registerUser(formData);
-      Alert.alert("Success", "Account created successfully!");
+      console.log("Signup success:", response.data);
+      if (Platform.OS === 'web') {
+        alert("Account created successfully!");
+      } else {
+        Alert.alert("Success", "Account created successfully!");
+      }
       router.push("/login");
     } catch (error: any) {
+      console.error("Signup error:", error);
       const message = error.response?.data?.message || "Something went wrong";
-      Alert.alert("Registration Failed", message);
+      if (Platform.OS === 'web') {
+        alert("Registration Failed: " + message);
+      } else {
+        Alert.alert("Registration Failed", message);
+      }
     } finally {
       setLoading(false);
     }
@@ -85,8 +98,6 @@ export default function SignupScreen() {
             <InputField label="Full Name" icon="person-outline" placeholder="Enter your full name" fieldId="name" value={formData.name} onChangeText={(text: string) => setFormData({ ...formData, name: text })} focusedField={focusedField} setFocusedField={setFocusedField} />
             <InputField label="Email Address" icon="mail-outline" placeholder="example@mail.com" keyboardType="email-address" fieldId="email" value={formData.email} onChangeText={(text: string) => setFormData({ ...formData, email: text })} autoCapitalize="none" focusedField={focusedField} setFocusedField={setFocusedField} />
             <InputField label="Phone Number" icon="call-outline" placeholder="+234 ..." keyboardType="phone-pad" fieldId="phone" value={formData.phone} onChangeText={(text: string) => setFormData({ ...formData, phone: text })} focusedField={focusedField} setFocusedField={setFocusedField} />
-            <InputField label="Date of Birth" icon="calendar-outline" placeholder="DD / MM / YYYY" fieldId="dob" value={formData.dob} onChangeText={(text: string) => setFormData({ ...formData, dob: text })} focusedField={focusedField} setFocusedField={setFocusedField} />
-            <InputField label="BVN" icon="shield-checkmark-outline" placeholder="11-digit BVN" keyboardType="number-pad" fieldId="bvn" value={formData.bvn} onChangeText={(text: string) => setFormData({ ...formData, bvn: text })} focusedField={focusedField} setFocusedField={setFocusedField} />
             <InputField label="Password" icon="lock-closed-outline" placeholder="••••••••" secureTextEntry={true} fieldId="password" value={formData.password} onChangeText={(text: string) => setFormData({ ...formData, password: text })} focusedField={focusedField} setFocusedField={setFocusedField} />
 
             <View style={Styles.actionSection}>
@@ -143,7 +154,7 @@ const InputField = ({ label, icon, placeholder, keyboardType = "default", secure
     ]}>
       <Ionicons name={icon} size={20} color={focusedField === fieldId ? "#FFF" : "#FFFFFF80"} style={Styles.inputIcon} />
       <TextInput
-        style={Styles.input}
+        style={[Styles.input, Platform.OS === "web" && ({ outlineStyle: "none" } as any)]}
         placeholder={placeholder}
         placeholderTextColor="#FFFFFF80"
         keyboardType={keyboardType}

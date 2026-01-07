@@ -1,0 +1,46 @@
+const Message = require('../models/Message');
+
+// @desc    Send a message
+// @route   POST /api/messages
+// @access  Private
+const sendMessage = async (req, res) => {
+    try {
+        const { recipientId, content, orderId, isVoiceNote, voiceNoteUrl } = req.body;
+
+        const message = await Message.create({
+            sender: req.user._id,
+            recipient: recipientId,
+            content,
+            order: orderId,
+            isVoiceNote,
+            voiceNoteUrl,
+        });
+
+        res.status(201).json(message);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// @desc    Get messages between two users
+// @route   GET /api/messages/:otherUserId
+// @access  Private
+const getMessages = async (req, res) => {
+    try {
+        const messages = await Message.find({
+            $or: [
+                { sender: req.user._id, recipient: req.params.otherUserId },
+                { sender: req.params.otherUserId, recipient: req.user._id },
+            ],
+        }).sort({ createdAt: 1 });
+
+        res.json(messages);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+module.exports = {
+    sendMessage,
+    getMessages,
+};

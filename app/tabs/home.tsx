@@ -1,11 +1,7 @@
-import BookingDetailsContent from '@/components/BookingDetailsContent'
-import BuyMaterialContent from '@/components/BuyMaterialContent'
-import NaturalResourcesContent from '@/components/NaturalResourcesContent'
-import PostRequestContent from '@/components/PostRequestContent'
-import TrackDeliveryContent from '@/components/TrackDeliveryContent'
 import Ionicons from "@expo/vector-icons/Ionicons"
+import AsyncStorage from "@react-native-async-storage/async-storage"
 import { useRouter } from "expo-router"
-import React, { useState } from "react"
+import React, { useEffect, useState } from "react"
 import {
   Image,
   Modal,
@@ -17,20 +13,107 @@ import {
   TouchableOpacity,
   View,
 } from "react-native"
+import BookingDetailsContent from '../../components/BookingDetailsContent'
+import BuyMaterialContent from '../../components/BuyMaterialContent'
+import NaturalResourcesContent from '../../components/NaturalResourcesContent'
+import TrackDeliveryContent from '../../components/TrackDeliveryContent'
+import { createOrder } from "../api/api"
 
 export default function Home() {
   const router = useRouter();
   const [selected, setSelected] = useState("Buy Material");
   const [visible, setVisible] = useState(false);
   const [activeTab, setActiveTab] = useState<string | null>(null);
+  const [user, setUser] = useState<any>(null);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      const userData = await AsyncStorage.getItem("user");
+      if (userData) {
+        const parsedUser = JSON.parse(userData);
+        setUser(parsedUser);
+
+        // Redirect if admin
+        if (parsedUser.role === "admin") {
+          router.replace("/tabs/admin_home" as any);
+        }
+      }
+    };
+    fetchUser();
+  }, []);
 
   const tabs = [
     "Buy Material",
     "Natural Resources",
-    "Post a Request",
     "Track My Delivery",
   ];
 
+  const [cart, setCart] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  const totalItems = cart.reduce((sum, item) => sum + (item.quantity || 1), 0);
+
+  const onAddToCart = (item: any) => {
+    setCart((prev) => [...prev, item]);
+  };
+
+  const handlePostLoad = async () => {
+    setLoading(true);
+    try {
+      // Logic for posting to load board
+      // For now, we reuse createOrder but with specific flags if needed
+      const orderData = {
+        items: [{ name: "Load Request", quantity: 1, price: 0 }],
+        totalAmount: 0,
+        pickupLocation: "User Input Placeholder",
+        deliveryLocation: "User Input Placeholder",
+        status: "pending_negotiation"
+      };
+
+      const response = await createOrder(orderData);
+      alert(`Load Posted Successfully! Admin will contact you in chat to negotiate the rate. trackingId: ${response.data.trackingId}`);
+      setVisible(false);
+      setActiveTab(null);
+    } catch (error: any) {
+      console.error("Post Load error:", error);
+      alert("Failed to post load: " + (error.response?.data?.message || "Error"));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+
+  const handleConfirmOrder = async () => {
+    if (cart.length === 0) {
+      alert("Please add items to your cart before confirming.");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const orderData = {
+        items: cart.map(item => ({
+          name: item.title || item.name,
+          size: item.size || "",
+          quantity: item.quantity || 1,
+          price: item.price
+        })),
+        totalAmount: 0,
+        pickupLocation: "Mining Site",
+        deliveryLocation: "Customer Address",
+      };
+
+      const response = await createOrder(orderData);
+      alert(`Order Success! trackingId: ${response.data.trackingId}`);
+      setVisible(false);
+      setCart([]);
+    } catch (error: any) {
+      console.error("Order error:", error);
+      alert("Order Failed: " + (error.response?.data?.message || "Error"));
+    } finally {
+      setLoading(false);
+    }
+  };
   const handleTabPress = (tab: string) => {
     setSelected(tab);
     setActiveTab(tab);
@@ -46,15 +129,21 @@ export default function Home() {
         <Text style={styles.headerTitle}>Home</Text>
         <View style={styles.headerRight}>
           <View style={styles.profileSection}>
-            <Image
-              source={require("../../assets/images/myImage.jpg")}
-              style={styles.profileImage}
-            />
+            {user?.image ? (
+              <Image
+                source={{ uri: user.image }}
+                style={styles.profileImage}
+              />
+            ) : (
+              <View style={[styles.profileImage, { backgroundColor: '#E0E0E0', justifyContent: 'center', alignItems: 'center' }]}>
+                <Ionicons name="person" size={20} color="#606060" />
+              </View>
+            )}
             <View style={styles.userInfo}>
-              <Text style={styles.userName}>Azih Monica</Text>
+              <Text style={styles.userName}>{user?.name || "Guest"}</Text>
               <View style={styles.idBadge}>
                 <Text style={styles.idLabel}>User ID</Text>
-                <Text style={styles.idValue}>D422Q7827</Text>
+                <Text style={styles.idValue}>{user?.userId || "..."}</Text>
               </View>
             </View>
           </View>
@@ -142,22 +231,24 @@ export default function Home() {
 
         {/* Cards Row */}
         <View style={styles.gridRow}>
+
+
           <TouchableOpacity
             style={styles.gridCard}
             onPress={() => {
-              setActiveTab("Post a Request");
+              setActiveTab("Booking Details");
               setVisible(true);
             }}
           >
             <View style={styles.gridCardHeader}>
               <Text style={styles.gridCardTitle}>Ready to{"\n"}Ship?</Text>
-              <View style={styles.iconBg}>
-                <Ionicons name="location-outline" size={20} color="#439D25" />
+              <View style={[styles.iconBg, { backgroundColor: '#E8F5E9' }]}>
+                <Ionicons name="cube-outline" size={20} color="#439D25" />
               </View>
             </View>
             <Text style={styles.gridCardSub}>Post a load</Text>
             <Text style={styles.gridCardDesc}>
-              Delivery and Pickup anywhere in Nigeria.
+              List your goods and get a driver to deliver for you.
             </Text>
           </TouchableOpacity>
 
@@ -233,22 +324,25 @@ export default function Home() {
               <Ionicons name="ellipsis-vertical" size={24} color="black" />
             </TouchableOpacity>
           </View>
-
-          {activeTab === "Buy Material" && <BuyMaterialContent />}
-          {activeTab === "Natural Resources" && <NaturalResourcesContent />}
-          {activeTab === "Post a Request" && <PostRequestContent />}
-          {activeTab === "Track My Delivery" && <TrackDeliveryContent />}
-          {activeTab === "Booking Details" && <BookingDetailsContent />}
+          <ScrollView contentContainerStyle={{ paddingBottom: 20 }}>
+            {activeTab === "Buy Material" && <BuyMaterialContent onAddToCart={onAddToCart} />}
+            {activeTab === "Natural Resources" && <NaturalResourcesContent onAddToCart={onAddToCart} />}
+            {activeTab === "Track My Delivery" && <TrackDeliveryContent />}
+            {activeTab === "Booking Details" && <BookingDetailsContent />}
+          </ScrollView>
 
           {/* Fallback for Coal Card click if not strictly setting activeTab */}
-          {!activeTab && <NaturalResourcesContent />}
+          {!activeTab && <NaturalResourcesContent onAddToCart={onAddToCart} />}
 
-          {activeTab !== "Post a Request" && activeTab !== "Booking Details" && (
+          {activeTab !== "Track My Delivery" && (
             <TouchableOpacity
-              onPress={() => setVisible(false)}
-              style={styles.confirmButton}
+              onPress={activeTab === "Booking Details" ? handlePostLoad : handleConfirmOrder}
+              disabled={loading}
+              style={[styles.confirmButton, { opacity: loading ? 0.7 : 1 }]}
             >
-              <Text style={styles.confirmText}>Confirm</Text>
+              <Text style={styles.confirmText}>
+                {loading ? "Processing..." : activeTab === "Booking Details" ? "Post to Load Board & Book" : `Confirm Order (${totalItems} items)`}
+              </Text>
             </TouchableOpacity>
           )}
         </View>

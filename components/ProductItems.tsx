@@ -1,5 +1,5 @@
-import React from "react";
-import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import React, { useState } from "react";
+import { Image, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 
 interface ProductProps {
   image: any;
@@ -7,9 +7,25 @@ interface ProductProps {
   size: string;
   price: string;
   available: boolean;
+  onAddToCart: (quantity: number) => void;
 }
 
-const ProductItems: React.FC<ProductProps> = ({ image, title, size, price, available }) => {
+const ProductItems: React.FC<ProductProps> = ({ image, title, size, price, available, onAddToCart }) => {
+  const [quantity, setQuantity] = useState("1");
+
+  const increment = () => setQuantity((prev) => (parseInt(prev) + 1).toString());
+  const decrement = () => setQuantity((prev) => (parseInt(prev) > 1 ? (parseInt(prev) - 1).toString() : "1"));
+
+  const handleQtyChange = (val: string) => {
+    const cleaned = val.replace(/[^0-9]/g, "");
+    setQuantity(cleaned || "1");
+  };
+
+  // Extract numeric price for calculations (e.g., "N 5,500" -> 5500)
+  const numericPrice = parseInt(price.replace(/[^0-9]/g, ""), 10) || 0;
+  const qtyNum = parseInt(quantity) || 1;
+  const totalPrice = numericPrice * qtyNum;
+
   return (
     <View style={styles.card}>
       <View style={styles.contentRow}>
@@ -30,8 +46,29 @@ const ProductItems: React.FC<ProductProps> = ({ image, title, size, price, avail
         {/* Right Column */}
         <View style={styles.rightColumn}>
           <Text style={styles.specText}>{size}</Text>
-          <TouchableOpacity style={styles.addButton}>
-            <Text style={styles.addButtonText}>Add to Chart</Text>
+
+          {/* Quantity Selector */}
+          <View style={styles.quantityContainer}>
+            <TouchableOpacity onPress={decrement} style={styles.qtyBtn}>
+              <Text style={styles.qtyBtnText}>-</Text>
+            </TouchableOpacity>
+            <TextInput
+              style={styles.qtyInput}
+              value={quantity}
+              onChangeText={handleQtyChange}
+              keyboardType="numeric"
+              maxLength={4}
+            />
+            <TouchableOpacity onPress={increment} style={styles.qtyBtn}>
+              <Text style={styles.qtyBtnText}>+</Text>
+            </TouchableOpacity>
+          </View>
+
+          <TouchableOpacity
+            style={styles.addButton}
+            onPress={() => onAddToCart(qtyNum)}
+          >
+            <Text style={styles.addButtonText}>Add N {totalPrice.toLocaleString()}</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -108,11 +145,43 @@ const styles = StyleSheet.create({
     textAlign: "right",
     marginTop: 10,
   },
+  qtyBtn: {
+    backgroundColor: "#EFF7EE",
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    justifyContent: "center",
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: "#439D25",
+  },
+  qtyBtnText: {
+    color: "#439D25",
+    fontSize: 18,
+    fontWeight: "700",
+  },
+  qtyInput: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: "#000",
+    textAlign: "center",
+    width: 40,
+    backgroundColor: "#F5F5F5",
+    borderRadius: 5,
+    paddingVertical: 2,
+  },
+  quantityContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    marginBottom: 10,
+  },
   addButton: {
     backgroundColor: "#439D25",
     borderRadius: 20,
     paddingVertical: 10,
-    paddingHorizontal: 15,
+    paddingHorizontal: 20,
+    minWidth: 100,
   },
   addButtonText: {
     color: "white",

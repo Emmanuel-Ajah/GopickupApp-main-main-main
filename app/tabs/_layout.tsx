@@ -1,16 +1,49 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Tabs } from "expo-router";
-import React from "react";
+import React, { useEffect, useState } from "react";
 
 export default function TabsLayout() {
+  const [role, setRole] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    // Reset background color for Web
+    if (typeof document !== 'undefined') {
+      document.body.style.backgroundColor = '#FFFFFF';
+    }
+
+    const checkRole = async () => {
+      try {
+        const userData = await AsyncStorage.getItem("user");
+        if (userData) {
+          const user = JSON.parse(userData);
+          setRole(user.role || "user");
+        } else {
+          setRole("user");
+        }
+      } catch (error) {
+        console.error("Error checking role:", error);
+        setRole("user");
+      } finally {
+        setLoading(false);
+      }
+    };
+    checkRole();
+  }, []);
+
+
+  console.log("Current Role in TabsLayout:", role);
+
   return (
     <Tabs
+      key={role}
       screenOptions={({ route }) => ({
         tabBarIcon: ({ color }) => {
           let iconName: React.ComponentProps<typeof Ionicons>["name"] =
             "home-outline";
 
-          if (route.name === "home") iconName = "home-outline";
+          if (route.name === "home" || route.name === "admin_home") iconName = "home-outline";
           else if (route.name === "chat") iconName = "chatbubble-outline";
           else if (route.name === "profile") iconName = "person-outline";
           else if (route.name === "map") iconName = "globe-outline";
@@ -44,12 +77,36 @@ export default function TabsLayout() {
         headerShown: false,
       })}
     >
-      <Tabs.Screen name="home" options={{ title: "Home" }} />
-      <Tabs.Screen name="chat" options={{ title: "Chat" }} />
-      <Tabs.Screen name="profile" options={{ title: "Profile" }} />
-      <Tabs.Screen name="map" options={{ title: "Map" }} />
+      <Tabs.Screen
+        name="home"
+        options={{
+          title: "Home",
+          href: role === "admin" ? null : "/tabs/home",
+        }}
+      />
+      <Tabs.Screen
+        name="admin_home"
+        options={{
+          title: "Dashboard",
+          href: (role === "admin" ? "/tabs/admin_home" : null) as any,
+        }}
+      />
+      <Tabs.Screen
+        name="chat"
+        options={{ title: role === "admin" ? "Messages" : "Chat" }}
+      />
+      <Tabs.Screen
+        name="profile"
+        options={{ title: "Profile" }}
+      />
+      <Tabs.Screen
+        name="map"
+        options={{
+          title: "Map",
+          href: role === "admin" ? null : "/tabs/map",
+        }}
+      />
 
-      {/* Hidden screens */}
       <Tabs.Screen name="explore" options={{ href: null }} />
       <Tabs.Screen name="notifications" options={{ href: null }} />
     </Tabs>

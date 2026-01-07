@@ -1,6 +1,9 @@
 import { Ionicons } from "@expo/vector-icons";
-import React from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useLocalSearchParams } from "expo-router";
+import React, { useEffect, useState } from "react";
 import {
+    ActivityIndicator,
     Image,
     KeyboardAvoidingView,
     Platform,
@@ -12,52 +15,62 @@ import {
     TouchableOpacity,
     View,
 } from "react-native";
+import { getMessages, sendMessage } from "../api/api";
+
+const ADMIN_ID = "677d24f0c4068c07e0568f18"; // Default Admin ID
 
 const Chat = () => {
-    const messages = [
-        {
-            id: 1,
-            text: "Good day, my name is Monica posted so loads on the app.",
-            sender: "user",
-            time: "08:23 AM",
-        },
-        {
-            id: 2,
-            text: "Okay that great, can you please tell us the nature of the goods or material you posted.",
-            sender: "agent",
-            time: "08:23 AM",
-        },
-        {
-            id: 3,
-            text: "i am moving two trips of coal.",
-            sender: "user",
-            time: "08:23 AM",
-        },
-        {
-            id: 4,
-            text: "Okay",
-            sender: "agent",
-            time: "08:23 AM",
-        },
-        {
-            id: 5,
-            text: "From your choice of vehicle i see that you've chosen a tipper as your preferred vehicle.",
-            sender: "agent",
-            time: "08:23 AM",
-        },
-        {
-            id: 6,
-            text: "Yes",
-            sender: "user",
-            time: "08:23 AM",
-        },
-        {
-            id: 7,
-            text: "Where is your location ?",
-            sender: "agent",
-            time: "08:23 AM",
-        },
-    ];
+    const params = useLocalSearchParams();
+    const [messages, setMessages] = useState<any[]>([]);
+    const [inputText, setInputText] = useState("");
+    const [user, setUser] = useState<any>(null);
+    const [loading, setLoading] = useState(true);
+    const [targetRecipient, setTargetRecipient] = useState<string>(ADMIN_ID);
+
+    const fetchMessages = async () => {
+        try {
+            const userData = await AsyncStorage.getItem("user");
+            if (userData) {
+                const parsedUser = JSON.parse(userData);
+                setUser(parsedUser);
+
+                let recipient = ADMIN_ID;
+                if (parsedUser.role === 'admin' && params.recipientId) {
+                    recipient = params.recipientId as string;
+                }
+                setTargetRecipient(recipient);
+
+                const response = await getMessages(recipient);
+                setMessages(response.data);
+            }
+        } catch (error) {
+            console.error("Error fetching messages:", error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchMessages();
+        const interval = setInterval(fetchMessages, 5000);
+        return () => clearInterval(interval);
+    }, [params.recipientId]); // Re-fetch if param changes
+
+    const handleSend = async () => {
+        if (!inputText.trim()) return;
+
+        try {
+            const data = {
+                recipientId: targetRecipient,
+                content: inputText,
+            };
+            await sendMessage(data);
+            setInputText("");
+            fetchMessages();
+        } catch (error) {
+            console.error("Send message error:", error);
+        }
+    };
 
     return (
         <View style={styles.container}>
@@ -101,39 +114,39 @@ const Chat = () => {
                     <Text style={styles.dateText}>Today</Text>
 
                     {/* Message List */}
-                    {messages.map((msg) => (
+                    {messages.map((msg: any, idx: number) => (
                         <View
-                            key={msg.id}
+                            key={msg._id || idx}
                             style={[
                                 styles.messageRow,
-                                msg.sender === "user" ? styles.userRow : styles.agentRow,
+                                msg.sender === user?._id ? styles.userRow : styles.agentRow,
                             ]}
                         >
                             <View
                                 style={[
                                     styles.bubble,
-                                    msg.sender === "user" ? styles.userBubble : styles.agentBubble,
-                                ]}
-                            >
+                                    msg.sender === user?._id ? styles.userBubble : styles.agentBubble,
+                                ]}>
                                 <Text
                                     style={[
                                         styles.messageText,
-                                        msg.sender === "user" ? styles.userText : styles.agentText,
-                                    ]}
-                                >
-                                    {msg.text}
+                                        msg.sender === user?._id ? styles.userText : styles.agentText,
+                                    ]}>
+                                    {msg.content}
                                 </Text>
                                 <Text
                                     style={[
                                         styles.timeText,
-                                        msg.sender === "user" ? styles.userTime : styles.agentTime,
-                                    ]}
-                                >
-                                    {msg.time}
+                                        msg.sender === user?._id ? styles.userTime : styles.agentTime,
+                                    ]}>
+                                    {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                 </Text>
                             </View>
                         </View>
                     ))}
+                    {loading && messages.length === 0 && (
+                        <ActivityIndicator size="small" color="#439D25" style={{ marginTop: 20 }} />
+                    )}
                 </ScrollView>
 
                 {/* Input Bar */}
@@ -143,6 +156,8 @@ const Chat = () => {
                             style={styles.input}
                             placeholder="Message"
                             placeholderTextColor="#A0A0A0"
+                            value={inputText}
+                            onChangeText={setInputText}
                         />
                         <View style={styles.inputIcons}>
                             <TouchableOpacity style={styles.iconCircle}>
@@ -153,7 +168,7 @@ const Chat = () => {
                             </TouchableOpacity>
                         </View>
                     </View>
-                    <TouchableOpacity style={styles.sendButton}>
+                    <TouchableOpacity style={styles.sendButton} onPress={handleSend}>
                         <Ionicons name="send" size={20} color="white" />
                     </TouchableOpacity>
                 </View>

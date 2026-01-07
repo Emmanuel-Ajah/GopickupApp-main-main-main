@@ -1,5 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
-import React from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import React, { useEffect, useState } from "react";
 import {
     Image,
     ScrollView,
@@ -11,89 +12,23 @@ import {
 } from "react-native";
 
 const Notifications = () => {
-    const notifications = [
-        {
-            id: 1,
-            title: "Item",
-            description: "Ceramics plate 3 sets.",
-            status: "Delivered",
-            date: "5th June, 2025",
-            time: "8:00pm",
-            type: "delivered",
-        },
-        {
-            id: 2,
-            title: "Item",
-            description: "Ceramics plate 3 sets.",
-            status: "Delivered",
-            date: "5th June, 2025",
-            time: "8:00pm",
-            type: "delivered",
-        },
-        {
-            id: 3,
-            title: "Item",
-            description: "Ceramics plate 3 sets.",
-            status: "Delivered",
-            date: "5th June, 2025",
-            time: "8:00pm",
-            type: "delivered",
-        },
-        {
-            id: 4,
-            title: "Item",
-            description: "Ceramics plate 3 sets.",
-            status: "Delivered",
-            date: "5th June, 2025",
-            time: "8:00pm",
-            type: "delivered",
-        },
-        {
-            id: 5,
-            title: "Item",
-            description: "Ceramics plate 3 sets.",
-            status: "Delivered",
-            date: "5th June, 2025",
-            time: "8:00pm",
-            type: "delivered",
-        },
-        {
-            id: 6,
-            title: "Item",
-            description: "Ceramics plate 3 sets.",
-            status: "Delivered",
-            date: "5th June, 2025",
-            time: "8:00pm",
-            type: "delivered",
-        },
-        {
-            id: 7,
-            title: "Item",
-            description: "Ceramics plate 3 sets.",
-            status: "Pending",
-            date: "5th June, 2025",
-            time: "8:00pm",
-            type: "pending",
-        },
-        {
-            id: 8,
-            title: "Item",
-            description: "Ceramics plate 3 sets.",
-            status: "Canceled",
-            date: "5th June, 2025",
-            time: "8:00pm",
-            type: "canceled",
-        },
-        {
-            id: 9,
-            title: "Item",
-            description: "Ceramics plate 3 sets.",
-            status: "Canceled",
-            date: "5th June, 2025",
-            time: "8:00pm",
-            type: "canceled",
-        },
-    ];
+    const [user, setUser] = useState<any>(null);
+
+    useEffect(() => {
+        const fetchUser = async () => {
+            const userData = await AsyncStorage.getItem("user");
+            if (userData) {
+                setUser(JSON.parse(userData));
+            }
+        };
+        fetchUser();
+    }, []);
+
+    const notifications: any[] = [];
+    /* 
+    // Cleared for new users as requested
+    // previously contained dummy data
+    */
 
     const getStatusIcon = (type: string) => {
         switch (type) {
@@ -139,17 +74,23 @@ const Notifications = () => {
             >
                 {/* User Card */}
                 <View style={styles.profileCard}>
-                    <Image
-                        source={require("../../assets/images/myImage.jpg")}
-                        style={styles.profileImage}
-                    />
+                    {user?.image ? (
+                        <Image
+                            source={{ uri: user.image }}
+                            style={styles.profileImage}
+                        />
+                    ) : (
+                        <View style={[styles.profileImage, { backgroundColor: '#F0F0F0', justifyContent: 'center', alignItems: 'center' }]}>
+                            <Ionicons name="person" size={30} color="#A0A0A0" />
+                        </View>
+                    )}
                     <View style={styles.profileInfo}>
-                        <Text style={styles.profileName}>Azih Monica</Text>
+                        <Text style={styles.profileName}>{user?.name || "User"}</Text>
                         <View style={styles.idBadgeContainer}>
                             <View style={styles.idBadge}>
                                 <Text style={styles.idBadgeText}>User ID</Text>
                             </View>
-                            <Text style={styles.idText}>D422Q7827</Text>
+                            <Text style={styles.idText}>{user?.userId || "..."}</Text>
                         </View>
                     </View>
                 </View>

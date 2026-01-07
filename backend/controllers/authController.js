@@ -15,6 +15,9 @@ exports.registerUser = async (req, res) => {
             return res.status(400).json({ message: 'User already exists' });
         }
 
+        // Check if this should be an admin
+        const role = email === process.env.ADMIN_EMAIL ? 'admin' : 'user';
+
         // Create user
         const user = await User.create({
             name,
@@ -23,7 +26,8 @@ exports.registerUser = async (req, res) => {
             phone,
             dob,
             bvn,
-            userId: 'D' + Math.floor(10000000 + Math.random() * 90000000), // Random ID matching mockup format
+            role,
+            userId: 'USER' + Math.floor(10000000 + Math.random() * 90000000), // Random ID matching mockup format
         });
 
         if (user) {
@@ -32,6 +36,7 @@ exports.registerUser = async (req, res) => {
                 name: user.name,
                 email: user.email,
                 userId: user.userId,
+                role: user.role,
                 token: generateToken(user._id),
             });
         } else {
@@ -53,11 +58,18 @@ exports.loginUser = async (req, res) => {
         const user = await User.findOne({ email }).select('+password');
 
         if (user && (await user.matchPassword(password))) {
+            // Hotfix: Ensure user has admin role if their email matches ADMIN_EMAIL
+            if (user.email === process.env.ADMIN_EMAIL && user.role !== 'admin') {
+                user.role = 'admin';
+                await user.save();
+            }
+
             res.json({
                 _id: user._id,
                 name: user.name,
                 email: user.email,
                 userId: user.userId,
+                role: user.role,
                 token: generateToken(user._id),
             });
         } else {

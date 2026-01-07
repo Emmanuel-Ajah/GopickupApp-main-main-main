@@ -37,3 +37,7 @@ yarn-error.*
 *.tsbuildinfo
 
 app-example
+
+# scripts
+test_orders.sh
+test_endpoints.sh

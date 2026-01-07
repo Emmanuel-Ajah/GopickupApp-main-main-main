@@ -1,8 +1,6 @@
 import * as Font from "expo-font";
 import { Stack, usePathname, useRouter } from "expo-router";
-import { StatusBar } from "expo-status-bar";
 import React, { useEffect, useState } from "react";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function RootLayout() {
   const [loaded, setLoaded] = useState(false);
@@ -39,13 +37,11 @@ export default function RootLayout() {
   if (!loaded) return null;
 
   return (
-      <Stack screenOptions={{ headerShown: false }}>
-        <StatusBar style="auto" />
-        {/* <Stack.Screen name="TermsOfService" /> */}
-        <Stack.Screen name="index" />
-        <Stack.Screen name="info" />
-        <Stack.Screen name="tabs" />
-        <Stack.Screen name="+not-found" />
-      </Stack>
+    <Stack screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="index" />
+      <Stack.Screen name="info" />
+      <Stack.Screen name="tabs" />
+      <Stack.Screen name="+not-found" />
+    </Stack>
   );
 }
