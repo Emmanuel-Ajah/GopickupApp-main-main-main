@@ -17,6 +17,7 @@ import BookingDetailsContent from '../../components/BookingDetailsContent'
 import BuyMaterialContent from '../../components/BuyMaterialContent'
 import NaturalResourcesContent from '../../components/NaturalResourcesContent'
 import PostRequestContent from '../../components/PostRequestContent'
+import QuarryMaterialsContent from '../../components/QuarryMaterialsContent'
 import TrackDeliveryContent from '../../components/TrackDeliveryContent'
 
 export default function Home() {
@@ -160,24 +161,7 @@ export default function Home() {
 
         {/* Cards Row */}
         <View style={styles.gridRow}>
-          <TouchableOpacity
-            style={styles.gridCard}
-            onPress={() => {
-              setActiveTab("Post a Request");
-              setVisible(true);
-            }}
-          >
-            <View style={styles.gridCardHeader}>
-              <Text style={styles.gridCardTitle}>Ready to{"\n"}Ship?</Text>
-              <View style={styles.iconBg}>
-                <Ionicons name="location-outline" size={20} color="#439D25" />
-              </View>
-            </View>
-            <Text style={styles.gridCardSub}>Post a load</Text>
-            <Text style={styles.gridCardDesc}>
-              Delivery and Pickup anywhere in Nigeria.
-            </Text>
-          </TouchableOpacity>
+
 
           <TouchableOpacity
             style={styles.gridCard}
@@ -251,12 +235,14 @@ export default function Home() {
               <Ionicons name="ellipsis-vertical" size={24} color="black" />
             </TouchableOpacity>
           </View>
-
-          {activeTab === "Buy Material" && <BuyMaterialContent />}
-          {activeTab === "Natural Resources" && <NaturalResourcesContent />}
-          {activeTab === "Post a Request" && <PostRequestContent />}
-          {activeTab === "Track My Delivery" && <TrackDeliveryContent />}
-          {activeTab === "Booking Details" && <BookingDetailsContent />}
+          <ScrollView contentContainerStyle={{ paddingBottom: 20 }}>
+            {activeTab === "Buy Material" && <BuyMaterialContent />}
+            {activeTab === "Quarry Materials" && <QuarryMaterialsContent />}
+            {activeTab === "Natural Resources" && <NaturalResourcesContent />}
+            {activeTab === "Post a Request" && <PostRequestContent />}
+            {activeTab === "Track My Delivery" && <TrackDeliveryContent />}
+            {activeTab === "Booking Details" && <BookingDetailsContent />}
+          </ScrollView>
 
           {/* Fallback for Coal Card click if not strictly setting activeTab */}
           {!activeTab && <NaturalResourcesContent />}

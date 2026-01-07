@@ -9,14 +9,14 @@ export default function BuyMaterialContent() {
       size: "50kg",
       price: "N 5,500",
       available: true,
-      image: require("../assets/images/Futures 1.png"),
+      image: require("../assets/images/DangoteCement.png"),
     },
     {
       title: "Roofing Sheet",
       size: "Zinc",
       price: "N 3,000/sqm",
       available: true,
-      image: require("../assets/images/Rock.png"),
+      image: require("../assets/images/ZincRoofing.png"),
     },
     {
       title: "Steel Rods",

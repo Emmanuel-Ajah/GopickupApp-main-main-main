@@ -54,7 +54,7 @@ const MapScreen = () => {
     },
     {
       id: 5,
-      title: "Driver has left mining location.",
+      title: "Driver has left pickup location.",
       description: "Your materials is on it way.",
       time: "",
       status: "pending",

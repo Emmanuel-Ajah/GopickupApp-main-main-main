@@ -5,10 +5,6 @@ import Items from "./Items";
 export default function NaturalResourcesContent() {
   const resources = [
     { name: "Coal", price: "N 7,300,000 per trip" },
-    { name: "Quarry Materials", price: "N 9,600 per ton" },
-    { name: "Sand & Gravel", price: "N 2,500 per ton" },
-    { name: "Crushed Stones", price: "N 3,200 per ton" },
-    { name: "Laterite", price: "N 1,800 per ton" },
   ];
 
   return (
