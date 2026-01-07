@@ -1,11 +1,13 @@
 import React, { useState } from "react";
 import { ActivityIndicator, Alert, Text, TextInput, TouchableOpacity, View } from "react-native";
-import { trackOrder } from "../app/api/api";
+import { createReview, trackOrder } from "../app/api/api";
+import RatingModal from "./RatingModal";
 
 export default function TrackDeliveryContent() {
   const [trackingId, setTrackingId] = useState("");
   const [loading, setLoading] = useState(false);
   const [order, setOrder] = useState<any>(null);
+  const [ratingVisible, setRatingVisible] = useState(false);
 
   const handleTrack = async () => {
     if (!trackingId.trim()) {
@@ -20,9 +22,24 @@ export default function TrackDeliveryContent() {
       setOrder(response.data);
     } catch (error: any) {
       console.error("Tracking error:", error);
-      Alert.alert("Error", error.response?.data?.message || "Order not found. Please check the ID.");
+      const msg = error.response?.data?.message || "Order not found. Please check the ID.";
+      Alert.alert("Error", msg);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleRatingSubmit = async (reviewData: any) => {
+    try {
+      await createReview({
+        orderId: order._id,
+        ...reviewData,
+      });
+      Alert.alert("Success", "Thank you for your feedback!");
+      setRatingVisible(false);
+    } catch (error: any) {
+      console.error("Review error:", error);
+      Alert.alert("Error", error.response?.data?.message || "Failed to submit review.");
     }
   };
 
@@ -73,9 +90,30 @@ export default function TrackDeliveryContent() {
           <Text style={{ fontSize: 16, fontWeight: "700", color: "#000", marginBottom: 12 }}>{order.trackingId}</Text>
 
           <Text style={{ fontSize: 14, color: "#606060", marginBottom: 2 }}>Delivery to</Text>
-          <Text style={{ fontSize: 16, fontWeight: "700", color: "#000" }}>{order.deliveryLocation}</Text>
+          <Text style={{ fontSize: 16, fontWeight: "700", color: "#000", marginBottom: 20 }}>{order.deliveryLocation}</Text>
+
+          <TouchableOpacity
+            onPress={() => setRatingVisible(true)}
+            style={{
+              backgroundColor: "#FFF9E6",
+              padding: 12,
+              borderRadius: 10,
+              alignItems: "center",
+              borderWidth: 1,
+              borderColor: "#DAA520",
+            }}
+          >
+            <Text style={{ color: "#DAA520", fontWeight: "700" }}>Rate Experience 🌟</Text>
+          </TouchableOpacity>
         </View>
       )}
+
+      <RatingModal
+        visible={ratingVisible}
+        onClose={() => setRatingVisible(false)}
+        onSubmit={handleRatingSubmit}
+        riderName="Dauda"
+      />
     </View>
   );
 }

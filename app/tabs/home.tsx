@@ -210,6 +210,25 @@ export default function Home() {
             }}
           >
             <View style={styles.gridCardHeader}>
+              <Text style={styles.gridCardTitle}>Ready to{"\n"}Ship?</Text>
+              <View style={[styles.iconBg, { backgroundColor: '#E8F5E9' }]}>
+                <Ionicons name="cube-outline" size={20} color="#439D25" />
+              </View>
+            </View>
+            <Text style={styles.gridCardSub}>Post a load</Text>
+            <Text style={styles.gridCardDesc}>
+              List your goods and get a driver to deliver for you.
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.gridCard}
+            onPress={() => {
+              setActiveTab("Booking Details");
+              setVisible(true);
+            }}
+          >
+            <View style={styles.gridCardHeader}>
               <Text style={styles.gridCardTitle}>Book a{"\n"}truck driver</Text>
               <View style={styles.iconBg}>
                 <Ionicons name="bus-outline" size={20} color="#439D25" />

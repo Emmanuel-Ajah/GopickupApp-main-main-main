@@ -24,3 +24,7 @@ export const googleLogin = (data) => API.post("/auth/google", data);
 export const createOrder = (data) => API.post("/orders", data);
 export const getMyOrders = () => API.get("/orders/myorders");
 export const trackOrder = (id) => API.get(`/orders/${id}`);
+
+// Reviews
+export const createReview = (data) => API.post("/reviews", data);
+export const getMyReviews = () => API.get("/reviews/my");
