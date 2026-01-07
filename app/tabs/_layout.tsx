@@ -2,7 +2,6 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Tabs } from "expo-router";
 import React, { useEffect, useState } from "react";
-import { ActivityIndicator, View } from "react-native";
 
 export default function TabsLayout() {
   const [role, setRole] = useState<string | null>(null);
@@ -33,13 +32,6 @@ export default function TabsLayout() {
     checkRole();
   }, []);
 
-  if (loading) {
-    return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "#FFFFFF" }}>
-        <ActivityIndicator size="large" color="#439D25" />
-      </View>
-    );
-  }
 
   return (
     <Tabs

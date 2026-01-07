@@ -1,6 +1,5 @@
 import * as Font from "expo-font";
 import { Stack, usePathname, useRouter } from "expo-router";
-import { StatusBar } from "expo-status-bar";
 import React, { useEffect, useState } from "react";
 
 export default function RootLayout() {
@@ -38,15 +37,11 @@ export default function RootLayout() {
   if (!loaded) return null;
 
   return (
-    <>
-      <StatusBar style="auto" />
-      <Stack screenOptions={{ headerShown: false }}>
-        {/* <Stack.Screen name="TermsOfService" /> */}
-        <Stack.Screen name="index" />
-        <Stack.Screen name="info" />
-        <Stack.Screen name="tabs" />
-        <Stack.Screen name="+not-found" />
-      </Stack>
-    </>
+    <Stack screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="index" />
+      <Stack.Screen name="info" />
+      <Stack.Screen name="tabs" />
+      <Stack.Screen name="+not-found" />
+    </Stack>
   );
 }
