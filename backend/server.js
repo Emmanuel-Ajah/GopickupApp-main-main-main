@@ -22,7 +22,10 @@ app.get('/', (req, res) => {
 
 // Import Routes
 const authRoutes = require('./routes/authRoutes');
+const orderRoutes = require('./routes/orderRoutes');
+
 app.use('/api/auth', authRoutes);
+app.use('/api/orders', orderRoutes);
 
 const PORT = process.env.PORT || 5000;
 
