@@ -16,7 +16,6 @@ import {
 import BookingDetailsContent from '../../components/BookingDetailsContent'
 import BuyMaterialContent from '../../components/BuyMaterialContent'
 import NaturalResourcesContent from '../../components/NaturalResourcesContent'
-import PostRequestContent from '../../components/PostRequestContent'
 import QuarryMaterialsContent from '../../components/QuarryMaterialsContent'
 import TrackDeliveryContent from '../../components/TrackDeliveryContent'
 
@@ -239,7 +238,6 @@ export default function Home() {
             {activeTab === "Buy Material" && <BuyMaterialContent />}
             {activeTab === "Quarry Materials" && <QuarryMaterialsContent />}
             {activeTab === "Natural Resources" && <NaturalResourcesContent />}
-            {activeTab === "Post a Request" && <PostRequestContent />}
             {activeTab === "Track My Delivery" && <TrackDeliveryContent />}
             {activeTab === "Booking Details" && <BookingDetailsContent />}
           </ScrollView>
@@ -247,7 +245,7 @@ export default function Home() {
           {/* Fallback for Coal Card click if not strictly setting activeTab */}
           {!activeTab && <NaturalResourcesContent />}
 
-          {activeTab !== "Post a Request" && activeTab !== "Booking Details" && (
+          {activeTab !== "Booking Details" && (
             <TouchableOpacity
               onPress={() => setVisible(false)}
               style={styles.confirmButton}
