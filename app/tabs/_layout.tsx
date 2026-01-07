@@ -33,8 +33,11 @@ export default function TabsLayout() {
   }, []);
 
 
+  console.log("Current Role in TabsLayout:", role);
+
   return (
     <Tabs
+      key={role}
       screenOptions={({ route }) => ({
         tabBarIcon: ({ color }) => {
           let iconName: React.ComponentProps<typeof Ionicons>["name"] =

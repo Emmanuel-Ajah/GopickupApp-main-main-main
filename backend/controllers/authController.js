@@ -58,6 +58,12 @@ exports.loginUser = async (req, res) => {
         const user = await User.findOne({ email }).select('+password');
 
         if (user && (await user.matchPassword(password))) {
+            // Hotfix: Ensure user has admin role if their email matches ADMIN_EMAIL
+            if (user.email === process.env.ADMIN_EMAIL && user.role !== 'admin') {
+                user.role = 'admin';
+                await user.save();
+            }
+
             res.json({
                 _id: user._id,
                 name: user.name,
