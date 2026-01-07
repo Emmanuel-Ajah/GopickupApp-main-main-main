@@ -23,21 +23,21 @@ export default function BuyMaterialContent({ onAddToCart }: { onAddToCart: (item
       size: "12mm, 16mm",
       price: "N 9,800 per bundle",
       available: true,
-      image: require("../assets/images/Shipping.png"),
+      image: require("../assets/images/SteelRods.png"),
     },
     {
       title: "Hollow Blocks",
       size: "9 inches",
       price: "N 600 each",
       available: true,
-      image: require("../assets/images/Van.png"),
+      image: require("../assets/images/HollowBlocks9.png"),
     },
     {
       title: "Hollow Blocks",
       size: "6 inches",
       price: "N 500 each",
       available: true,
-      image: require("../assets/images/Van.png"),
+      image: require("../assets/images/HollowBlocks6.png"),
     },
   ];
 
