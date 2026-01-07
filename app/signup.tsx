@@ -40,18 +40,33 @@ export default function SignupScreen() {
 
   const handleSignup = async () => {
     if (!formData.email || !formData.password || !formData.name) {
-      Alert.alert("Error", "Please fill in all required fields (Name, Email, Password)");
+      if (Platform.OS === 'web') {
+        alert("Please fill in all required fields (Name, Email, Password)");
+      } else {
+        Alert.alert("Error", "Please fill in all required fields (Name, Email, Password)");
+      }
       return;
     }
 
     setLoading(true);
     try {
+      console.log("Attempting signup with:", formData);
       const response = await registerUser(formData);
-      Alert.alert("Success", "Account created successfully!");
+      console.log("Signup success:", response.data);
+      if (Platform.OS === 'web') {
+        alert("Account created successfully!");
+      } else {
+        Alert.alert("Success", "Account created successfully!");
+      }
       router.push("/login");
     } catch (error: any) {
+      console.error("Signup error:", error);
       const message = error.response?.data?.message || "Something went wrong";
-      Alert.alert("Registration Failed", message);
+      if (Platform.OS === 'web') {
+        alert("Registration Failed: " + message);
+      } else {
+        Alert.alert("Registration Failed", message);
+      }
     } finally {
       setLoading(false);
     }

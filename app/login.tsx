@@ -39,20 +39,31 @@ export default function LoginScreen() {
 
   const handleLogin = async () => {
     if (!formData.email || !formData.password) {
-      Alert.alert("Error", "Please enter both email and password");
+      if (Platform.OS === 'web') {
+        alert("Please enter both email and password");
+      } else {
+        Alert.alert("Error", "Please enter both email and password");
+      }
       return;
     }
 
     setLoading(true);
     try {
+      console.log("Attempting login with:", formData.email);
       const response = await loginUser(formData);
+      console.log("Login success:", response.data);
       const { token, ...userData } = response.data;
       await AsyncStorage.setItem("token", token);
       await AsyncStorage.setItem("user", JSON.stringify(userData));
       router.push("/tabs/home");
     } catch (error: any) {
+      console.error("Login error:", error);
       const message = error.response?.data?.message || "Invalid email or password";
-      Alert.alert("Login Failed", message);
+      if (Platform.OS === 'web') {
+        alert("Login Failed: " + message);
+      } else {
+        Alert.alert("Login Failed", message);
+      }
     } finally {
       setLoading(false);
     }
