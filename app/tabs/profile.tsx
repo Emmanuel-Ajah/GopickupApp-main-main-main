@@ -13,15 +13,25 @@ import {
 
 const Profile = () => {
   const [user, setUser] = useState<any>(null);
+  const [reviews, setReviews] = useState<any[]>([]);
 
   useEffect(() => {
-    const fetchUser = async () => {
+    const fetchData = async () => {
       const userData = await AsyncStorage.getItem("user");
       if (userData) {
         setUser(JSON.parse(userData));
       }
+      try {
+        const { getMyReviews } = require("../api/api");
+        const response = await getMyReviews();
+        if (response.data.success) {
+          setReviews(response.data.data);
+        }
+      } catch (error) {
+        console.error("Error fetching reviews:", error);
+      }
     };
-    fetchUser();
+    fetchData();
   }, []);
 
   return (
@@ -131,6 +141,42 @@ const Profile = () => {
               <Text style={styles.editBtnText}>Edit</Text>
             </TouchableOpacity>
           </View>
+        </View>
+
+        {/* My Reviews Section */}
+        <View style={styles.sectionHeader}>
+          <Ionicons name="star-outline" size={24} color="#000" />
+          <Text style={styles.sectionTitle}>My Reviews</Text>
+        </View>
+
+        <View style={styles.reviewsCard}>
+          {reviews.length > 0 ? (
+            reviews.map((rev, idx) => (
+              <View key={rev._id || idx} style={styles.reviewItem}>
+                <View style={styles.reviewHeader}>
+                  <Text style={styles.reviewRider}>Rider: {rev.riderName}</Text>
+                  <View style={styles.ratingBadge}>
+                    <Text style={styles.ratingText}>{rev.rating} ★</Text>
+                  </View>
+                </View>
+                <Text style={styles.experienceText}>{rev.experience}</Text>
+                {rev.feedback ? <Text style={styles.feedbackText}>"{rev.feedback}"</Text> : null}
+                <View style={styles.tagBubbleContainer}>
+                  {rev.tags?.map((tag: string) => (
+                    <View key={tag} style={styles.tagBubble}>
+                      <Text style={styles.tagBubbleText}>{tag}</Text>
+                    </View>
+                  ))}
+                </View>
+                {idx < reviews.length - 1 && <View style={styles.reviewDivider} />}
+              </View>
+            ))
+          ) : (
+            <View style={styles.emptyReviews}>
+              <Ionicons name="chatbox-ellipses-outline" size={40} color="#CCC" />
+              <Text style={styles.emptyText}>No reviews yet. Rate your deliveries to see them here!</Text>
+            </View>
+          )}
         </View>
 
         {/* Refer a Friend Banner */}
@@ -383,6 +429,87 @@ const styles = StyleSheet.create({
     fontWeight: "800",
     color: "#000",
     marginTop: 2,
+  },
+  reviewsCard: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 20,
+    padding: 20,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.05,
+    shadowRadius: 10,
+    elevation: 3,
+    marginBottom: 10,
+    marginTop: 10,
+  },
+  reviewItem: {
+    marginBottom: 15,
+  },
+  reviewHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  reviewRider: {
+    fontSize: 14,
+    fontWeight: "700",
+    color: "#000",
+  },
+  ratingBadge: {
+    backgroundColor: "#EFF7EE",
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 5,
+  },
+  ratingText: {
+    color: "#439D25",
+    fontSize: 12,
+    fontWeight: "900",
+  },
+  experienceText: {
+    fontSize: 13,
+    fontWeight: "600",
+    color: "#DAA520",
+    marginTop: 4,
+  },
+  feedbackText: {
+    fontSize: 13,
+    color: "#606060",
+    fontStyle: "italic",
+    marginTop: 6,
+  },
+  tagBubbleContainer: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 6,
+    marginTop: 10,
+  },
+  tagBubble: {
+    backgroundColor: "#F5F5F5",
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 10,
+  },
+  tagBubbleText: {
+    fontSize: 10,
+    fontWeight: "600",
+    color: "#808080",
+  },
+  reviewDivider: {
+    height: 1,
+    backgroundColor: "#F0F0F0",
+    marginTop: 15,
+  },
+  emptyReviews: {
+    alignItems: "center",
+    paddingVertical: 20,
+  },
+  emptyText: {
+    fontSize: 13,
+    color: "#A0A0A0",
+    textAlign: "center",
+    marginTop: 10,
+    paddingHorizontal: 20,
   },
 });
 
