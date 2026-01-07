@@ -51,6 +51,31 @@ export default function Home() {
     setCart((prev) => [...prev, item]);
   };
 
+  const handlePostLoad = async () => {
+    setLoading(true);
+    try {
+      // Logic for posting to load board
+      // For now, we reuse createOrder but with specific flags if needed
+      const orderData = {
+        items: [{ name: "Load Request", quantity: 1, price: 0 }],
+        totalAmount: 0,
+        pickupLocation: "User Input Placeholder",
+        deliveryLocation: "User Input Placeholder",
+        status: "pending_negotiation"
+      };
+
+      const response = await createOrder(orderData);
+      alert(`Load Posted Successfully! Admin will contact you in chat to negotiate the rate. trackingId: ${response.data.trackingId}`);
+      setVisible(false);
+      setActiveTab(null);
+    } catch (error: any) {
+      console.error("Post Load error:", error);
+      alert("Failed to post load: " + (error.response?.data?.message || "Error"));
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleConfirmOrder = async () => {
     if (cart.length === 0) {
       alert("Please add items to your cart before confirming.");
@@ -82,7 +107,6 @@ export default function Home() {
       setLoading(false);
     }
   };
-
   const handleTabPress = (tab: string) => {
     setSelected(tab);
     setActiveTab(tab);
@@ -303,14 +327,14 @@ export default function Home() {
           {/* Fallback for Coal Card click if not strictly setting activeTab */}
           {!activeTab && <NaturalResourcesContent onAddToCart={onAddToCart} />}
 
-          {activeTab !== "Booking Details" && activeTab !== "Track My Delivery" && (
+          {activeTab !== "Track My Delivery" && (
             <TouchableOpacity
-              onPress={handleConfirmOrder}
+              onPress={activeTab === "Booking Details" ? handlePostLoad : handleConfirmOrder}
               disabled={loading}
               style={[styles.confirmButton, { opacity: loading ? 0.7 : 1 }]}
             >
               <Text style={styles.confirmText}>
-                {loading ? "Processing..." : `Confirm Order (${totalItems} items)`}
+                {loading ? "Processing..." : activeTab === "Booking Details" ? "Post to Load Board & Book" : `Confirm Order (${totalItems} items)`}
               </Text>
             </TouchableOpacity>
           )}

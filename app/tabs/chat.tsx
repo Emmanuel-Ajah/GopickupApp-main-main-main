@@ -17,45 +17,33 @@ const Chat = () => {
     const messages = [
         {
             id: 1,
-            text: "Good day, my name is Monica posted so loads on the app.",
+            text: "Hello, I just posted a load for 2 trips of coal. What's the best rate for this?",
             sender: "user",
             time: "08:23 AM",
         },
         {
             id: 2,
-            text: "Okay that great, can you please tell us the nature of the goods or material you posted.",
+            text: "Welcome! I see your request. For that distance and volume, we're looking at N 150,000 per trip.",
             sender: "agent",
-            time: "08:23 AM",
+            time: "08:25 AM",
         },
         {
             id: 3,
-            text: "i am moving two trips of coal.",
+            text: "That's a bit high. Can we do N 130,000? I have regular loads.",
             sender: "user",
-            time: "08:23 AM",
+            time: "08:26 AM",
         },
         {
             id: 4,
-            text: "Okay",
+            text: "Let me check with the fleet manager... Okay, we can do N 135,000 as a special rate for you.",
             sender: "agent",
-            time: "08:23 AM",
+            time: "08:28 AM",
         },
         {
             id: 5,
-            text: "From your choice of vehicle i see that you've chosen a tipper as your preferred vehicle.",
-            sender: "agent",
-            time: "08:23 AM",
-        },
-        {
-            id: 6,
-            text: "Yes",
+            text: "Great! Send me the invoice and I'll make the payment.",
             sender: "user",
-            time: "08:23 AM",
-        },
-        {
-            id: 7,
-            text: "Where is your location ?",
-            sender: "agent",
-            time: "08:23 AM",
+            time: "08:30 AM",
         },
     ];
 

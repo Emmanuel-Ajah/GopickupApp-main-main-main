@@ -1,4 +1,3 @@
-import { Ionicons } from "@expo/vector-icons";
 import React from "react";
 import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 
@@ -70,20 +69,6 @@ export default function BookingDetailsContent() {
                 </View>
             </View>
 
-            {/* Payment Method Section */}
-            <View style={styles.fieldSection}>
-                <Text style={styles.label}>Payment Method</Text>
-
-                <TouchableOpacity style={styles.paymentRow}>
-                    <Ionicons name="card-outline" size={20} color="#606060" />
-                    <Text style={styles.paymentText}>Card</Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity style={styles.paymentRow}>
-                    <Ionicons name="wallet-outline" size={20} color="#606060" />
-                    <Text style={styles.paymentText}>Account Wallet</Text>
-                </TouchableOpacity>
-            </View>
         </ScrollView>
     );
 }
