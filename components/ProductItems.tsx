@@ -68,7 +68,7 @@ const ProductItems: React.FC<ProductProps> = ({ image, title, size, price, avail
             style={styles.addButton}
             onPress={() => onAddToCart(qtyNum)}
           >
-            <Text style={styles.addButtonText}>Add {qtyNum > 1 ? `N ${totalPrice.toLocaleString()} ` : ""}</Text>
+            <Text style={styles.addButtonText}>Add N ${totalPrice.toLocaleString()}</Text>
           </TouchableOpacity>
         </View>
       </View>

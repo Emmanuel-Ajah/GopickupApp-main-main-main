@@ -45,9 +45,10 @@ export default function Home() {
   const [cart, setCart] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
 
+  const totalItems = cart.reduce((sum, item) => sum + (item.quantity || 1), 0);
+
   const onAddToCart = (item: any) => {
-    setCart([...cart, item]);
-    alert(`${item.quantity > 1 ? `${item.quantity}x ` : ""}${item.title || item.name} added to cart!`);
+    setCart((prev) => [...prev, item]);
   };
 
   const handleConfirmOrder = async () => {
@@ -290,7 +291,7 @@ export default function Home() {
               style={[styles.confirmButton, { opacity: loading ? 0.7 : 1 }]}
             >
               <Text style={styles.confirmText}>
-                {loading ? "Processing..." : `Confirm Order (${cart.length} items)`}
+                {loading ? "Processing..." : `Confirm Order (${totalItems} items)`}
               </Text>
             </TouchableOpacity>
           )}
