@@ -35,6 +35,7 @@ export default function TabsLayout() {
 
   return (
     <Tabs
+      key={role}
       screenOptions={({ route }) => ({
         tabBarIcon: ({ color }) => {
           let iconName: React.ComponentProps<typeof Ionicons>["name"] =
@@ -74,29 +75,42 @@ export default function TabsLayout() {
         headerShown: false,
       })}
     >
-      {role === "admin" ? (
-        <>
-          <Tabs.Screen name="admin_home" options={{ title: "Dashboard" }} />
-          <Tabs.Screen name="chat" options={{ title: "Messages" }} />
-          <Tabs.Screen name="profile" options={{ title: "Profile" }} />
-          {/* Hide user screens */}
-          <Tabs.Screen name="home" options={{ href: null }} />
-          <Tabs.Screen name="map" options={{ href: null }} />
-        </>
-      ) : (
-        <>
-          <Tabs.Screen name="home" options={{ title: "Home" }} />
-          <Tabs.Screen name="chat" options={{ title: "Chat" }} />
-          <Tabs.Screen name="profile" options={{ title: "Profile" }} />
-          <Tabs.Screen name="map" options={{ title: "Map" }} />
-          {/* Hide admin screens */}
-          <Tabs.Screen name="admin_home" options={{ href: null }} />
-        </>
-      )}
+      <Tabs.Screen
+        name="home"
+        options={{
+          title: "Home",
+          href: role === "admin" ? null : "/tabs/home",
+          tabBarButton: role === "admin" ? () => null : undefined,
+        }}
+      />
+      <Tabs.Screen
+        name="admin_home"
+        options={{
+          title: "Dashboard",
+          href: (role === "admin" ? "/tabs/admin_home" : null) as any,
+          tabBarButton: role === "admin" ? undefined : () => null,
+        }}
+      />
+      <Tabs.Screen
+        name="chat"
+        options={{ title: role === "admin" ? "Messages" : "Chat" }}
+      />
+      <Tabs.Screen
+        name="profile"
+        options={{ title: "Profile" }}
+      />
+      <Tabs.Screen
+        name="map"
+        options={{
+          title: "Map",
+          href: role === "admin" ? null : "/tabs/map",
+          tabBarButton: role === "admin" ? () => null : undefined,
+        }}
+      />
 
       {/* Hidden screens */}
-      <Tabs.Screen name="explore" options={{ href: null }} />
-      <Tabs.Screen name="notifications" options={{ href: null }} />
+      <Tabs.Screen name="explore" options={{ href: null, tabBarButton: () => null }} />
+      <Tabs.Screen name="notifications" options={{ href: null, tabBarButton: () => null }} />
     </Tabs>
   );
 }
