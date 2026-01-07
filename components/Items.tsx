@@ -60,7 +60,7 @@ const Items: React.FC<ItemProps> = ({ name, price, onAddToCart }) => {
           </View>
 
           <TouchableOpacity style={styles.addToChartBtn} onPress={() => onAddToCart(qtyNum)}>
-            <Text style={styles.addToChartText}>Add N ${totalPrice.toLocaleString()}</Text>
+            <Text style={styles.addToChartText}>Add N {totalPrice.toLocaleString()}</Text>
           </TouchableOpacity>
         </View>
       </View>
