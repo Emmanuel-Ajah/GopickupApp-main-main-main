@@ -39,6 +39,10 @@ const userSchema = new mongoose.Schema({
         enum: ['user', 'driver', 'admin'],
         default: 'user',
     },
+    isBanned: {
+        type: Boolean,
+        default: false,
+    },
     createdAt: {
         type: Date,
         default: Date.now,
