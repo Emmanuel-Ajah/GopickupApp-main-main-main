@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
     ActivityIndicator,
@@ -21,11 +21,14 @@ const ADMIN_ID = "677d24f0c4068c07e0568f18"; // Default Admin ID
 
 const Chat = () => {
     const params = useLocalSearchParams();
+    const router = useRouter();
     const [messages, setMessages] = useState<any[]>([]);
     const [inputText, setInputText] = useState("");
     const [user, setUser] = useState<any>(null);
     const [loading, setLoading] = useState(true);
     const [targetRecipient, setTargetRecipient] = useState<string>(ADMIN_ID);
+    const [conversations, setConversations] = useState<any[]>([]);
+    const [showInbox, setShowInbox] = useState(false);
 
     const fetchMessages = async () => {
         try {
@@ -37,16 +40,34 @@ const Chat = () => {
                 let recipient = ADMIN_ID;
                 if (parsedUser.role === 'admin' && params.recipientId) {
                     recipient = params.recipientId as string;
+                    setShowInbox(false);
+                } else if (parsedUser.role === 'admin') {
+                    setShowInbox(true);
+                    fetchConversations();
+                } else {
+                    setShowInbox(false);
                 }
                 setTargetRecipient(recipient);
 
-                const response = await getMessages(recipient);
-                setMessages(response.data);
+                if (recipient !== ADMIN_ID || parsedUser.role !== 'admin') {
+                    const response = await getMessages(recipient);
+                    setMessages(response.data);
+                }
             }
         } catch (error) {
             console.error("Error fetching messages:", error);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const fetchConversations = async () => {
+        try {
+            const { getAdminConversations } = require("../api/api");
+            const response = await getAdminConversations();
+            setConversations(response.data);
+        } catch (error) {
+            console.error("Error fetching conversations:", error);
         }
     };
 
@@ -88,91 +109,126 @@ const Chat = () => {
                 behavior={Platform.OS === "ios" ? "padding" : "height"}
                 style={{ flex: 1 }}
             >
-                <ScrollView
-                    showsVerticalScrollIndicator={false}
-                    contentContainerStyle={styles.chatScroll}
-                >
-                    {/* System Banner */}
-                    <View style={styles.systemBanner}>
-                        <Ionicons name="chatbox-ellipses-outline" size={18} color="#606060" />
-                        <Text style={styles.systemText}>
-                            This chat is directly with our agent.
-                        </Text>
-                    </View>
-
-                    {/* Avatars */}
-                    <View style={styles.avatarGroup}>
-                        <Image
-                            source={require("../../assets/images/myImage.jpg")}
-                            style={[styles.avatar, styles.userAvatar]}
-                        />
-                        <View style={[styles.avatar, styles.agentAvatarPlaceholder]}>
-                            <Ionicons name="person-outline" size={24} color="#A0A0A0" />
-                        </View>
-                    </View>
-
-                    <Text style={styles.dateText}>Today</Text>
-
-                    {/* Message List */}
-                    {messages.map((msg: any, idx: number) => (
-                        <View
-                            key={msg._id || idx}
-                            style={[
-                                styles.messageRow,
-                                msg.sender === user?._id ? styles.userRow : styles.agentRow,
-                            ]}
+                {showInbox ? (
+                    <ScrollView
+                        showsVerticalScrollIndicator={false}
+                        contentContainerStyle={styles.inboxScroll}
+                    >
+                        <Text style={styles.inboxSubtitle}>Recent Conversations</Text>
+                        {conversations.map((contact) => (
+                            <TouchableOpacity
+                                key={contact._id}
+                                style={styles.conversationItem}
+                                onPress={() => router.push({
+                                    pathname: "/tabs/chat" as any,
+                                    params: { recipientId: contact._id }
+                                })}
+                            >
+                                <View style={styles.inboxAvatar}>
+                                    <Ionicons name="person" size={20} color="#606060" />
+                                </View>
+                                <View style={styles.conversationInfo}>
+                                    <Text style={styles.conversationName}>{contact.name}</Text>
+                                    <Text style={styles.conversationId}>{contact.userId}</Text>
+                                </View>
+                                <Ionicons name="chevron-forward" size={20} color="#E0E0E0" />
+                            </TouchableOpacity>
+                        ))}
+                        {conversations.length === 0 && (
+                            <Text style={styles.emptyText}>No messages yet.</Text>
+                        )}
+                    </ScrollView>
+                ) : (
+                    <>
+                        <ScrollView
+                            showsVerticalScrollIndicator={false}
+                            contentContainerStyle={styles.chatScroll}
                         >
-                            <View
-                                style={[
-                                    styles.bubble,
-                                    msg.sender === user?._id ? styles.userBubble : styles.agentBubble,
-                                ]}>
-                                <Text
-                                    style={[
-                                        styles.messageText,
-                                        msg.sender === user?._id ? styles.userText : styles.agentText,
-                                    ]}>
-                                    {msg.content}
-                                </Text>
-                                <Text
-                                    style={[
-                                        styles.timeText,
-                                        msg.sender === user?._id ? styles.userTime : styles.agentTime,
-                                    ]}>
-                                    {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            {/* System Banner */}
+                            <View style={styles.systemBanner}>
+                                <Ionicons name="chatbox-ellipses-outline" size={18} color="#606060" />
+                                <Text style={styles.systemText}>
+                                    {user?.role === 'admin' ? "Direct chat with client." : "This chat is directly with our agent."}
                                 </Text>
                             </View>
-                        </View>
-                    ))}
-                    {loading && messages.length === 0 && (
-                        <ActivityIndicator size="small" color="#439D25" style={{ marginTop: 20 }} />
-                    )}
-                </ScrollView>
 
-                {/* Input Bar */}
-                <View style={styles.inputBarArea}>
-                    <View style={styles.inputPill}>
-                        <TextInput
-                            style={styles.input}
-                            placeholder="Message"
-                            placeholderTextColor="#A0A0A0"
-                            value={inputText}
-                            onChangeText={setInputText}
-                        />
-                        <View style={styles.inputIcons}>
-                            <TouchableOpacity style={styles.iconCircle}>
-                                <Ionicons name="attach" size={20} color="#000" />
-                            </TouchableOpacity>
-                            <TouchableOpacity style={styles.iconCircle}>
-                                <Ionicons name="mic" size={20} color="#000" />
+                            {/* Avatars - Only for client */}
+                            {user?.role !== 'admin' && (
+                                <View style={styles.avatarGroup}>
+                                    <Image
+                                        source={require("../../assets/images/myImage.jpg")}
+                                        style={[styles.avatar, styles.userAvatar]}
+                                    />
+                                    <View style={[styles.avatar, styles.agentAvatarPlaceholder]}>
+                                        <Ionicons name="person-outline" size={24} color="#A0A0A0" />
+                                    </View>
+                                </View>
+                            )}
+
+                            <Text style={styles.dateText}>Today</Text>
+
+                            {/* Message List */}
+                            {messages.map((msg: any, idx: number) => (
+                                <View
+                                    key={msg._id || idx}
+                                    style={[
+                                        styles.messageRow,
+                                        msg.sender === user?._id ? styles.userRow : styles.agentRow,
+                                    ]}
+                                >
+                                    <View
+                                        style={[
+                                            styles.bubble,
+                                            msg.sender === user?._id ? styles.userBubble : styles.agentBubble,
+                                        ]}>
+                                        <Text
+                                            style={[
+                                                styles.messageText,
+                                                msg.sender === user?._id ? styles.userText : styles.agentText,
+                                            ]}>
+                                            {msg.content}
+                                        </Text>
+                                        <Text
+                                            style={[
+                                                styles.timeText,
+                                                msg.sender === user?._id ? styles.userTime : styles.agentTime,
+                                            ]}>
+                                            {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                        </Text>
+                                    </View>
+                                </View>
+                            ))}
+                            {loading && messages.length === 0 && (
+                                <ActivityIndicator size="small" color="#439D25" style={{ marginTop: 20 }} />
+                            )}
+                        </ScrollView>
+
+                        {/* Input Bar */}
+                        <View style={styles.inputBarArea}>
+                            <View style={styles.inputPill}>
+                                <TextInput
+                                    style={styles.input}
+                                    placeholder="Message"
+                                    placeholderTextColor="#A0A0A0"
+                                    value={inputText}
+                                    onChangeText={setInputText}
+                                />
+                                <View style={styles.inputIcons}>
+                                    <TouchableOpacity style={styles.iconCircle}>
+                                        <Ionicons name="attach" size={20} color="#000" />
+                                    </TouchableOpacity>
+                                    <TouchableOpacity style={styles.iconCircle}>
+                                        <Ionicons name="mic" size={20} color="#000" />
+                                    </TouchableOpacity>
+                                </View>
+                            </View>
+                            <TouchableOpacity style={styles.sendButton} onPress={handleSend}>
+                                <Ionicons name="send" size={20} color="white" />
                             </TouchableOpacity>
                         </View>
-                    </View>
-                    <TouchableOpacity style={styles.sendButton} onPress={handleSend}>
-                        <Ionicons name="send" size={20} color="white" />
-                    </TouchableOpacity>
-                </View>
-                <View style={{ height: 100 }} />
+                        <View style={{ height: 100 }} />
+                    </>
+                )}
             </KeyboardAvoidingView>
         </View>
     );
@@ -356,6 +412,55 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.2,
         shadowRadius: 8,
         elevation: 4,
+    },
+    inboxScroll: {
+        paddingHorizontal: 15,
+        paddingBottom: 20,
+    },
+    inboxSubtitle: {
+        fontSize: 14,
+        fontWeight: '700',
+        color: '#A0A0A0',
+        marginBottom: 15,
+        marginTop: 10,
+    },
+    conversationItem: {
+        backgroundColor: 'white',
+        borderRadius: 15,
+        padding: 15,
+        marginBottom: 12,
+        flexDirection: 'row',
+        alignItems: 'center',
+        borderWidth: 1,
+        borderColor: '#F0F0F0',
+    },
+    inboxAvatar: {
+        width: 44,
+        height: 44,
+        borderRadius: 22,
+        backgroundColor: '#F5F5F5',
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginRight: 12,
+    },
+    conversationInfo: {
+        flex: 1,
+    },
+    conversationName: {
+        fontSize: 16,
+        fontWeight: '700',
+        color: '#000',
+    },
+    conversationId: {
+        fontSize: 12,
+        color: '#A0A0A0',
+        marginTop: 2,
+    },
+    emptyText: {
+        textAlign: 'center',
+        color: '#A0A0A0',
+        marginTop: 40,
+        fontSize: 14,
     },
 });
 

@@ -1,4 +1,5 @@
 const Message = require('../models/Message');
+const User = require('../models/User');
 
 // @desc    Send a message
 // @route   POST /api/messages
@@ -40,7 +41,36 @@ const getMessages = async (req, res) => {
     }
 };
 
+// @desc    Get all unique conversations for the current user
+// @route   GET /api/messages/conversations
+// @access  Private
+const getConversations = async (req, res) => {
+    try {
+        const userId = req.user._id;
+        const messages = await Message.find({
+            $or: [{ sender: userId }, { recipient: userId }]
+        }).sort({ createdAt: -1 });
+
+        const conversationUsers = new Set();
+        const contactIds = [];
+
+        messages.forEach(msg => {
+            const otherUser = msg.sender.toString() === userId.toString() ? msg.recipient.toString() : msg.sender.toString();
+            if (!conversationUsers.has(otherUser)) {
+                conversationUsers.add(otherUser);
+                contactIds.push(otherUser);
+            }
+        });
+
+        const users = await User.find({ _id: { $in: contactIds } }).select('name email userId role');
+        res.json(users);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
 module.exports = {
     sendMessage,
     getMessages,
+    getConversations,
 };

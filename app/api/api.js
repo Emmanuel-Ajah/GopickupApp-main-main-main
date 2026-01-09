@@ -19,6 +19,8 @@ export const registerUser = (data) => API.post("/auth/register", data);
 export const loginUser = (data) => API.post("/auth/login", data);
 export const forgotPassword = (data) => API.post("/auth/forgot-password", data);
 export const googleLogin = (data) => API.post("/auth/google", data);
+export const getAdminUsers = () => API.get("/auth/users");
+export const toggleUserBan = (userId) => API.patch(`/auth/users/${userId}/ban`);
 
 // Orders
 export const createOrder = (orderData) => API.post("/orders", orderData);
@@ -36,3 +38,4 @@ export const getMyReviews = () => API.get("/reviews/my");
 // Messages
 export const sendMessage = (messageData) => API.post("/messages", messageData);
 export const getMessages = (otherUserId) => API.get(`/messages/${otherUserId}`);
+export const getAdminConversations = () => API.get("/messages/conversations");

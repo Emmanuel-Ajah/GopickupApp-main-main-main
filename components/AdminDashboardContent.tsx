@@ -4,9 +4,12 @@ import React, { useEffect, useState } from "react";
 import { ActivityIndicator, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { getAdminOrders, negotiateOrder, sendMessage } from "../app/api/api";
 
+import AdminUsersContent from "./AdminUsersContent";
+
 export default function AdminDashboardContent() {
     const [orders, setOrders] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
+    const [activeTab, setActiveTab] = useState<'orders' | 'users'>('orders');
 
     const fetchOrders = async () => {
         try {
@@ -20,8 +23,10 @@ export default function AdminDashboardContent() {
     };
 
     useEffect(() => {
-        fetchOrders();
-    }, []);
+        if (activeTab === 'orders') {
+            fetchOrders();
+        }
+    }, [activeTab]);
 
     const handleNegotiate = async (orderId: string, userId: string, price: number) => {
         try {
@@ -53,7 +58,7 @@ export default function AdminDashboardContent() {
         });
     };
 
-    if (loading) {
+    if (loading && activeTab === 'orders') {
         return <ActivityIndicator size="large" color="#439D25" style={{ marginTop: 50 }} />;
     }
 
@@ -61,50 +66,72 @@ export default function AdminDashboardContent() {
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.container}>
             <Text style={styles.mainTitle}>Admin Dashboard</Text>
 
-            <View style={styles.statsRow}>
-                <View style={styles.statBox}>
-                    <Text style={styles.statLabel}>Total Requests</Text>
-                    <Text style={styles.statValue}>{orders.length}</Text>
-                </View>
-                <View style={[styles.statBox, { backgroundColor: '#F0F9EF' }]}>
-                    <Text style={[styles.statLabel, { color: '#439D25' }]}>Pending</Text>
-                    <Text style={[styles.statValue, { color: '#439D25' }]}>
-                        {orders.filter(o => o.status === 'Pending' || o.status === 'Pending Negotiation').length}
-                    </Text>
-                </View>
+            <View style={styles.tabSwitcher}>
+                <TouchableOpacity
+                    style={[styles.tab, activeTab === 'orders' && styles.activeTab]}
+                    onPress={() => setActiveTab('orders')}
+                >
+                    <Text style={[styles.tabText, activeTab === 'orders' && styles.activeTabText]}>Requests</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                    style={[styles.tab, activeTab === 'users' && styles.activeTab]}
+                    onPress={() => setActiveTab('users')}
+                >
+                    <Text style={[styles.tabText, activeTab === 'users' && styles.activeTabText]}>Users</Text>
+                </TouchableOpacity>
             </View>
 
-            <Text style={styles.sectionHeader}>Active Load Requests</Text>
-
-            {orders.map((order) => (
-                <View key={order._id} style={styles.orderCard}>
-                    <View style={styles.orderHeader}>
-                        <Text style={styles.orderId}>{order.trackingId}</Text>
-                        <View style={[styles.statusBadge, { backgroundColor: order.status === 'Pending' ? '#FFF3E0' : '#E8F5E9' }]}>
-                            <Text style={styles.statusText}>{order.status}</Text>
+            {activeTab === 'orders' ? (
+                <>
+                    <View style={styles.statsRow}>
+                        <View style={styles.statBox}>
+                            <Text style={styles.statLabel}>Total Requests</Text>
+                            <Text style={styles.statValue}>{orders.length}</Text>
+                        </View>
+                        <View style={[styles.statBox, { backgroundColor: '#F0F9EF' }]}>
+                            <Text style={[styles.statLabel, { color: '#439D25' }]}>Pending</Text>
+                            <Text style={[styles.statValue, { color: '#439D25' }]}>
+                                {orders.filter(o => o.status === 'Pending' || o.status === 'Pending Negotiation').length}
+                            </Text>
                         </View>
                     </View>
 
-                    <Text style={styles.orderUser}>Customer: {order.user?.name || 'Unknown'}</Text>
-                    <Text style={styles.orderDetail}>Route: {order.pickupLocation} ➔ {order.deliveryLocation}</Text>
+                    <Text style={styles.sectionHeader}>Active Load Requests</Text>
 
-                    <View style={styles.actionRow}>
-                        <TouchableOpacity
-                            style={styles.negotiateBtn}
-                            onPress={() => handleNegotiate(order._id, order.user?._id, 135000)}
-                        >
-                            <Text style={styles.btnText}>Set Rate (N 135k)</Text>
-                        </TouchableOpacity>
+                    {orders.map((order) => (
+                        <View key={order._id} style={styles.orderCard}>
+                            <View style={styles.orderHeader}>
+                                <Text style={styles.orderId}>{order.trackingId}</Text>
+                                <View style={[styles.statusBadge, { backgroundColor: order.status === 'Pending' ? '#FFF3E0' : '#E8F5E9' }]}>
+                                    <Text style={styles.statusText}>{order.status}</Text>
+                                </View>
+                            </View>
 
-                        <TouchableOpacity
-                            style={styles.chatBtn}
-                            onPress={() => handleChatWithClient(order.user?._id)}
-                        >
-                            <Ionicons name="chatbubble-ellipses-outline" size={20} color="white" />
-                        </TouchableOpacity>
-                    </View>
-                </View>
-            ))}
+                            <Text style={styles.orderUser}>Customer: {order.user?.name || 'Unknown'}</Text>
+                            <Text style={styles.orderDetail}>Route: {order.pickupLocation} ➔ {order.deliveryLocation}</Text>
+
+                            <View style={styles.actionRow}>
+                                <TouchableOpacity
+                                    style={styles.negotiateBtn}
+                                    onPress={() => handleNegotiate(order._id, order.user?._id, 135000)}
+                                >
+                                    <Text style={styles.btnText}>Set Rate (N 135k)</Text>
+                                </TouchableOpacity>
+
+                                <TouchableOpacity
+                                    style={styles.chatBtn}
+                                    onPress={() => handleChatWithClient(order.user?._id)}
+                                >
+                                    <Ionicons name="chatbubble-ellipses-outline" size={20} color="white" />
+                                </TouchableOpacity>
+                            </View>
+                        </View>
+                    ))}
+                    {orders.length === 0 && <Text style={styles.emptyText}>No requests found.</Text>}
+                </>
+            ) : (
+                <AdminUsersContent />
+            )}
         </ScrollView>
     );
 }
@@ -212,6 +239,42 @@ const styles = StyleSheet.create({
     btnText: {
         color: 'white',
         fontWeight: '700',
+        fontSize: 14,
+    },
+    tabSwitcher: {
+        flexDirection: 'row',
+        backgroundColor: '#F5F5F5',
+        borderRadius: 12,
+        padding: 5,
+        marginBottom: 20,
+    },
+    tab: {
+        flex: 1,
+        paddingVertical: 10,
+        alignItems: 'center',
+        borderRadius: 10,
+    },
+    activeTab: {
+        backgroundColor: 'white',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+        elevation: 3,
+    },
+    tabText: {
+        fontSize: 14,
+        fontWeight: '600',
+        color: '#606060',
+    },
+    activeTabText: {
+        color: '#439D25',
+        fontWeight: '700',
+    },
+    emptyText: {
+        textAlign: 'center',
+        color: '#A0A0A0',
+        marginTop: 40,
         fontSize: 14,
     },
 });

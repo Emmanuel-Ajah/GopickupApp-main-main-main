@@ -58,6 +58,11 @@ exports.loginUser = async (req, res) => {
         const user = await User.findOne({ email }).select('+password');
 
         if (user && (await user.matchPassword(password))) {
+            // Check if user is banned
+            if (user.isBanned) {
+                return res.status(403).json({ message: 'Your account has been banned. Please contact support.' });
+            }
+
             // Hotfix: Ensure user has admin role if their email matches ADMIN_EMAIL
             if (user.email === process.env.ADMIN_EMAIL && user.role !== 'admin') {
                 user.role = 'admin';
@@ -86,6 +91,35 @@ exports.loginUser = async (req, res) => {
 exports.getMe = async (req, res) => {
     try {
         const user = await User.findById(req.user.id);
+        res.status(200).json(user);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// @desc    Get all users (Admin only)
+// @route   GET /api/auth/users
+// @access  Private/Admin
+exports.getAllUsers = async (req, res) => {
+    try {
+        const users = await User.find({ role: { $ne: 'admin' } }).select('-password');
+        res.status(200).json(users);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// @desc    Toggle user ban status (Admin only)
+// @route   PATCH /api/auth/users/:id/ban
+// @access  Private/Admin
+exports.toggleUserBan = async (req, res) => {
+    try {
+        const user = await User.findById(req.params.id);
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+        user.isBanned = !user.isBanned;
+        await user.save();
         res.status(200).json(user);
     } catch (error) {
         res.status(500).json({ message: error.message });
