@@ -12,6 +12,20 @@ export default function BuyMaterialContent({ onAddToCart }: { onAddToCart: (item
       image: require("../assets/images/DangoteCement.png"),
     },
     {
+      title: "BUA Cement",
+      size: "50kg",
+      price: "N 5,500",
+      available: true,
+      image: require("../assets/images/BUACement.jpg"),
+    },
+    {
+      title: "Mangal Cement",
+      size: "50kg",
+      price: "N 5,500",
+      available: true,
+      image: require("../assets/images/MangalCement.jpg"),
+    },
+    {
       title: "Roofing Sheet",
       size: "Zinc",
       price: "N 3,000/sqm",
