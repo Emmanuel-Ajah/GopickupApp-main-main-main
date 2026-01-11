@@ -4,8 +4,7 @@ import { useRouter } from "expo-router"
 import React, { useEffect, useState } from "react"
 import {
   Image,
-  Modal,s
-
+  Modal,
   ScrollView,
   StatusBar,
   StyleSheet,

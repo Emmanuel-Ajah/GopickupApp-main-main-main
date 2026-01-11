@@ -171,30 +171,46 @@ export default function LoginScreen() {
   );
 }
 
-const InputField = ({ label, icon, placeholder, keyboardType = "default", secureTextEntry = false, fieldId, value, onChangeText, autoCapitalize = "sentences", focusedField, setFocusedField }: any) => (
-  <View style={Styles.inputGroup}>
-    <Text style={Styles.label}>{label}</Text>
-    <View style={[
-      Styles.inputContainer,
-      focusedField === fieldId && Styles.inputContainerFocused
-    ]}>
-      <Ionicons name={icon} size={20} color={focusedField === fieldId ? "#FFF" : "#FFFFFF80"} style={Styles.inputIcon} />
-      <TextInput
-        style={[Styles.input, Platform.OS === "web" && ({ outlineStyle: "none" } as any)]}
-        placeholder={placeholder}
-        placeholderTextColor="#FFFFFF80"
-        keyboardType={keyboardType}
-        secureTextEntry={secureTextEntry}
-        cursorColor="#FFF"
-        onFocus={() => setFocusedField(fieldId)}
-        onBlur={() => setFocusedField(null)}
-        value={value}
-        onChangeText={onChangeText}
-        autoCapitalize={autoCapitalize}
-      />
+const InputField = ({ label, icon, placeholder, keyboardType = "default", secureTextEntry = false, fieldId, value, onChangeText, autoCapitalize = "sentences", focusedField, setFocusedField }: any) => {
+  const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+
+  return (
+    <View style={Styles.inputGroup}>
+      <Text style={Styles.label}>{label}</Text>
+      <View style={[
+        Styles.inputContainer,
+        focusedField === fieldId && Styles.inputContainerFocused
+      ]}>
+        <Ionicons name={icon} size={20} color={focusedField === fieldId ? "#FFF" : "#FFFFFF80"} style={Styles.inputIcon} />
+        <TextInput
+          style={[Styles.input, Platform.OS === "web" && ({ outlineStyle: "none" } as any)]}
+          placeholder={placeholder}
+          placeholderTextColor="#FFFFFF80"
+          keyboardType={keyboardType}
+          secureTextEntry={secureTextEntry && !isPasswordVisible}
+          cursorColor="#FFF"
+          onFocus={() => setFocusedField(fieldId)}
+          onBlur={() => setFocusedField(null)}
+          value={value}
+          onChangeText={onChangeText}
+          autoCapitalize={autoCapitalize}
+        />
+        {secureTextEntry && (
+          <TouchableOpacity
+            style={Styles.eyeIcon}
+            onPress={() => setIsPasswordVisible(!isPasswordVisible)}
+          >
+            <Ionicons
+              name={isPasswordVisible ? "eye-outline" : "eye-off-outline"}
+              size={20}
+              color={focusedField === fieldId ? "#FFF" : "#FFFFFF80"}
+            />
+          </TouchableOpacity>
+        )}
+      </View>
     </View>
-  </View>
-);
+  );
+};
 
 const Styles = StyleSheet.create({
   mainContainer: {
@@ -379,5 +395,8 @@ const Styles = StyleSheet.create({
     marginTop: 10,
     borderRadius: 2,
     opacity: 0.3,
+  },
+  eyeIcon: {
+    padding: 5,
   },
 });
