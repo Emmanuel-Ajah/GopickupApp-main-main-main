@@ -39,6 +39,12 @@ const userSchema = new mongoose.Schema({
         enum: ['user', 'driver', 'admin'],
         default: 'user',
     },
+    googleId: {
+        type: String,
+    },
+    avatar: {
+        type: String,
+    },
     isBanned: {
         type: Boolean,
         default: false,

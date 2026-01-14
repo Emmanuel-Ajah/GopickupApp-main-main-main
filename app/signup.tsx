@@ -1,6 +1,9 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as Google from "expo-auth-session/providers/google";
 import { BlurView } from "expo-blur";
 import { useRouter } from "expo-router";
+import * as WebBrowser from "expo-web-browser";
 import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
@@ -17,13 +20,48 @@ import {
   TouchableOpacity,
   View
 } from "react-native";
-import { registerUser } from "./api/api";
+import { googleLogin, registerUser } from "./api/api";
+
+WebBrowser.maybeCompleteAuthSession();
 
 const { width } = Dimensions.get("window");
 
 export default function SignupScreen() {
   const router = useRouter();
   const [focusedField, setFocusedField] = useState<string | null>(null);
+
+  const [request, response, promptAsync] = Google.useAuthRequest({
+    webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
+    iosClientId: process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID,
+    androidClientId: process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID,
+  });
+
+  useEffect(() => {
+    if (response?.type === "success") {
+      const { id_token } = response.params;
+      handleGoogleLogin(id_token);
+    }
+  }, [response]);
+
+  const handleGoogleLogin = async (idToken: string) => {
+    setLoading(true);
+    try {
+      console.log("Attempting Google login...");
+      const res = await googleLogin({ idToken });
+      console.log("Google login success:", res.data);
+      const { token, ...userData } = res.data;
+      await AsyncStorage.setItem("token", token);
+      await AsyncStorage.setItem("user", JSON.stringify(userData));
+      router.push("/tabs/home");
+    } catch (error: any) {
+      console.error("Google login error:", error);
+      const message = error.response?.data?.message || "Google login failed";
+      if (Platform.OS === 'web') alert(message);
+      else Alert.alert("Error", message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     if (typeof document !== 'undefined') {
@@ -105,7 +143,12 @@ export default function SignupScreen() {
                 <Text style={Styles.forgotPasswordText}>Forgot Password?</Text>
               </TouchableOpacity>
 
-              <TouchableOpacity style={Styles.googleButton} activeOpacity={0.8}>
+              <TouchableOpacity
+                style={Styles.googleButton}
+                activeOpacity={0.8}
+                disabled={!request || loading}
+                onPress={() => promptAsync()}
+              >
                 <Image
                   source={require("../assets/images/GoogleLogo.png")}
                   style={Styles.googleIcon}
