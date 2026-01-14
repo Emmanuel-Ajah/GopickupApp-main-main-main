@@ -1,5 +1,7 @@
 const User = require('../models/User');
 const jwt = require('jsonwebtoken');
+const { OAuth2Client } = require('google-auth-library');
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 // @desc    Register user
 // @route   POST /api/auth/register
@@ -123,6 +125,55 @@ exports.toggleUserBan = async (req, res) => {
         res.status(200).json(user);
     } catch (error) {
         res.status(500).json({ message: error.message });
+    }
+};
+
+// @desc    Google login
+// @route   POST /api/auth/google
+// @access  Public
+exports.googleLogin = async (req, res) => {
+    const { idToken } = req.body;
+
+    try {
+        const ticket = await client.verifyIdToken({
+            idToken,
+            audience: process.env.GOOGLE_CLIENT_ID,
+        });
+
+        const { name, email, picture, sub } = ticket.getPayload();
+
+        let user = await User.findOne({ email });
+
+        if (!user) {
+            // Create user if doesn't exist
+            const role = email === process.env.ADMIN_EMAIL ? 'admin' : 'user';
+            user = await User.create({
+                name,
+                email,
+                avatar: picture,
+                googleId: sub,
+                role,
+                userId: 'USER' + Math.floor(10000000 + Math.random() * 90000000),
+                password: Math.random().toString(36).slice(-8), // Dummy password for Google users
+            });
+        }
+
+        if (user.isBanned) {
+            return res.status(403).json({ message: 'Your account has been banned. Please contact support.' });
+        }
+
+        res.json({
+            _id: user._id,
+            name: user.name,
+            email: user.email,
+            userId: user.userId,
+            role: user.role,
+            avatar: user.avatar,
+            token: generateToken(user._id),
+        });
+    } catch (error) {
+        console.error('Google login error:', error);
+        res.status(400).json({ message: 'Google login failed' });
     }
 };
 
