@@ -133,19 +133,26 @@ exports.toggleUserBan = async (req, res) => {
 // @access  Public
 exports.googleLogin = async (req, res) => {
     const { idToken } = req.body;
+    console.log('Received Google Login request');
+
+    if (!idToken) {
+        return res.status(400).json({ message: 'No ID Token provided' });
+    }
 
     try {
+        console.log('Verifying ID Token with Client ID:', process.env.GOOGLE_CLIENT_ID);
         const ticket = await client.verifyIdToken({
             idToken,
             audience: process.env.GOOGLE_CLIENT_ID,
         });
 
         const { name, email, picture, sub } = ticket.getPayload();
+        console.log('Google verification successful for email:', email);
 
         let user = await User.findOne({ email });
 
         if (!user) {
-            // Create user if doesn't exist
+            console.log('Creating new user for Google login:', email);
             const role = email === process.env.ADMIN_EMAIL ? 'admin' : 'user';
             user = await User.create({
                 name,
@@ -154,15 +161,24 @@ exports.googleLogin = async (req, res) => {
                 googleId: sub,
                 role,
                 userId: 'USER' + Math.floor(10000000 + Math.random() * 90000000),
-                password: Math.random().toString(36).slice(-8), // Dummy password for Google users
+                password: Math.random().toString(36).slice(-8),
             });
+        } else {
+            console.log('Existing user found for Google login:', email);
+            // Link Google ID if not already linked
+            if (!user.googleId) {
+                console.log('Linking Google ID to existing user account');
+                user.googleId = sub;
+                if (picture && !user.avatar) user.avatar = picture;
+                await user.save();
+            }
         }
 
         if (user.isBanned) {
             return res.status(403).json({ message: 'Your account has been banned. Please contact support.' });
         }
 
-        res.json({
+        const responseData = {
             _id: user._id,
             name: user.name,
             email: user.email,
@@ -170,10 +186,13 @@ exports.googleLogin = async (req, res) => {
             role: user.role,
             avatar: user.avatar,
             token: generateToken(user._id),
-        });
+        };
+        
+        console.log('Sending success response for Google login');
+        res.json(responseData);
     } catch (error) {
-        console.error('Google login error:', error);
-        res.status(400).json({ message: 'Google login failed' });
+        console.error('Google login backend error:', error);
+        res.status(400).json({ message: 'Google login failed: ' + error.message });
     }
 };
 
