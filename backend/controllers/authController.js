@@ -150,9 +150,11 @@ exports.googleLogin = async (req, res) => {
         console.log('Google verification successful for email:', email);
 
         let user = await User.findOne({ email });
+        let isNewUser = false;
 
         if (!user) {
             console.log('Creating new user for Google login:', email);
+            isNewUser = true;
             const role = email === process.env.ADMIN_EMAIL ? 'admin' : 'user';
             user = await User.create({
                 name,
@@ -185,10 +187,11 @@ exports.googleLogin = async (req, res) => {
             userId: user.userId,
             role: user.role,
             avatar: user.avatar,
+            isNewUser,
             token: generateToken(user._id),
         };
         
-        console.log('Sending success response for Google login');
+        console.log('Sending success response for Google login. Is new user:', isNewUser);
         res.json(responseData);
     } catch (error) {
         console.error('Google login backend error:', error);
