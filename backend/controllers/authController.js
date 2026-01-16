@@ -1,7 +1,9 @@
 const User = require('../models/User');
 const jwt = require('jsonwebtoken');
 const { OAuth2Client } = require('google-auth-library');
-const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+
+const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID || '153094572502-n0jop50na9aihi82pgtsocgus6v54lvd.apps.googleusercontent.com';
+const client = new OAuth2Client(GOOGLE_CLIENT_ID);
 
 // @desc    Register user
 // @route   POST /api/auth/register
@@ -140,19 +142,21 @@ exports.googleLogin = async (req, res) => {
     }
 
     try {
-        console.log('Verifying ID Token with Client ID:', process.env.GOOGLE_CLIENT_ID);
+        console.log('Verifying ID Token with Client ID:', GOOGLE_CLIENT_ID);
         const ticket = await client.verifyIdToken({
             idToken,
-            audience: process.env.GOOGLE_CLIENT_ID,
+            audience: GOOGLE_CLIENT_ID,
         });
 
         const { name, email, picture, sub } = ticket.getPayload();
         console.log('Google verification successful for email:', email);
 
         let user = await User.findOne({ email });
+        let isNewUser = false;
 
         if (!user) {
             console.log('Creating new user for Google login:', email);
+            isNewUser = true;
             const role = email === process.env.ADMIN_EMAIL ? 'admin' : 'user';
             user = await User.create({
                 name,
@@ -185,10 +189,11 @@ exports.googleLogin = async (req, res) => {
             userId: user.userId,
             role: user.role,
             avatar: user.avatar,
+            isNewUser,
             token: generateToken(user._id),
         };
         
-        console.log('Sending success response for Google login');
+        console.log('Sending success response for Google login. Is new user:', isNewUser);
         res.json(responseData);
     } catch (error) {
         console.error('Google login backend error:', error);
