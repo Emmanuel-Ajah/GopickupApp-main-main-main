@@ -52,11 +52,12 @@ export default function SignupScreen() {
       console.log("Google login success:", res.data);
       const { token, isNewUser, ...userData } = res.data;
       
-      if (isNewUser) {
-        const msg = "Account created successfully with Google!";
-        if (Platform.OS === 'web') alert(msg);
-        else Alert.alert("Success", msg);
-      }
+      const msg = isNewUser 
+        ? "Account created successfully with Google!" 
+        : `Welcome back, ${userData.name || 'user'}! (Account already exists)`;
+
+      if (Platform.OS === 'web') alert(msg);
+      else Alert.alert("Success", msg);
 
       await AsyncStorage.setItem("token", token);
       await AsyncStorage.setItem("user", JSON.stringify(userData));

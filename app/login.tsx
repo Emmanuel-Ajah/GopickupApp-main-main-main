@@ -50,7 +50,15 @@ export default function LoginScreen() {
       console.log("Attempting Google login...");
       const res = await googleLogin({ idToken });
       console.log("Google login success:", res.data);
-      const { token, ...userData } = res.data;
+      const { token, isNewUser, ...userData } = res.data;
+      
+      const welcomeMsg = isNewUser 
+        ? "Account created successfully with Google!" 
+        : `Welcome back, ${userData.name || 'user'}!`;
+        
+      if (Platform.OS === 'web') alert(welcomeMsg);
+      else Alert.alert("Success", welcomeMsg);
+
       await AsyncStorage.setItem("token", token);
       await AsyncStorage.setItem("user", JSON.stringify(userData));
       router.push("/tabs/home");
