@@ -1,5 +1,12 @@
 import React, { useState } from "react";
-import { Image, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import {
+    Image,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
+} from "react-native";
 
 interface ProductProps {
   image: any;
@@ -10,11 +17,22 @@ interface ProductProps {
   onAddToCart: (quantity: number) => void;
 }
 
-const ProductItems: React.FC<ProductProps> = ({ image, title, size, price, available, onAddToCart }) => {
+const ProductItems: React.FC<ProductProps> = ({
+  image,
+  title,
+  size,
+  price,
+  available,
+  onAddToCart,
+}) => {
   const [quantity, setQuantity] = useState("1");
 
-  const increment = () => setQuantity((prev) => (parseInt(prev) + 1).toString());
-  const decrement = () => setQuantity((prev) => (parseInt(prev) > 1 ? (parseInt(prev) - 1).toString() : "1"));
+  const increment = () =>
+    setQuantity((prev) => (parseInt(prev) + 1).toString());
+  const decrement = () =>
+    setQuantity((prev) =>
+      parseInt(prev) > 1 ? (parseInt(prev) - 1).toString() : "1",
+    );
 
   const handleQtyChange = (val: string) => {
     const cleaned = val.replace(/[^0-9]/g, "");
@@ -32,7 +50,11 @@ const ProductItems: React.FC<ProductProps> = ({ image, title, size, price, avail
         {/* Left Column */}
         <View style={styles.leftColumn}>
           <View style={styles.imageWrapper}>
-            <Image source={image} style={styles.productImage} resizeMode="cover" />
+            <Image
+              source={image}
+              style={styles.productImage}
+              resizeMode="cover"
+            />
           </View>
           <Text style={styles.titleText}>{title}</Text>
           <View style={styles.pricingSection}>
@@ -68,7 +90,9 @@ const ProductItems: React.FC<ProductProps> = ({ image, title, size, price, avail
             style={styles.addButton}
             onPress={() => onAddToCart(qtyNum)}
           >
-            <Text style={styles.addButtonText}>Add N {totalPrice.toLocaleString()}</Text>
+            <Text style={styles.addButtonText}>
+              Add N {totalPrice.toLocaleString()}
+            </Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -191,4 +215,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default ProductItems;
+export default React.memo(ProductItems);
