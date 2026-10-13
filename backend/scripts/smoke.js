@@ -1,0 +1,42 @@
+const assert = require('node:assert/strict');
+const base = 'http://127.0.0.1:5050/api';
+async function request(path, method = 'GET', body, token, expected = 200) {
+  const response = await fetch(base + path, { method, headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) }, body: body ? JSON.stringify(body) : undefined });
+  const data = await response.json();
+  assert.equal(response.status, expected, `${method} ${path}: ${JSON.stringify(data)}`);
+  return data;
+}
+(async () => {
+  const admin = await request('/auth/login', 'POST', { email: 'admin@gopickup.test', password: 'LocalDemo123!' });
+  const user = await request('/auth/login', 'POST', { email: 'user@gopickup.test', password: 'LocalDemo123!' });
+  const second = await request('/auth/register', 'POST', { name: 'Smoke test', email: `smoke${Date.now()}@gopickup.test`, password: 'TestPassword123!', role: 'admin' }, null, 201);
+  assert.equal(second.role, 'user');
+  const order = await request('/orders', 'POST', { kind: 'load', pickupLocation: 'Abuja depot', deliveryLocation: 'Gwarinpa site', vehicle: 'Truck', description: '20 bags of cement', contactPhone: '08000000000', status: 'Delivered', totalAmount: -1 }, user.token, 201);
+  assert.equal(order.status, 'Pending Negotiation');
+  assert.equal(order.totalAmount, 0);
+  assert.equal((await request(`/orders/track/${encodeURIComponent(order.trackingId)}`, 'GET', null, user.token))._id, order._id);
+  await request(`/orders/${order._id}`, 'GET', null, second.token, 404);
+  await request(`/orders/${order._id}/negotiate`, 'PATCH', { negotiatedPrice: 100 }, second.token, 401);
+  await request(`/orders/${order._id}/negotiate`, 'PATCH', { negotiatedPrice: 25000 }, admin.token);
+  await request(`/orders/${order._id}/accept`, 'PATCH', {}, user.token);
+  await request(`/orders/${order._id}/accept`, 'PATCH', {}, user.token, 400);
+  await request(`/orders/${order._id}/negotiate`, 'PATCH', { status: 'In Transit' }, admin.token);
+  const delivered = await request(`/orders/${order._id}/negotiate`, 'PATCH', { status: 'Delivered' }, admin.token);
+  assert.equal(delivered.events.length, 4);
+  await request('/reviews', 'POST', { orderId: order._id, rating: 5, experience: 'Excellent' }, user.token, 201);
+  const support = await request('/auth/support', 'GET', null, user.token);
+  await request('/messages', 'POST', { recipientId: support._id, content: 'Local test message', orderId: order._id }, user.token, 201);
+  const materials = await request('/orders', 'POST', { items: [{ name: 'Dangote Cement', size: '50kg', quantity: 2, price: '-1' }], pickupLocation: 'Depot', deliveryLocation: 'Site', contactPhone: '08000000000', totalAmount: -1 }, user.token, 201);
+  assert.equal(materials.totalAmount, 11000);
+  const profile = await request('/auth/me', 'PATCH', { name: 'Updated local customer', phone: '08000000000' }, second.token);
+  assert.equal(profile.name, 'Updated local customer');
+  const recovery = await request('/auth/forgot-password', 'POST', { email: second.email });
+  await request('/auth/reset-password', 'POST', { token: recovery.localToken, password: 'NewTestPassword123!' });
+  await request('/auth/me', 'GET', null, second.token, 401);
+  await request('/auth/reset-password', 'POST', { token: recovery.localToken, password: 'AnotherPassword123!' }, null, 400);
+  const recovered = await request('/auth/login', 'POST', { email: second.email, password: 'NewTestPassword123!' });
+  await request(`/auth/users/${second._id}/ban`, 'PATCH', {}, admin.token);
+  await request('/orders/myorders', 'GET', null, second.token, 401);
+  await request('/auth/me', 'GET', null, recovered.token, 401);
+  console.log('PASS: registration roles, login, booking, catalog pricing, tracking, order ownership, quotes, delivery, reviews, chat, ban enforcement, profile editing, password reset and token revocation.');
+})().catch(error => { console.error(error.message); process.exit(1); });

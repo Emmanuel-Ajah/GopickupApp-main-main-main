@@ -19,6 +19,7 @@ exports.createReview = async (req, res) => {
             return res.status(403).json({ message: "Not authorized to review this order" });
         }
 
+        if (order.status !== 'Delivered') return res.status(400).json({ message: 'Only delivered orders can be reviewed.' });
         // Check if review already exists for this order
         const existingReview = await Review.findOne({ order: orderId });
         if (existingReview) {
@@ -28,7 +29,7 @@ exports.createReview = async (req, res) => {
         const review = await Review.create({
             order: orderId,
             user: req.user._id,
-            riderName: "Dauda", // Should ideally come from the order's assigned driver
+            riderName: "GoPickup delivery team", // Should ideally come from the order's assigned driver
             rating,
             experience,
             feedback,

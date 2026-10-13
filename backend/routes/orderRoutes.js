@@ -6,6 +6,8 @@ const { protect, admin } = require('../middleware/authMiddleware');
 router.post('/', protect, createOrder);
 router.get('/', protect, admin, getAllOrders);
 router.get('/myorders', protect, getMyOrders);
+router.get('/track/:trackingId', protect, getOrderById);
+router.patch('/:id/accept', protect, require('../controllers/orderController').acceptQuote);
 router.get('/:id', protect, getOrderById);
 router.patch('/:id/negotiate', protect, admin, negotiateOrder);
 

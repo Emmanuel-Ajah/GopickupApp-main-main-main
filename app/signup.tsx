@@ -1,6 +1,6 @@
+import GoogleAuthButton from "../components/GoogleAuthButton";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import * as Google from "expo-auth-session/providers/google";
 import { BlurView } from "expo-blur";
 import { useRouter } from "expo-router";
 import * as WebBrowser from "expo-web-browser";
@@ -20,8 +20,7 @@ import {
     TouchableOpacity,
     View
 } from "react-native";
-import { GOOGLE_CONFIG } from "../constants/Config";
-import { googleLogin, registerUser } from "./api/api";
+import { googleLogin, registerUser } from "../services/api";
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -31,25 +30,10 @@ export default function SignupScreen() {
   const router = useRouter();
   const [focusedField, setFocusedField] = useState<string | null>(null);
 
-  const [request, response, promptAsync] = Google.useAuthRequest({
-    webClientId: GOOGLE_CONFIG.webClientId,
-    iosClientId: GOOGLE_CONFIG.iosClientId,
-    androidClientId: GOOGLE_CONFIG.androidClientId,
-  });
-
-  useEffect(() => {
-    if (response?.type === "success") {
-      const { id_token } = response.params;
-      handleGoogleLogin(id_token);
-    }
-  }, [response]);
-
   const handleGoogleLogin = async (idToken: string) => {
     setLoading(true);
     try {
-      console.log("Attempting Google login...");
       const res = await googleLogin({ idToken });
-      console.log("Google login success:", res.data);
       const { token, isNewUser, ...userData } = res.data;
       
       const msg = isNewUser 
@@ -97,9 +81,7 @@ export default function SignupScreen() {
 
     setLoading(true);
     try {
-      console.log("Attempting signup with:", formData);
       const response = await registerUser(formData);
-      console.log("Signup success:", response.data);
       if (Platform.OS === 'web') {
         alert("Account created successfully!");
       } else {
@@ -148,22 +130,11 @@ export default function SignupScreen() {
             <InputField label="Password" icon="lock-closed-outline" placeholder="••••••••" secureTextEntry={true} fieldId="password" value={formData.password} onChangeText={(text: string) => setFormData({ ...formData, password: text })} focusedField={focusedField} setFocusedField={setFocusedField} />
 
             <View style={Styles.actionSection}>
-              <TouchableOpacity style={Styles.forgotPassword} onPress={() => { }}>
+              <TouchableOpacity style={Styles.forgotPassword} onPress={() => router.push("/reset-password")}>
                 <Text style={Styles.forgotPasswordText}>Forgot Password?</Text>
               </TouchableOpacity>
 
-              <TouchableOpacity
-                style={Styles.googleButton}
-                activeOpacity={0.8}
-                disabled={!request || loading}
-                onPress={() => promptAsync()}
-              >
-                <Image
-                  source={require("../assets/images/GoogleLogo.png")}
-                  style={Styles.googleIcon}
-                />
-                <Text style={Styles.googleText}>Continue with Google</Text>
-              </TouchableOpacity>
+              <GoogleAuthButton onToken={handleGoogleLogin} disabled={loading} />
             </View>
 
             <TouchableOpacity

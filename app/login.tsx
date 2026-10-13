@@ -1,6 +1,6 @@
+import GoogleAuthButton from "../components/GoogleAuthButton";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import * as Google from "expo-auth-session/providers/google";
 import { BlurView } from "expo-blur";
 import { useRouter } from "expo-router";
 import * as WebBrowser from "expo-web-browser";
@@ -20,8 +20,7 @@ import {
     TouchableOpacity,
     View
 } from "react-native";
-import { GOOGLE_CONFIG } from "../constants/Config";
-import { googleLogin, loginUser } from "./api/api";
+import { googleLogin, loginUser } from "../services/api";
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -31,25 +30,10 @@ export default function LoginScreen() {
   const router = useRouter();
   const [focusedField, setFocusedField] = useState<string | null>(null);
 
-  const [request, response, promptAsync] = Google.useAuthRequest({
-    webClientId: GOOGLE_CONFIG.webClientId,
-    iosClientId: GOOGLE_CONFIG.iosClientId,
-    androidClientId: GOOGLE_CONFIG.androidClientId,
-  });
-
-  useEffect(() => {
-    if (response?.type === "success") {
-      const { id_token } = response.params;
-      handleGoogleLogin(id_token);
-    }
-  }, [response]);
-
   const handleGoogleLogin = async (idToken: string) => {
     setLoading(true);
     try {
-      console.log("Attempting Google login...");
       const res = await googleLogin({ idToken });
-      console.log("Google login success:", res.data);
       const { token, isNewUser, ...userData } = res.data;
       
       const welcomeMsg = isNewUser 
@@ -95,9 +79,7 @@ export default function LoginScreen() {
 
     setLoading(true);
     try {
-      console.log("Attempting login with:", formData.email);
       const response = await loginUser(formData);
-      console.log("Login success:", response.data);
       const { token, ...userData } = response.data;
       await AsyncStorage.setItem("token", token);
       await AsyncStorage.setItem("user", JSON.stringify(userData));
@@ -173,22 +155,11 @@ export default function LoginScreen() {
             />
 
             <View style={Styles.actionSection}>
-              <TouchableOpacity style={Styles.forgotPassword} onPress={() => { }}>
+              <TouchableOpacity style={Styles.forgotPassword} onPress={() => router.push("/reset-password")}>
                 <Text style={Styles.forgotPasswordText}>Forgot Password?</Text>
               </TouchableOpacity>
 
-              <TouchableOpacity
-                style={Styles.googleButton}
-                activeOpacity={0.8}
-                disabled={!request || loading}
-                onPress={() => promptAsync()}
-              >
-                <Image
-                  source={require("../assets/images/GoogleLogo.png")}
-                  style={Styles.googleIcon}
-                />
-                <Text style={Styles.googleText}>Continue with Google</Text>
-              </TouchableOpacity>
+              <GoogleAuthButton onToken={handleGoogleLogin} disabled={loading} />
             </View>
 
             <TouchableOpacity
@@ -208,7 +179,7 @@ export default function LoginScreen() {
             </TouchableOpacity>
 
             <TouchableOpacity style={Styles.signupLink} onPress={() => router.push("/signup")}>
-              <Text style={Styles.signupLinkText}>Don't have an account? <Text style={Styles.signupLinkBold}>Sign Up</Text></Text>
+              <Text style={Styles.signupLinkText}>Don{"'"}t have an account? <Text style={Styles.signupLinkBold}>Sign Up</Text></Text>
             </TouchableOpacity>
           </BlurView>
 

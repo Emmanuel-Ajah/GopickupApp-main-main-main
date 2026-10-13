@@ -9,9 +9,10 @@ const userSchema = new mongoose.Schema({
     email: {
         type: String,
         required: [true, 'Please add an email'],
+        lowercase: true, trim: true,
         unique: true,
         match: [
-            /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/,
+            /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,63})+$/,
             'Please add a valid email',
         ],
     },
@@ -21,6 +22,9 @@ const userSchema = new mongoose.Schema({
         minlength: 6,
         select: false,
     },
+    tokenVersion: { type: Number, default: 0 },
+    resetHash: { type: String, select: false },
+    resetExpires: { type: Date, select: false },
     phone: {
         type: String,
     },

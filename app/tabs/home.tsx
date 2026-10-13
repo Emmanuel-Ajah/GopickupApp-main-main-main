@@ -3,8 +3,10 @@ import AsyncStorage from "@react-native-async-storage/async-storage"
 import { useRouter } from "expo-router"
 import React, { useEffect, useState } from "react"
 import {
+  Alert,
   Image,
   Modal,
+  Platform,
   ScrollView,
   StatusBar,
   StyleSheet,
@@ -17,13 +19,17 @@ import BookingDetailsContent from '../../components/BookingDetailsContent'
 import BuyMaterialContent from '../../components/BuyMaterialContent'
 import NaturalResourcesContent from '../../components/NaturalResourcesContent'
 import TrackDeliveryContent from '../../components/TrackDeliveryContent'
-import { createOrder } from "../api/api"
+import PostRequestContent from '../../components/PostRequestContent'
+import LocationAutocompleteInput from '../../components/LocationAutocompleteInput'
+import { createOrder } from "../../services/api"
 
 export default function Home() {
   const router = useRouter();
   const [selected, setSelected] = useState("Buy Material");
   const [visible, setVisible] = useState(false);
   const [activeTab, setActiveTab] = useState<string | null>(null);
+  const [showPostRequest, setShowPostRequest] = useState(false);
+  const [showBookingDetails, setShowBookingDetails] = useState(false);
   const [user, setUser] = useState<any>(null);
 
   useEffect(() => {
@@ -40,7 +46,7 @@ export default function Home() {
       }
     };
     fetchUser();
-  }, []);
+  }, [router]);
 
   const tabs = [
     "Buy Material",
@@ -48,35 +54,43 @@ export default function Home() {
     "Track My Delivery",
   ];
 
+  const [booking, setBooking] = useState({ pickupLocation: '', deliveryLocation: '', vehicle: '', description: '', weight: '', contactPhone: '', scheduledAt: '' });
+  const [search, setSearch] = useState('');
+  const [cartReady, setCartReady] = useState(false);
   const [cart, setCart] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (!user?._id) return;
+    let active = true;
+    setCartReady(false);
+    AsyncStorage.getItem(`cart:${user._id}`).then(raw => {
+      if (active) { setCart(raw ? JSON.parse(raw) : []); setCartReady(true); }
+    }).catch(() => { if (active) setCartReady(true); });
+    return () => { active = false; };
+  }, [user?._id]);
+  useEffect(() => {
+    if (cartReady && user?._id) AsyncStorage.setItem(`cart:${user._id}`, JSON.stringify(cart)).catch(() => {});
+  }, [cart, cartReady, user?._id]);
 
   const totalItems = cart.reduce((sum, item) => sum + (item.quantity || 1), 0);
 
   const onAddToCart = (item: any) => {
+    if (!cartReady) { Alert.alert('Please wait', 'Your cart is loading.'); return; }
     setCart((prev) => [...prev, item]);
   };
 
   const handlePostLoad = async () => {
     setLoading(true);
     try {
-      // Logic for posting to load board
-      // For now, we reuse createOrder but with specific flags if needed
-      const orderData = {
-        items: [{ name: "Load Request", quantity: 1, price: 0 }],
-        totalAmount: 0,
-        pickupLocation: "User Input Placeholder",
-        deliveryLocation: "User Input Placeholder",
-        status: "pending_negotiation"
-      };
-
+      const orderData = { ...booking, kind: 'load' };
       const response = await createOrder(orderData);
-      alert(`Load Posted Successfully! Admin will contact you in chat to negotiate the rate. trackingId: ${response.data.trackingId}`);
+      Alert.alert("GoPickup", `Load Posted Successfully! Admin will contact you in chat to negotiate the rate. trackingId: ${response.data.trackingId}`);
       setVisible(false);
       setActiveTab(null);
     } catch (error: any) {
       console.error("Post Load error:", error);
-      alert("Failed to post load: " + (error.response?.data?.message || "Error"));
+      Alert.alert("GoPickup", "Failed to post load: " + (error.response?.data?.message || "Error"));
     } finally {
       setLoading(false);
     }
@@ -85,7 +99,7 @@ export default function Home() {
 
   const handleConfirmOrder = async () => {
     if (cart.length === 0) {
-      alert("Please add items to your cart before confirming.");
+      Alert.alert("GoPickup", "Please add items to your cart before confirming.");
       return;
     }
 
@@ -98,18 +112,17 @@ export default function Home() {
           quantity: item.quantity || 1,
           price: item.price
         })),
-        totalAmount: 0,
-        pickupLocation: "Mining Site",
-        deliveryLocation: "Customer Address",
+        ...booking,
+        kind: 'materials',
       };
 
       const response = await createOrder(orderData);
-      alert(`Order Success! trackingId: ${response.data.trackingId}`);
+      Alert.alert("GoPickup", `Order Success! trackingId: ${response.data.trackingId}`);
       setVisible(false);
       setCart([]);
     } catch (error: any) {
       console.error("Order error:", error);
-      alert("Order Failed: " + (error.response?.data?.message || "Error"));
+      Alert.alert("GoPickup", "Order Failed: " + (error.response?.data?.message || "Error"));
     } finally {
       setLoading(false);
     }
@@ -120,9 +133,33 @@ export default function Home() {
     setVisible(true);
   };
 
+  if (showPostRequest) {
+    return (
+      <View style={styles.mainContainer}>
+        <StatusBar barStyle="dark-content" backgroundColor="#F8FAF8" />
+        <PostRequestContent
+          onClose={() => setShowPostRequest(false)}
+          user={user}
+        />
+      </View>
+    );
+  }
+
+  if (showBookingDetails) {
+    return (
+      <View style={styles.mainContainer}>
+        <StatusBar barStyle="dark-content" backgroundColor="#F8FAF8" />
+        <BookingDetailsContent
+          onClose={() => setShowBookingDetails(false)}
+          user={user}
+        />
+      </View>
+    );
+  }
+
   return (
     <View style={styles.mainContainer}>
-      <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
+      <StatusBar barStyle="dark-content" backgroundColor="#F8FAF8" />
 
       {/* Header */}
       <View style={styles.header}>
@@ -167,102 +204,59 @@ export default function Home() {
           <TextInput
             style={styles.searchInput}
             placeholder="Search"
-            placeholderTextColor="#A0A0A0"
+            value={search}
+            onChangeText={setSearch}
+            placeholderTextColor="#757575"
           />
-          <TouchableOpacity style={styles.searchButton}>
+          <TouchableOpacity
+            style={styles.searchButton}
+            onPress={() => handleTabPress("Buy Material")}
+          >
             <Ionicons name="search" size={20} color="white" />
           </TouchableOpacity>
         </View>
 
-        {/* Coal Card */}
-        <View style={styles.coalCard}>
-          <View>
-            <Text style={styles.coalTitle}>Coal</Text>
-            <Text style={styles.coalSubtitle}>Available</Text>
-            <TouchableOpacity
-              style={styles.buyButton}
-              onPress={() => {
-                setActiveTab("Natural Resources");
-                setVisible(true);
-              }}
-            >
-              <Text style={styles.buyText}>Buy</Text>
-            </TouchableOpacity>
-          </View>
-          <Image
-            source={require("../../assets/images/Rock.png")}
-            style={styles.coalImage}
-          />
-        </View>
-
-        {/* GoMarket Banner */}
-        <TouchableOpacity style={styles.bannerContainer}>
-          <Image
-            source={require("../../assets/images/GoMarket.png")}
-            style={styles.bannerImage}
-            resizeMode="cover"
-          />
+        {/* Track My Delivery Button */}
+        <TouchableOpacity
+          style={styles.trackDeliveryButton}
+          onPress={() => {
+            setActiveTab("Track My Delivery");
+            setVisible(true);
+          }}
+        >
+          <Text style={styles.trackDeliveryButtonText}>Track My Delivery</Text>
         </TouchableOpacity>
-
-        {/* Tabs */}
-        <View style={styles.tabsContainer}>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-            {tabs.map((tab) => (
-              <TouchableOpacity
-                key={tab}
-                onPress={() => handleTabPress(tab)}
-                style={[
-                  styles.tabButton,
-                  selected === tab && styles.selectedTabButton,
-                ]}
-              >
-                <Text
-                  style={[
-                    styles.tabText,
-                    selected === tab && styles.selectedTabText,
-                  ]}
-                >
-                  {tab}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
-        </View>
 
         {/* Cards Row */}
         <View style={styles.gridRow}>
-
-
           <TouchableOpacity
             style={styles.gridCard}
             onPress={() => {
-              setActiveTab("Booking Details");
-              setVisible(true);
+              setShowPostRequest(true);
             }}
           >
             <View style={styles.gridCardHeader}>
               <Text style={styles.gridCardTitle}>Ready to{"\n"}Ship?</Text>
-              <View style={[styles.iconBg, { backgroundColor: '#E8F5E9' }]}>
-                <Ionicons name="cube-outline" size={20} color="#439D25" />
+              <View style={styles.iconBg}>
+                <Ionicons name="location-outline" size={22} color="#439D25" />
               </View>
             </View>
             <Text style={styles.gridCardSub}>Post a load</Text>
             <Text style={styles.gridCardDesc}>
-              List your goods and get a driver to deliver for you.
+              Truck Delivery and Pickup anywhere in Nigeria.
             </Text>
           </TouchableOpacity>
 
           <TouchableOpacity
             style={styles.gridCard}
             onPress={() => {
-              setActiveTab("Booking Details");
-              setVisible(true);
+              setShowBookingDetails(true);
             }}
           >
             <View style={styles.gridCardHeader}>
               <Text style={styles.gridCardTitle}>Book a{"\n"}truck driver</Text>
               <View style={styles.iconBg}>
-                <Ionicons name="bus-outline" size={20} color="#439D25" />
+                <Ionicons name="bus-outline" size={22} color="#439D25" />
               </View>
             </View>
             <Text style={styles.gridCardSub}>Our Dispatch Equipment</Text>
@@ -270,41 +264,6 @@ export default function Home() {
               Van, Pick Up, Truck, Flat bed, Trailer and Tipper.
             </Text>
           </TouchableOpacity>
-        </View>
-
-        {/* Register Vendor Card */}
-        <TouchableOpacity style={styles.vendorCard}>
-          <Image
-            source={require("../../assets/images/Futures 1.png")}
-            style={styles.vendorImage}
-          />
-          <View style={styles.vendorInfo}>
-            <Text style={styles.vendorTitle}>
-              Register as a building material vendor.
-            </Text>
-            <Text style={styles.vendorSub}>
-              Begin your journey to great business values
-            </Text>
-          </View>
-        </TouchableOpacity>
-
-        <Image
-          source={require("../../assets/images/Truck GoPick 1.png")}
-          style={styles.bottomTruckImage}
-        />
-
-        {/* Driver Section */}
-        <View style={styles.driverSection}>
-          <View style={styles.driverBorder}>
-            <Image
-              source={require("../../assets/images/Futures 1.png")}
-              style={styles.driverIcon}
-            />
-            <View style={styles.driverTextContainer}>
-              <Text style={styles.driverQuestion}>Are you a Driver?</Text>
-              <Text style={styles.driverAction}>Register to drive with Go pickup</Text>
-            </View>
-          </View>
         </View>
       </ScrollView>
 
@@ -325,12 +284,42 @@ export default function Home() {
             </TouchableOpacity>
           </View>
           <ScrollView contentContainerStyle={{ paddingBottom: 20 }}>
-            {activeTab === "Buy Material" && <BuyMaterialContent onAddToCart={onAddToCart} />}
+            {activeTab === "Buy Material" && <BuyMaterialContent search={search} onAddToCart={onAddToCart} />}
             {activeTab === "Natural Resources" && <NaturalResourcesContent onAddToCart={onAddToCart} />}
             {activeTab === "Track My Delivery" && <TrackDeliveryContent />}
-            {activeTab === "Booking Details" && <BookingDetailsContent />}
+            {activeTab === "Booking Details" && <BookingDetailsContent value={booking} onChange={setBooking} />}
           </ScrollView>
 
+          {(activeTab === 'Buy Material' || activeTab === 'Natural Resources') && (
+            <View style={{ padding: 12 }}>
+              <Text>Delivery details · delivery fee quoted separately</Text>
+              <LocationAutocompleteInput
+                placeholder="Supplier / pickup address"
+                value={booking.pickupLocation}
+                onChangeText={(text) => setBooking({ ...booking, pickupLocation: text })}
+                containerStyle={{ marginTop: 8, marginBottom: 8 }}
+              />
+              <LocationAutocompleteInput
+                placeholder="Delivery address"
+                value={booking.deliveryLocation}
+                onChangeText={(text) => setBooking({ ...booking, deliveryLocation: text })}
+                containerStyle={{ marginBottom: 8 }}
+              />
+              <TextInput
+                accessibilityLabel="contactPhone"
+                placeholder="Contact phone"
+                value={booking.contactPhone}
+                onChangeText={(text) => setBooking({ ...booking, contactPhone: text })}
+                keyboardType="phone-pad"
+                style={{ borderWidth: 1, borderColor: '#ddd', padding: 10, borderRadius: 8, marginBottom: 8 }}
+              />
+              {cart.map((item, index) => <View key={index} style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 6 }}>
+                <Text>{item.quantity} × {item.title || item.name}</Text>
+                <TouchableOpacity onPress={() => setCart(cart.filter((_, i) => i !== index))}><Text>Remove</Text></TouchableOpacity>
+              </View>)}
+              {cart.length > 0 && <TouchableOpacity onPress={() => setCart([])}><Text>Clear cart</Text></TouchableOpacity>}
+            </View>
+          )}
           {/* Fallback for Coal Card click if not strictly setting activeTab */}
           {!activeTab && <NaturalResourcesContent onAddToCart={onAddToCart} />}
 
@@ -354,16 +343,16 @@ export default function Home() {
 const styles = StyleSheet.create({
   mainContainer: {
     flex: 1,
-    backgroundColor: "#F8FBF8",
+    backgroundColor: "#F8FAF8",
   },
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    paddingHorizontal: 20,
-    paddingTop: 60,
-    paddingBottom: 20,
-    backgroundColor: "#FFFFFF",
+    paddingHorizontal: 16,
+    paddingTop: Platform.OS === "ios" ? 54 : 40,
+    paddingBottom: 14,
+    backgroundColor: "#F8FAF8",
   },
   headerTitle: {
     fontSize: 28,
@@ -379,18 +368,18 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   profileImage: {
-    width: 35,
-    height: 35,
-    borderRadius: 17.5,
+    width: 38,
+    height: 38,
+    borderRadius: 19,
     borderWidth: 1,
     borderColor: "#E0E0E0",
   },
   userInfo: {
     marginLeft: 8,
-    marginRight: 15,
+    marginRight: 12,
   },
   userName: {
-    fontSize: 13,
+    fontSize: 14,
     fontWeight: "700",
     color: "#000",
   },
@@ -404,24 +393,25 @@ const styles = StyleSheet.create({
     color: "white",
     fontSize: 8,
     fontWeight: "800",
-    paddingHorizontal: 6,
+    paddingHorizontal: 5,
     paddingVertical: 2,
     borderRadius: 4,
     overflow: "hidden",
   },
   idValue: {
-    fontSize: 9,
-    color: "#606060",
+    fontSize: 9.5,
+    color: "#555555",
     marginLeft: 4,
     fontWeight: "600",
   },
   notificationBtn: {
     position: "relative",
+    padding: 2,
   },
   notificationDot: {
     position: "absolute",
     top: 2,
-    right: 4,
+    right: 2,
     width: 8,
     height: 8,
     borderRadius: 4,
@@ -431,19 +421,19 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    paddingHorizontal: 15,
+    paddingHorizontal: 16,
   },
   searchContainer: {
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: "#FFFFFF",
-    borderRadius: 30,
-    paddingLeft: 20,
+    borderRadius: 28,
+    paddingLeft: 18,
     paddingRight: 6,
-    height: 54,
-    borderWidth: 1,
-    borderColor: "#E0E0E0",
-    marginTop: 10,
+    height: 52,
+    borderWidth: 1.2,
+    borderColor: "#222222",
+    marginTop: 8,
   },
   searchInput: {
     flex: 1,
@@ -452,93 +442,39 @@ const styles = StyleSheet.create({
   },
   searchButton: {
     backgroundColor: "#439D25",
-    width: 42,
-    height: 42,
-    borderRadius: 21,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     justifyContent: "center",
     alignItems: "center",
   },
-  coalCard: {
-    backgroundColor: "#EFF7EE",
-    borderRadius: 20,
-    padding: 20,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginTop: 20,
-  },
-  coalTitle: {
-    fontSize: 18,
-    fontWeight: "800",
-    color: "#000",
-  },
-  coalSubtitle: {
-    fontSize: 14,
-    color: "#606060",
-    marginTop: 2,
-  },
-  buyButton: {
-    backgroundColor: "#000000",
-    borderRadius: 20,
-    paddingHorizontal: 25,
-    paddingVertical: 10,
-    marginTop: 15,
-    alignSelf: "flex-start",
-  },
-  buyText: {
-    color: "white",
-    fontWeight: "700",
-    fontSize: 14,
-  },
-  coalImage: {
-    width: 160,
-    height: 100,
-    resizeMode: "contain",
-  },
-  bannerContainer: {
-    marginTop: 20,
-    borderRadius: 15,
-    overflow: "hidden",
-  },
-  bannerImage: {
+  trackDeliveryButton: {
     width: "100%",
-    height: 110,
-  },
-  tabsContainer: {
-    marginTop: 25,
-  },
-  tabButton: {
-    backgroundColor: "#FFFFFF",
-    borderRadius: 20,
-    paddingVertical: 10,
-    paddingHorizontal: 18,
-    marginRight: 10,
-    borderWidth: 1,
-    borderColor: "#E0E0E0",
-  },
-  selectedTabButton: {
+    borderWidth: 1.2,
     borderColor: "#439D25",
-    backgroundColor: "#F0F9EF",
+    backgroundColor: "#F2F7F0",
+    borderRadius: 26,
+    height: 50,
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 20,
   },
-  tabText: {
-    fontSize: 13,
-    color: "#606060",
-    fontWeight: "600",
-  },
-  selectedTabText: {
-    color: "#439D25",
-    fontWeight: "700",
+  trackDeliveryButtonText: {
+    fontSize: 15,
+    fontWeight: "800",
+    color: "#1A1A1A",
   },
   gridRow: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginTop: 25,
+    marginTop: 22,
   },
   gridCard: {
-    backgroundColor: "#EFF7EE",
+    backgroundColor: "#E6EFE4",
     width: "48%",
-    borderRadius: 20,
-    padding: 15,
+    borderRadius: 16,
+    padding: 16,
+    minHeight: 140,
   },
   gridCardHeader: {
     flexDirection: "row",
@@ -546,104 +482,30 @@ const styles = StyleSheet.create({
     alignItems: "flex-start",
   },
   gridCardTitle: {
-    fontSize: 15,
+    fontSize: 17,
     fontWeight: "800",
-    color: "#000",
+    color: "#0F1A0E",
+    lineHeight: 21,
   },
   iconBg: {
-    backgroundColor: "#D9EBD7",
-    width: 34,
-    height: 34,
-    borderRadius: 10,
+    backgroundColor: "#D2EBD0",
+    width: 40,
+    height: 40,
+    borderRadius: 11,
     justifyContent: "center",
     alignItems: "center",
   },
   gridCardSub: {
-    fontSize: 13,
-    fontWeight: "700",
-    color: "#000",
-    marginTop: 12,
+    fontSize: 12,
+    fontWeight: "800",
+    color: "#1A1A1A",
+    marginTop: 18,
   },
   gridCardDesc: {
-    fontSize: 11,
-    color: "#606060",
+    fontSize: 10.5,
+    color: "#5A6559",
     marginTop: 4,
     lineHeight: 14,
-  },
-  vendorCard: {
-    backgroundColor: "#FFFFFF",
-    borderRadius: 20,
-    padding: 15,
-    flexDirection: "row",
-    alignItems: "center",
-    marginTop: 25,
-    borderWidth: 1,
-    borderColor: "#F0F0F0",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.03,
-    shadowRadius: 10,
-    elevation: 2,
-  },
-  vendorImage: {
-    width: 60,
-    height: 60,
-    resizeMode: "contain",
-  },
-  vendorInfo: {
-    flex: 1,
-    marginLeft: 15,
-  },
-  vendorTitle: {
-    fontSize: 13,
-    fontWeight: "800",
-    color: "#000",
-  },
-  vendorSub: {
-    fontSize: 11,
-    color: "#606060",
-    marginTop: 2,
-  },
-  bottomTruckImage: {
-    width: "100%",
-    height: 160,
-    borderRadius: 20,
-    marginTop: 25,
-    resizeMode: "cover",
-  },
-  driverSection: {
-    marginTop: 25,
-    backgroundColor: "#CDEBC9",
-    padding: 15,
-    borderRadius: 12,
-  },
-  driverBorder: {
-    borderWidth: 1,
-    borderColor: "white",
-    borderStyle: "dashed",
-    flexDirection: "row",
-    alignItems: "center",
-    padding: 10,
-    borderRadius: 8,
-  },
-  driverIcon: {
-    width: 40,
-    height: 40,
-    resizeMode: "contain",
-  },
-  driverTextContainer: {
-    marginLeft: 15,
-  },
-  driverQuestion: {
-    fontSize: 12,
-    fontWeight: "700",
-    color: "#000",
-  },
-  driverAction: {
-    fontSize: 13,
-    fontWeight: "700",
-    color: "#000",
-    marginTop: 2,
   },
   modalContainer: {
     flex: 1,

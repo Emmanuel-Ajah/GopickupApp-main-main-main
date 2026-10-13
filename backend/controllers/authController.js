@@ -20,7 +20,7 @@ exports.registerUser = async (req, res) => {
         }
 
         // Check if this should be an admin
-        const role = email === process.env.ADMIN_EMAIL ? 'admin' : 'user';
+        const role = 'user';
 
         // Create user
         const user = await User.create({
@@ -41,7 +41,7 @@ exports.registerUser = async (req, res) => {
                 email: user.email,
                 userId: user.userId,
                 role: user.role,
-                token: generateToken(user._id),
+                token: generateToken(user._id, user.tokenVersion),
             });
         } else {
             res.status(400).json({ message: 'Invalid user data' });
@@ -57,6 +57,7 @@ exports.registerUser = async (req, res) => {
 exports.loginUser = async (req, res) => {
     try {
         const { email, password } = req.body;
+        if (typeof email !== 'string' || typeof password !== 'string') return res.status(400).json({ message: 'Email and password required.' });
 
         // Check for user email
         const user = await User.findOne({ email }).select('+password');
@@ -67,19 +68,13 @@ exports.loginUser = async (req, res) => {
                 return res.status(403).json({ message: 'Your account has been banned. Please contact support.' });
             }
 
-            // Hotfix: Ensure user has admin role if their email matches ADMIN_EMAIL
-            if (user.email === process.env.ADMIN_EMAIL && user.role !== 'admin') {
-                user.role = 'admin';
-                await user.save();
-            }
-
             res.json({
                 _id: user._id,
                 name: user.name,
                 email: user.email,
                 userId: user.userId,
                 role: user.role,
-                token: generateToken(user._id),
+                token: generateToken(user._id, user.tokenVersion),
             });
         } else {
             res.status(401).json({ message: 'Invalid email or password' });
@@ -157,7 +152,7 @@ exports.googleLogin = async (req, res) => {
         if (!user) {
             console.log('Creating new user for Google login:', email);
             isNewUser = true;
-            const role = email === process.env.ADMIN_EMAIL ? 'admin' : 'user';
+            const role = 'user';
             user = await User.create({
                 name,
                 email,
@@ -190,7 +185,7 @@ exports.googleLogin = async (req, res) => {
             role: user.role,
             avatar: user.avatar,
             isNewUser,
-            token: generateToken(user._id),
+            token: generateToken(user._id, user.tokenVersion),
         };
         
         console.log('Sending success response for Google login. Is new user:', isNewUser);
@@ -202,8 +197,53 @@ exports.googleLogin = async (req, res) => {
 };
 
 // Generate JWT
-const generateToken = (id) => {
-    return jwt.sign({ id }, process.env.JWT_SECRET, {
+const generateToken = (id, version = 0) => {
+    return jwt.sign({ id, version }, process.env.JWT_SECRET, {
         expiresIn: '30d',
     });
+};
+
+exports.getSupport = async (req, res) => {
+    const user = await User.findOne({ role: 'admin', isBanned: false }).select('_id name');
+    if (!user) return res.status(404).json({ message: 'Support is not available yet.' });
+    res.json(user);
+};
+
+exports.updateMe = async (req, res) => {
+    const { name, phone } = req.body;
+    if (typeof name !== 'string' || !name.trim() || typeof phone !== 'string') return res.status(400).json({ message: 'Name and phone are required.' });
+    const user = await User.findByIdAndUpdate(req.user._id, { name: name.trim(), phone: phone.trim() }, { new: true, runValidators: true });
+    res.json(user);
+};
+exports.deleteMe = async (req, res) => {
+    if (req.user.role === 'admin') return res.status(400).json({ message: 'Admin accounts must be managed by an administrator.' });
+    const Order = require('../models/Order');
+    if (await Order.exists({ user: req.user._id, status: { $nin: ['Delivered', 'Cancelled'] } })) return res.status(400).json({ message: 'Please complete or cancel active orders first.' });
+    await User.findByIdAndDelete(req.user._id);
+    res.json({ message: 'Account deleted.' });
+};
+exports.forgotPassword = async (req, res) => {
+    if (process.env.GOPICKUP_LOCAL !== '1') return res.status(503).json({ message: 'Password recovery email is not configured yet. Contact support.' });
+    if (typeof req.body.email !== 'string') return res.status(400).json({ message: 'Email required.' });
+    const crypto = require('crypto');
+    const token = crypto.randomBytes(32).toString('hex');
+    const user = await User.findOne({ email: req.body.email.trim().toLowerCase(), isBanned: false });
+    if (user) {
+        user.resetHash = crypto.createHash('sha256').update(token).digest('hex');
+        user.resetExpires = new Date(Date.now() + 15 * 60 * 1000);
+        await user.save();
+    }
+    res.json({ message: 'Local test recovery code (email delivery is disabled).', localToken: token });
+};
+exports.resetPassword = async (req, res) => {
+    const { token, password } = req.body;
+    if (typeof token !== 'string' || typeof password !== 'string' || password.length < 8) return res.status(400).json({ message: 'Code and a password of at least 8 characters are required.' });
+    const crypto = require('crypto');
+    const hash = crypto.createHash('sha256').update(token).digest('hex');
+    const user = await User.findOneAndUpdate({ resetHash: hash, resetExpires: { $gt: new Date() }, isBanned: false }, { $unset: { resetHash: 1, resetExpires: 1 } }, { new: true });
+    if (!user) return res.status(400).json({ message: 'Invalid or expired code.' });
+    user.password = password;
+    user.tokenVersion = (user.tokenVersion || 0) + 1;
+    await user.save();
+    res.json({ message: 'Password updated. Please sign in.' });
 };

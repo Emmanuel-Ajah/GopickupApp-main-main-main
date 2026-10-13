@@ -27,6 +27,13 @@ const orderSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  kind: { type: String, enum: ['materials', 'load'], default: 'materials' },
+  vehicle: String,
+  description: String,
+  weight: String,
+  scheduledAt: Date,
+  contactPhone: String,
+  events: [{ status: String, at: { type: Date, default: Date.now } }],
   totalItems: {
     type: Number,
     default: 1,

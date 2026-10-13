@@ -1,10 +1,11 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
 
-const BASE_URL = "https://backend.gopickup.com.ng/api";
+const BASE_URL = process.env.EXPO_PUBLIC_API_URL || (__DEV__ ? "http://127.0.0.1:5050/api" : "https://backend.gopickup.com.ng/api");
 
 const API = axios.create({
   baseURL: BASE_URL,
+  timeout: 15000,
 });
 
 // attach token automatically
@@ -25,7 +26,7 @@ export const toggleUserBan = (userId) => API.patch(`/auth/users/${userId}/ban`);
 // Orders
 export const createOrder = (orderData) => API.post("/orders", orderData);
 export const getMyOrders = () => API.get("/orders/myorders");
-export const trackOrder = (trackingId) => API.get(`/orders/${trackingId}`);
+export const trackOrder = (trackingId) => API.get(`/orders/track/${encodeURIComponent(trackingId)}`);
 
 // Admin Orders
 export const getAdminOrders = () => API.get("/orders");
@@ -39,3 +40,11 @@ export const getMyReviews = () => API.get("/reviews/my");
 export const sendMessage = (messageData) => API.post("/messages", messageData);
 export const getMessages = (otherUserId) => API.get(`/messages/${otherUserId}`);
 export const getAdminConversations = () => API.get("/messages/conversations");
+
+export const getSupport = () => API.get("/auth/support");
+export const acceptQuote = (id) => API.patch(`/orders/${id}/accept`);
+
+export const getMe = () => API.get('/auth/me');
+export const updateMe = (data) => API.patch('/auth/me', data);
+export const deleteMe = () => API.delete('/auth/me');
+export const resetPassword = (data) => API.post('/auth/reset-password', data);

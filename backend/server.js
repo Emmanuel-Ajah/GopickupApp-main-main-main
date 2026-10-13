@@ -7,10 +7,10 @@ const rateLimit = require("express-rate-limit");
 const connectDB = require("./config/db");
 
 // Load environment variables
-dotenv.config();
+if (process.env.GOPICKUP_LOCAL !== '1') dotenv.config();
 
 // Connect to Database
-connectDB();
+
 
 const app = express();
 
@@ -50,6 +50,6 @@ app.use("/api/messages", messageRoutes);
 
 const PORT = process.env.PORT || 5000;
 
-app.listen(PORT, () => {
+connectDB().then(() => app.listen(PORT, process.env.GOPICKUP_LOCAL === '1' ? '127.0.0.1' : '0.0.0.0', () => {
   console.log(`Server running in ${process.env.NODE_ENV} mode on port ${PORT}`);
-});
+}));

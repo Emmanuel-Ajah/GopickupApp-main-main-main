@@ -1,7 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import React, { useEffect, useState } from "react";
 import { ActivityIndicator, Alert, StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import { getAdminUsers, toggleUserBan } from "../app/api/api";
+import { getAdminUsers, toggleUserBan } from "../services/api";
 
 export default function AdminUsersContent() {
     const [users, setUsers] = useState<any[]>([]);

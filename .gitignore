@@ -41,3 +41,7 @@ app-example
 # scripts
 test_orders.sh
 test_endpoints.sh
+
+backend/.local-data/
+backend/.env
+.env

@@ -1,9 +1,11 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { Tabs } from "expo-router";
+import { Tabs, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
+import { Platform } from "react-native";
 
 export default function TabsLayout() {
+  const router = useRouter();
   const [role, setRole] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -20,7 +22,7 @@ export default function TabsLayout() {
           const user = JSON.parse(userData);
           setRole(user.role || "user");
         } else {
-          setRole("user");
+          router.replace("/login");
         }
       } catch (error) {
         console.error("Error checking role:", error);
@@ -33,7 +35,7 @@ export default function TabsLayout() {
   }, []);
 
 
-  console.log("Current Role in TabsLayout:", role);
+  if (loading) return null;
 
   return (
     <Tabs
@@ -44,34 +46,34 @@ export default function TabsLayout() {
             "home-outline";
 
           if (route.name === "home" || route.name === "admin_home") iconName = "home-outline";
-          else if (route.name === "chat") iconName = "chatbubble-outline";
+          else if (route.name === "chat") iconName = "chatbox-outline";
           else if (route.name === "profile") iconName = "person-outline";
           else if (route.name === "map") iconName = "globe-outline";
 
           return <Ionicons name={iconName} size={24} color={color} />;
         },
         tabBarActiveTintColor: "#439D25",
-        tabBarInactiveTintColor: "#A0A0A0",
+        tabBarInactiveTintColor: "#555555",
         tabBarStyle: {
-          height: 80,
-          paddingBottom: 20,
+          height: 72,
+          paddingBottom: Platform.OS === "ios" ? 14 : 10,
           paddingTop: 10,
           backgroundColor: "#FFFFFF",
-          borderTopLeftRadius: 30,
-          borderTopRightRadius: 30,
+          borderRadius: 36,
           borderTopWidth: 0,
-          elevation: 20,
+          elevation: 15,
           shadowColor: "#000",
-          shadowOffset: { width: 0, height: -4 },
-          shadowOpacity: 0.05,
-          shadowRadius: 10,
+          shadowOffset: { width: 0, height: 4 },
+          shadowOpacity: 0.08,
+          shadowRadius: 16,
           position: "absolute",
-          bottom: 0,
-          left: 0,
-          right: 0,
+          bottom: Platform.OS === "ios" ? 22 : 14,
+          left: 16,
+          right: 16,
+          marginHorizontal: 10,
         },
         tabBarLabelStyle: {
-          fontSize: 10,
+          fontSize: 11,
           fontWeight: "600",
         },
         headerShown: false,

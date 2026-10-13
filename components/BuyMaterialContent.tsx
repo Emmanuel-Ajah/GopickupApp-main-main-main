@@ -4,8 +4,10 @@ import Products from "./ProductItems";
 
 export default function BuyMaterialContent({
   onAddToCart,
+  search = "",
 }: {
   onAddToCart: (item: any) => void;
+  search?: string;
 }) {
   return (
     <View style={styles.container}>
@@ -14,7 +16,7 @@ export default function BuyMaterialContent({
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
       >
-        {products.map((item, index) => (
+        {products.filter(item => item.title.toLowerCase().includes(search.toLowerCase())).map((item, index) => (
           <Products
             key={index}
             image={item.image}

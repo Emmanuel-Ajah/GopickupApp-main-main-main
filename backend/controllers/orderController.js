@@ -5,30 +5,27 @@ const Order = require("../models/Order");
 // @access  Private
 const createOrder = async (req, res) => {
   try {
-    const { items, totalAmount, pickupLocation, deliveryLocation, status } =
-      req.body;
-
-    if (!items || items.length === 0) {
-      return res.status(400).json({ message: "No order items" });
-    }
-
-    // Generate Tracking ID
-    const randomStr = Math.random().toString(36).substring(2, 10).toUpperCase();
-    const trackingId = `#TRK-${randomStr}`;
-
+    const { pickupLocation, deliveryLocation, vehicle, description, weight, contactPhone, scheduledAt } = req.body;
+    const kind = req.body.kind === 'load' ? 'load' : 'materials';
+    if (![pickupLocation, deliveryLocation, contactPhone].every(v => typeof v === 'string' && v.trim()))
+      return res.status(400).json({ message: 'Pickup, delivery address and contact phone are required.' });
+    if (kind === 'load' && (!['Van','Pick Up','Truck','Flat bed','Trailer','Trailer / Tractor','Tipper'].includes(vehicle) || !description?.trim()))
+      return res.status(400).json({ message: 'Select a vehicle and describe your goods.' });
+    if (scheduledAt && (!Number.isFinite(Date.parse(scheduledAt)) || Date.parse(scheduledAt) <= Date.now()))
+      return res.status(400).json({ message: 'Choose a future delivery date.' });
+    const items = kind === 'load' ? [{ name: description, quantity: 1, price: '0' }] : require('../catalog').priceItems(req.body.items);
+    const totalAmount = items.reduce((sum, item) => sum + Number(item.price) * item.quantity, 0);
+    const status = 'Pending Negotiation';
     const order = await Order.create({
-      user: req.user._id,
-      items,
-      totalAmount: totalAmount || 0,
-      pickupLocation,
-      deliveryLocation,
-      trackingId,
-      status: status || "Pending",
+      user: req.user._id, items, totalAmount, pickupLocation: pickupLocation.trim(), deliveryLocation: deliveryLocation.trim(),
+      trackingId: 'TRK-' + require('crypto').randomUUID().slice(0, 8).toUpperCase(),
+      kind, vehicle, description, weight, contactPhone, scheduledAt: scheduledAt || undefined,
+      totalItems: items.reduce((sum, item) => sum + item.quantity, 0), status, events: [{ status }],
     });
 
     res.status(201).json(order);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(error.status || 500).json({ message: error.message });
   }
 };
 
@@ -42,7 +39,7 @@ const getMyOrders = async (req, res) => {
       .lean();
     res.json(orders);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(error.status || 500).json({ message: error.message });
   }
 };
 
@@ -51,7 +48,11 @@ const getMyOrders = async (req, res) => {
 // @access  Private
 const getOrderById = async (req, res) => {
   try {
-    const order = await Order.findById(req.params.id)
+    const filter = req.params.trackingId
+      ? { trackingId: { $in: [req.params.trackingId.replace(/^#/, '').toUpperCase(), '#' + req.params.trackingId.replace(/^#/, '').toUpperCase()] } }
+      : { _id: req.params.id };
+    if (req.user.role !== 'admin') filter.user = req.user._id;
+    const order = await Order.findOne(filter)
       .populate("user", "name email")
       .lean();
 
@@ -61,7 +62,7 @@ const getOrderById = async (req, res) => {
       res.status(404).json({ message: "Order not found" });
     }
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(error.status || 500).json({ message: error.message });
   }
 };
 
@@ -76,7 +77,7 @@ const getAllOrders = async (req, res) => {
       .lean();
     res.json(orders);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(error.status || 500).json({ message: error.message });
   }
 };
 
@@ -89,6 +90,14 @@ const negotiateOrder = async (req, res) => {
     const order = await Order.findById(req.params.id);
 
     if (order) {
+      if (negotiatedPrice !== undefined && (!Number.isFinite(negotiatedPrice) || negotiatedPrice <= 0))
+        return res.status(400).json({ message: 'Enter a positive quote.' });
+      const transitions = { 'Pending': ['Pending Negotiation', 'Cancelled'], 'Pending Negotiation': ['Cancelled'], 'Processing': ['In Transit','Cancelled'], 'In Transit': ['Delivered'], 'Delivered': [], 'Cancelled': [] };
+      if (status && status !== order.status && !transitions[order.status]?.includes(status))
+        return res.status(400).json({ message: 'Invalid status change. The customer must accept a quote first.' });
+      if (negotiatedPrice !== undefined && !['Pending','Pending Negotiation'].includes(order.status))
+        return res.status(400).json({ message: 'Accepted quotes cannot be changed.' });
+      if (status && status !== order.status) order.events.push({ status });
       order.negotiatedPrice =
         negotiatedPrice !== undefined ? negotiatedPrice : order.negotiatedPrice;
       order.status = status || order.status;
@@ -100,7 +109,7 @@ const negotiateOrder = async (req, res) => {
       res.status(404).json({ message: "Order not found" });
     }
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(error.status || 500).json({ message: error.message });
   }
 };
 
@@ -110,4 +119,11 @@ module.exports = {
   getOrderById,
   getAllOrders,
   negotiateOrder,
+};
+
+module.exports.acceptQuote = async (req, res) => {
+  const order = await Order.findOneAndUpdate({ _id: req.params.id, user: req.user._id, status: 'Pending Negotiation', negotiatedPrice: { $gt: 0 } },
+    { $set: { status: 'Processing' }, $push: { events: { status: 'Processing', at: new Date() } } }, { new: true });
+  if (!order) return res.status(400).json({ message: 'No quote awaiting acceptance.' });
+  res.json(order);
 };

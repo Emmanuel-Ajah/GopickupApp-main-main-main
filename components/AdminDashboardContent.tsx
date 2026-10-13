@@ -1,12 +1,13 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
-import { ActivityIndicator, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import { getAdminOrders, negotiateOrder, sendMessage } from "../app/api/api";
+import { ActivityIndicator, Alert, TextInput, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { getAdminOrders, negotiateOrder, sendMessage } from "../services/api";
 
 import AdminUsersContent from "./AdminUsersContent";
 
 export default function AdminDashboardContent() {
+    const [rates, setRates] = useState<Record<string, string>>({});
     const [orders, setOrders] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState<'orders' | 'users'>('orders');
@@ -43,9 +44,9 @@ export default function AdminDashboardContent() {
             });
 
             fetchOrders();
-            alert("Rate set and message sent to client!");
-        } catch (error) {
-            console.error("Negotiation error:", error);
+            Alert.alert("GoPickup", "Rate set and message sent to client!");
+        } catch {
+            Alert.alert("Error", "Could not set rate. Check the amount and connection.");
         }
     };
 
@@ -110,12 +111,13 @@ export default function AdminDashboardContent() {
                             <Text style={styles.orderUser}>Customer: {order.user?.name || 'Unknown'}</Text>
                             <Text style={styles.orderDetail}>Route: {order.pickupLocation} ➔ {order.deliveryLocation}</Text>
 
+                            <TextInput placeholder="Quote total (₦), including delivery" keyboardType="numeric" value={rates[order._id] || ''} onChangeText={value => setRates({ ...rates, [order._id]: value })} style={{ padding: 10, borderWidth: 1, borderColor: '#ddd' }} />
                             <View style={styles.actionRow}>
                                 <TouchableOpacity
                                     style={styles.negotiateBtn}
-                                    onPress={() => handleNegotiate(order._id, order.user?._id, 135000)}
+                                    onPress={() => handleNegotiate(order._id, order.user?._id, Number(rates[order._id]))}
                                 >
-                                    <Text style={styles.btnText}>Set Rate (N 135k)</Text>
+                                    <Text style={styles.btnText}>Send quote</Text>
                                 </TouchableOpacity>
 
                                 <TouchableOpacity
@@ -125,6 +127,10 @@ export default function AdminDashboardContent() {
                                     <Ionicons name="chatbubble-ellipses-outline" size={20} color="white" />
                                 </TouchableOpacity>
                             </View>
+                            {(['Processing', 'In Transit'].includes(order.status)) && <TouchableOpacity onPress={async () => {
+                              try { await negotiateOrder(order._id, { status: order.status === 'Processing' ? 'In Transit' : 'Delivered' }); fetchOrders(); }
+                              catch { Alert.alert('Error', 'Unable to update delivery'); }
+                            }}><Text style={{ padding: 12 }}>Mark {order.status === 'Processing' ? 'In Transit' : 'Delivered'}</Text></TouchableOpacity>}
                         </View>
                     ))}
                     {orders.length === 0 && <Text style={styles.emptyText}>No requests found.</Text>}

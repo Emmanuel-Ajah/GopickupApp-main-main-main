@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { ActivityIndicator, Alert, Text, TextInput, TouchableOpacity, View } from "react-native";
-import { createReview, trackOrder } from "../app/api/api";
+import { acceptQuote, createReview, trackOrder } from "../services/api";
 import RatingModal from "./RatingModal";
 
 export default function TrackDeliveryContent() {
@@ -92,7 +92,11 @@ export default function TrackDeliveryContent() {
           <Text style={{ fontSize: 14, color: "#606060", marginBottom: 2 }}>Delivery to</Text>
           <Text style={{ fontSize: 16, fontWeight: "700", color: "#000", marginBottom: 20 }}>{order.deliveryLocation}</Text>
 
-          <TouchableOpacity
+          {order.status === 'Pending Negotiation' && order.negotiatedPrice > 0 && <TouchableOpacity onPress={async () => {
+            try { const result = await acceptQuote(order._id); setOrder(result.data); }
+            catch (error: any) { Alert.alert('Error', error.response?.data?.message || 'Unable to accept quote'); }
+          }}><Text style={{ padding: 12, color: '#439D25' }}>Accept quote: ₦{order.negotiatedPrice.toLocaleString()}</Text></TouchableOpacity>}
+          {order.status === 'Delivered' && <TouchableOpacity
             onPress={() => setRatingVisible(true)}
             style={{
               backgroundColor: "#FFF9E6",
@@ -104,7 +108,7 @@ export default function TrackDeliveryContent() {
             }}
           >
             <Text style={{ color: "#DAA520", fontWeight: "700" }}>Rate Experience 🌟</Text>
-          </TouchableOpacity>
+          </TouchableOpacity>}
         </View>
       )}
 
@@ -112,7 +116,7 @@ export default function TrackDeliveryContent() {
         visible={ratingVisible}
         onClose={() => setRatingVisible(false)}
         onSubmit={handleRatingSubmit}
-        riderName="Dauda"
+        riderName="GoPickup delivery team"
       />
     </View>
   );

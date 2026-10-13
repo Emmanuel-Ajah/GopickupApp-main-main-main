@@ -18,6 +18,7 @@ const protect = async (req, res, next) => {
             // Get user from the token
             req.user = await User.findById(decoded.id).select('-password');
 
+            if (!req.user || req.user.isBanned || (decoded.version || 0) !== (req.user.tokenVersion || 0)) return res.status(401).json({ message: 'Account unavailable' });
             next();
         } catch (error) {
             console.error(error);
