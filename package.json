@@ -5,17 +5,17 @@
   "scripts": {
     "start": "expo start",
     "reset-project": "node ./scripts/reset-project.js",
-    "android": "expo start --android",
-    "ios": "expo start --ios",
+    "android": "expo run:android",
+    "ios": "expo run:ios",
     "web": "expo start --web",
     "lint": "expo lint",
     "ios:local": "EXPO_PUBLIC_API_URL=http://127.0.0.1:5050/api expo start --localhost --ios",
     "typecheck": "tsc --noEmit",
     "testflight": "testflight",
-    "build:ios": "eas build --platform ios --submit",
-    "build:android": "eas build --platform android --profile production",
-    "build:android:preview": "eas build --platform android --profile preview",
-    "submit:android": "eas submit --platform android"
+    "build:ios": "npx eas-cli build --platform ios --submit",
+    "build:android": "npx eas-cli build --platform android --profile production",
+    "build:android:preview": "npx eas-cli build --platform android --profile preview",
+    "submit:android": "npx eas-cli submit --platform android"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",
