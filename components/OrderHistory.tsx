@@ -29,9 +29,18 @@ export default function OrderHistory({ notifications = false }: { notifications?
       <Text>Payment: {order.paymentStatus}</Text>
       {order.events?.map((event: any, index: number) => <Text key={index} style={{ marginTop: 8 }}>{event.status} · {new Date(event.at).toLocaleString()}</Text>)}
       {!notifications && order.status === 'Pending Negotiation' && order.negotiatedPrice > 0 && <TouchableOpacity disabled={busy !== null} onPress={async () => {
+        const haptic = (await import('../utils/haptics')).default;
+        await haptic.mediumImpact();
         setBusy(order._id);
-        try { await acceptQuote(order._id); await refresh(); }
-        catch (error: any) { Alert.alert('Error', error.response?.data?.message || 'Unable to accept quote'); }
+        try {
+          await acceptQuote(order._id);
+          await haptic.successNotification();
+          await refresh();
+        }
+        catch (error: any) {
+          await haptic.errorNotification();
+          Alert.alert('Error', error.response?.data?.message || 'Unable to accept quote');
+        }
         finally { setBusy(null); }
       }}><Text style={{ paddingVertical: 15, fontWeight: '700', color: '#439D25' }}>{busy === order._id ? 'Accepting…' : 'Accept quote'}</Text></TouchableOpacity>}
     </View>)}

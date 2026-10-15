@@ -162,17 +162,23 @@ export default function MapScreen() {
       >
         {/* User Pill Card */}
         <View style={styles.userCard}>
-          <Image
-            source={require("../../assets/images/myImage.jpg")}
-            style={styles.avatarImage}
-          />
+          {user?.image ? (
+            <Image
+              source={{ uri: user.image }}
+              style={styles.avatarImage}
+            />
+          ) : (
+            <View style={[styles.avatarImage, { backgroundColor: '#EBF7EA', justifyContent: 'center', alignItems: 'center' }]}>
+              <Ionicons name="person" size={20} color="#439D25" />
+            </View>
+          )}
           <View style={styles.userInfo}>
-            <Text style={styles.userName}>{user?.name || "Azih Monica"}</Text>
+            <Text style={styles.userName}>{user?.name || "GoPickup User"}</Text>
             <View style={styles.userIdBadge}>
               <View style={styles.userIdPill}>
                 <Text style={styles.userIdPillText}>User ID</Text>
               </View>
-              <Text style={styles.userIdText}>{user?.userId || "D422Q7827"}</Text>
+              <Text style={styles.userIdText}>{user?.userId || "Pending"}</Text>
             </View>
           </View>
         </View>
@@ -262,45 +268,39 @@ export default function MapScreen() {
             <View style={styles.routePolylineSegment2} />
             <View style={styles.routePolylineSegment3} />
 
-            {/* Origin Pin (Driver Headshot) */}
+            {/* Origin Pin (Driver Headshot / Truck) */}
             <View style={styles.originPin}>
               <Ionicons name="location-sharp" size={18} color="#222222" />
-              <Image
-                source={require("../../assets/images/myImage.jpg")}
-                style={styles.pinAvatar}
-              />
+              <View style={[styles.pinAvatar, { backgroundColor: '#439D25', alignItems: 'center', justifyContent: 'center' }]}>
+                <Ionicons name="car-outline" size={14} color="#FFFFFF" />
+              </View>
             </View>
 
-            {/* Traffic Badge (10 mins Heavy Traffic) */}
+            {/* Traffic Badge */}
             <View style={styles.trafficBadge}>
               <View style={styles.trafficBadgeInner}>
                 <View style={styles.trafficBadgeTimeRow}>
                   <Text style={styles.trafficBadgeNum}>10</Text>
                   <Text style={styles.trafficBadgeMins}>mins</Text>
                 </View>
-                <Text style={styles.trafficBadgeSub}>Heavy Traffic</Text>
+                <Text style={styles.trafficBadgeSub}>Traffic</Text>
               </View>
               <View style={styles.trafficArrowDown} />
             </View>
 
-            {/* ETA Badge (40 mins) */}
+            {/* ETA Badge */}
             <View style={styles.etaBadge}>
               <Text style={styles.etaBadgeText}>40 <Text style={styles.etaBadgeSub}>mins</Text></Text>
               <View style={styles.etaArrowRight} />
             </View>
 
-            {/* Destination Pin (Driver + User) */}
+            {/* Destination Pin */}
             <View style={styles.destinationPin}>
               <Ionicons name="location-sharp" size={18} color="#222222" />
               <View style={styles.destAvatarsRow}>
-                <Image
-                  source={require("../../assets/images/myImage.jpg")}
-                  style={styles.pinAvatar}
-                />
-                <Image
-                  source={require("../../assets/images/myImage.jpg")}
-                  style={[styles.pinAvatar, { marginLeft: -6 }]}
-                />
+                <View style={[styles.pinAvatar, { backgroundColor: '#111827', alignItems: 'center', justifyContent: 'center' }]}>
+                  <Ionicons name="flag-outline" size={14} color="#FFFFFF" />
+                </View>
               </View>
             </View>
           </View>

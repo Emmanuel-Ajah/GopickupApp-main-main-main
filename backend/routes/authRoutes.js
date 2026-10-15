@@ -4,6 +4,8 @@ const { registerUser, loginUser, getMe, getAllUsers, toggleUserBan, googleLogin 
 const { protect, admin } = require('../middleware/authMiddleware');
 
 const account = require('../controllers/authController');
+router.post('/send-otp', account.sendOtp);
+router.post('/verify-otp', account.verifyOtp);
 router.post('/forgot-password', account.forgotPassword);
 router.post('/reset-password', account.resetPassword);
 router.patch('/me', protect, account.updateMe);

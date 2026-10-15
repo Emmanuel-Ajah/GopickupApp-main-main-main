@@ -1,7 +1,8 @@
 import Ionicons from "@expo/vector-icons/Ionicons"
 import AsyncStorage from "@react-native-async-storage/async-storage"
+import { useFocusEffect } from "@react-navigation/native"
 import { useRouter } from "expo-router"
-import React, { useEffect, useState } from "react"
+import React, { useCallback, useEffect, useState } from "react"
 import {
   Alert,
   Image,
@@ -21,16 +22,45 @@ import NaturalResourcesContent from '../../components/NaturalResourcesContent'
 import TrackDeliveryContent from '../../components/TrackDeliveryContent'
 import PostRequestContent from '../../components/PostRequestContent'
 import LocationAutocompleteInput from '../../components/LocationAutocompleteInput'
+import { useAuth } from "../../context/AuthContext"
 import { createOrder } from "../../services/api"
+import notificationService from "../../services/notificationService"
+import haptic from "../../utils/haptics"
 
 export default function Home() {
   const router = useRouter();
+  const { user: authUser } = useAuth();
   const [selected, setSelected] = useState("Buy Material");
   const [visible, setVisible] = useState(false);
   const [activeTab, setActiveTab] = useState<string | null>(null);
   const [showPostRequest, setShowPostRequest] = useState(false);
   const [showBookingDetails, setShowBookingDetails] = useState(false);
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<any>(authUser || null);
+  const [unreadCount, setUnreadCount] = useState<number>(0);
+
+  useEffect(() => {
+    if (authUser) {
+      setUser(authUser);
+      if (authUser.role === "admin") {
+        router.replace("/tabs/admin_home" as any);
+      }
+    }
+  }, [authUser, router]);
+
+  const loadUnreadCount = useCallback(async () => {
+    try {
+      const count = await notificationService.getUnreadCount(user?._id || authUser?._id);
+      setUnreadCount(count);
+    } catch {
+      // Ignore count fetch error
+    }
+  }, [user?._id, authUser?._id]);
+
+  useFocusEffect(
+    useCallback(() => {
+      loadUnreadCount();
+    }, [loadUnreadCount])
+  );
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -73,6 +103,28 @@ export default function Home() {
     if (cartReady && user?._id) AsyncStorage.setItem(`cart:${user._id}`, JSON.stringify(cart)).catch(() => {});
   }, [cart, cartReady, user?._id]);
 
+  useEffect(() => {
+    if (!user?._id) return;
+    AsyncStorage.getItem(`bookingDraft:${user._id}`).then(raw => {
+      if (raw) {
+        try {
+          const parsed = JSON.parse(raw);
+          if (parsed && typeof parsed === 'object') {
+            setBooking(prev => ({ ...prev, ...parsed }));
+          }
+        } catch {}
+      }
+    }).catch(() => {});
+  }, [user?._id]);
+
+  useEffect(() => {
+    if (!user?._id) return;
+    const hasData = Object.values(booking).some(v => typeof v === 'string' && v.trim().length > 0);
+    if (hasData) {
+      AsyncStorage.setItem(`bookingDraft:${user._id}`, JSON.stringify(booking)).catch(() => {});
+    }
+  }, [booking, user?._id]);
+
   const totalItems = cart.reduce((sum, item) => sum + (item.quantity || 1), 0);
 
   const onAddToCart = (item: any) => {
@@ -81,15 +133,22 @@ export default function Home() {
   };
 
   const handlePostLoad = async () => {
+    await haptic.mediumImpact();
     setLoading(true);
     try {
       const orderData = { ...booking, kind: 'load' };
       const response = await createOrder(orderData);
+      await haptic.successNotification();
       Alert.alert("GoPickup", `Load Posted Successfully! Admin will contact you in chat to negotiate the rate. trackingId: ${response.data.trackingId}`);
+      if (user?._id) {
+        AsyncStorage.removeItem(`bookingDraft:${user._id}`).catch(() => {});
+      }
+      setBooking({ pickupLocation: '', deliveryLocation: '', vehicle: '', description: '', weight: '', contactPhone: '', scheduledAt: '' });
       setVisible(false);
       setActiveTab(null);
     } catch (error: any) {
       console.error("Post Load error:", error);
+      await haptic.errorNotification();
       Alert.alert("GoPickup", "Failed to post load: " + (error.response?.data?.message || "Error"));
     } finally {
       setLoading(false);
@@ -99,10 +158,12 @@ export default function Home() {
 
   const handleConfirmOrder = async () => {
     if (cart.length === 0) {
+      await haptic.warningNotification();
       Alert.alert("GoPickup", "Please add items to your cart before confirming.");
       return;
     }
 
+    await haptic.mediumImpact();
     setLoading(true);
     try {
       const orderData = {
@@ -117,17 +178,20 @@ export default function Home() {
       };
 
       const response = await createOrder(orderData);
+      await haptic.successNotification();
       Alert.alert("GoPickup", `Order Success! trackingId: ${response.data.trackingId}`);
       setVisible(false);
       setCart([]);
     } catch (error: any) {
       console.error("Order error:", error);
+      await haptic.errorNotification();
       Alert.alert("GoPickup", "Order Failed: " + (error.response?.data?.message || "Error"));
     } finally {
       setLoading(false);
     }
   };
-  const handleTabPress = (tab: string) => {
+  const handleTabPress = async (tab: string) => {
+    await haptic.selection();
     setSelected(tab);
     setActiveTab(tab);
     setVisible(true);
@@ -186,10 +250,13 @@ export default function Home() {
           </View>
           <TouchableOpacity
             style={styles.notificationBtn}
-            onPress={() => router.push("/tabs/notifications")}
+            onPress={async () => {
+              await haptic.lightImpact();
+              router.push("/tabs/notifications");
+            }}
           >
             <Ionicons name="notifications-outline" size={28} color="#000" />
-            <View style={styles.notificationDot} />
+            {unreadCount > 0 && <View style={styles.notificationDot} />}
           </TouchableOpacity>
         </View>
       </View>
@@ -219,7 +286,8 @@ export default function Home() {
         {/* Track My Delivery Button */}
         <TouchableOpacity
           style={styles.trackDeliveryButton}
-          onPress={() => {
+          onPress={async () => {
+            await haptic.lightImpact();
             setActiveTab("Track My Delivery");
             setVisible(true);
           }}
@@ -231,7 +299,8 @@ export default function Home() {
         <View style={styles.gridRow}>
           <TouchableOpacity
             style={styles.gridCard}
-            onPress={() => {
+            onPress={async () => {
+              await haptic.lightImpact();
               setShowPostRequest(true);
             }}
           >
@@ -249,7 +318,8 @@ export default function Home() {
 
           <TouchableOpacity
             style={styles.gridCard}
-            onPress={() => {
+            onPress={async () => {
+              await haptic.lightImpact();
               setShowBookingDetails(true);
             }}
           >

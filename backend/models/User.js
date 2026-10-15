@@ -25,6 +25,9 @@ const userSchema = new mongoose.Schema({
     tokenVersion: { type: Number, default: 0 },
     resetHash: { type: String, select: false },
     resetExpires: { type: Date, select: false },
+    otpCode: { type: String, select: false },
+    otpExpires: { type: Date, select: false },
+    isVerified: { type: Boolean, default: true },
     phone: {
         type: String,
     },
@@ -47,6 +50,12 @@ const userSchema = new mongoose.Schema({
         type: String,
     },
     avatar: {
+        type: String,
+    },
+    image: {
+        type: String,
+    },
+    location: {
         type: String,
     },
     isBanned: {

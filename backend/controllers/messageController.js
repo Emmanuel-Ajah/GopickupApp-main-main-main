@@ -6,7 +6,7 @@ const User = require('../models/User');
 // @access  Private
 const sendMessage = async (req, res) => {
     try {
-        const { recipientId, content, orderId, isVoiceNote, voiceNoteUrl } = req.body;
+        const { recipientId, content, orderId, isVoiceNote, voiceNoteUrl, fileUrl, fileName, fileType, fileSize, replyTo } = req.body;
 
         const recipient = await User.findById(recipientId);
         if (!recipient || recipient.isBanned || (req.user.role !== 'admin' && recipient.role !== 'admin')) return res.status(403).json({ message: 'Select an available support contact.' });
@@ -19,12 +19,37 @@ const sendMessage = async (req, res) => {
             order: orderId,
             isVoiceNote,
             voiceNoteUrl,
+            fileUrl,
+            fileName,
+            fileType,
+            fileSize,
+            replyTo: replyTo && replyTo.messageId ? {
+                messageId: replyTo.messageId,
+                content: replyTo.content,
+                senderName: replyTo.senderName,
+            } : undefined,
+        });
+
+        // Notify recipient of new message
+        const { createNotification } = require('./notificationController');
+        createNotification({
+            userId: recipientId,
+            title: `Message from ${req.user.name || 'GoPickup User'}`,
+            body: isVoiceNote ? '🎙️ Voice note' : (fileUrl ? `📎 File: ${fileName || 'Attachment'}` : (content || '').slice(0, 80)),
+            type: 'message',
+            data: { senderId: req.user._id, messageId: message._id, orderId },
         });
 
         // Live support assistant auto-replies to customers
         if (req.user.role !== 'admin' && recipient.role === 'admin') {
             setTimeout(async () => {
                 try {
+                    await Message.findByIdAndUpdate(message._id, {
+                        isRead: true,
+                        status: 'read',
+                        readAt: new Date(),
+                    });
+
                     let replyText = "Hello! Our support dispatch team has received your message and is reviewing your request.";
                     const text = content.toLowerCase();
                     if (text.includes("coal") || text.includes("goods") || text.includes("load") || text.includes("moving") || text.includes("trip")) {
@@ -36,11 +61,19 @@ const sendMessage = async (req, res) => {
                     } else if (text.includes("yes") || text.includes("proceed") || text.includes("okay") || text.includes("ok") || text.includes("sure")) {
                         replyText = "Awesome! Driver is dispatched. You can track your shipment live on the Map tab!";
                     }
-                    await Message.create({
+                    const replyMsg = await Message.create({
                         sender: recipientId,
                         recipient: req.user._id,
                         content: replyText,
                         order: orderId,
+                    });
+
+                    createNotification({
+                        userId: req.user._id,
+                        title: 'GoPickup Support',
+                        body: replyText.slice(0, 80),
+                        type: 'message',
+                        data: { senderId: recipientId, messageId: replyMsg._id, orderId },
                     });
                 } catch (e) {
                     console.error("Support assistant error:", e);
@@ -59,6 +92,11 @@ const sendMessage = async (req, res) => {
 // @access  Private
 const getMessages = async (req, res) => {
     try {
+        await Message.updateMany(
+            { sender: req.params.otherUserId, recipient: req.user._id, isRead: false },
+            { $set: { isRead: true, status: 'read', readAt: new Date() } }
+        );
+
         const messages = await Message.find({
             $or: [
                 { sender: req.user._id, recipient: req.params.otherUserId },
@@ -67,6 +105,21 @@ const getMessages = async (req, res) => {
         }).sort({ createdAt: 1 });
 
         res.json(messages);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// @desc    Mark messages as read
+// @route   PATCH /api/messages/read/:otherUserId
+// @access  Private
+const markAsRead = async (req, res) => {
+    try {
+        await Message.updateMany(
+            { sender: req.params.otherUserId, recipient: req.user._id, isRead: false },
+            { $set: { isRead: true, status: 'read', readAt: new Date() } }
+        );
+        res.json({ message: "Messages marked as read" });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -100,8 +153,35 @@ const getConversations = async (req, res) => {
     }
 };
 
+// @desc    Delete a message
+// @route   DELETE /api/messages/:id
+// @access  Private
+const deleteMessage = async (req, res) => {
+    try {
+        const message = await Message.findById(req.params.id);
+        if (!message) {
+            return res.status(404).json({ message: "Message not found" });
+        }
+
+        const isSender = message.sender.toString() === req.user._id.toString();
+        const isRecipient = message.recipient.toString() === req.user._id.toString();
+        const isAdmin = req.user.role === 'admin';
+
+        if (!isSender && !isRecipient && !isAdmin) {
+            return res.status(403).json({ message: "Not authorized to delete this message" });
+        }
+
+        await Message.findByIdAndDelete(req.params.id);
+        res.json({ message: "Message deleted successfully", id: req.params.id });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
 module.exports = {
     sendMessage,
     getMessages,
+    markAsRead,
     getConversations,
+    deleteMessage,
 };

@@ -20,7 +20,8 @@ import {
     TouchableOpacity,
     View
 } from "react-native";
-import { googleLogin, registerUser } from "../services/api";
+import { googleLogin, registerUser, sendOtp } from "../services/api";
+import haptic from "../utils/haptics";
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -31,6 +32,7 @@ export default function SignupScreen() {
   const [focusedField, setFocusedField] = useState<string | null>(null);
 
   const handleGoogleLogin = async (idToken: string) => {
+    await haptic.mediumImpact();
     setLoading(true);
     try {
       const res = await googleLogin({ idToken });
@@ -43,11 +45,13 @@ export default function SignupScreen() {
       if (Platform.OS === 'web') alert(msg);
       else Alert.alert("Success", msg);
 
+      await haptic.successNotification();
       await AsyncStorage.setItem("token", token);
       await AsyncStorage.setItem("user", JSON.stringify(userData));
       router.push("/tabs/home");
     } catch (error: any) {
       console.error("Google login error:", error);
+      await haptic.errorNotification();
       const message = error.response?.data?.message || "Google login failed";
       if (Platform.OS === 'web') alert(message);
       else Alert.alert("Error", message);
@@ -71,6 +75,7 @@ export default function SignupScreen() {
 
   const handleSignup = async () => {
     if (!formData.email || !formData.password || !formData.name) {
+      await haptic.warningNotification();
       if (Platform.OS === 'web') {
         alert("Please fill in all required fields (Name, Email, Password)");
       } else {
@@ -79,17 +84,30 @@ export default function SignupScreen() {
       return;
     }
 
+    await haptic.mediumImpact();
     setLoading(true);
     try {
-      const response = await registerUser(formData);
-      if (Platform.OS === 'web') {
-        alert("Account created successfully!");
-      } else {
-        Alert.alert("Success", "Account created successfully!");
+      await registerUser(formData);
+      await haptic.successNotification();
+      let localOtp = "";
+      try {
+        const otpRes = await sendOtp({ email: formData.email, purpose: "signup" });
+        localOtp = otpRes.data?.localOtp || otpRes.data?.otp || "";
+      } catch (otpErr) {
+        console.warn("Could not send signup OTP:", otpErr);
       }
-      router.push("/login");
+
+      router.push({
+        pathname: "/otp",
+        params: {
+          email: formData.email,
+          flow: "signup",
+          ...(localOtp && { localOtp }),
+        },
+      });
     } catch (error: any) {
       console.error("Signup error:", error);
+      await haptic.errorNotification();
       const message = error.response?.data?.message || "Something went wrong";
       if (Platform.OS === 'web') {
         alert("Registration Failed: " + message);
@@ -225,7 +243,7 @@ const Styles = StyleSheet.create({
     borderRadius: 175,
     backgroundColor: "#439D25",
     opacity: 0.3,
-    filter: "blur(60px)", // Works on web
+    ...(Platform.OS === 'web' ? ({ filter: "blur(60px)" } as any) : {}),
   },
   blob1: {
     top: -100,

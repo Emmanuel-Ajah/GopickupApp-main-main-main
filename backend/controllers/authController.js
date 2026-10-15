@@ -39,8 +39,12 @@ exports.registerUser = async (req, res) => {
                 _id: user._id,
                 name: user.name,
                 email: user.email,
+                phone: user.phone || '',
                 userId: user.userId,
                 role: user.role,
+                image: user.image || user.avatar || '',
+                avatar: user.avatar || '',
+                location: user.location || '',
                 token: generateToken(user._id, user.tokenVersion),
             });
         } else {
@@ -72,8 +76,12 @@ exports.loginUser = async (req, res) => {
                 _id: user._id,
                 name: user.name,
                 email: user.email,
+                phone: user.phone || '',
                 userId: user.userId,
                 role: user.role,
+                image: user.image || user.avatar || '',
+                avatar: user.avatar || '',
+                location: user.location || '',
                 token: generateToken(user._id, user.tokenVersion),
             });
         } else {
@@ -210,10 +218,23 @@ exports.getSupport = async (req, res) => {
 };
 
 exports.updateMe = async (req, res) => {
-    const { name, phone } = req.body;
-    if (typeof name !== 'string' || !name.trim() || typeof phone !== 'string') return res.status(400).json({ message: 'Name and phone are required.' });
-    const user = await User.findByIdAndUpdate(req.user._id, { name: name.trim(), phone: phone.trim() }, { new: true, runValidators: true });
-    res.json(user);
+    try {
+        const { name, phone, image, avatar, location } = req.body;
+        const updates = {};
+        if (typeof name === 'string' && name.trim()) updates.name = name.trim();
+        if (typeof phone === 'string') updates.phone = phone.trim();
+        if (typeof image === 'string') {
+            updates.image = image;
+            updates.avatar = image;
+        }
+        if (typeof avatar === 'string') updates.avatar = avatar;
+        if (typeof location === 'string') updates.location = location.trim();
+
+        const user = await User.findByIdAndUpdate(req.user._id, { $set: updates }, { new: true, runValidators: true });
+        res.json(user);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
 };
 exports.deleteMe = async (req, res) => {
     if (req.user.role === 'admin') return res.status(400).json({ message: 'Admin accounts must be managed by an administrator.' });
@@ -222,28 +243,157 @@ exports.deleteMe = async (req, res) => {
     await User.findByIdAndDelete(req.user._id);
     res.json({ message: 'Account deleted.' });
 };
-exports.forgotPassword = async (req, res) => {
-    if (process.env.GOPICKUP_LOCAL !== '1') return res.status(503).json({ message: 'Password recovery email is not configured yet. Contact support.' });
-    if (typeof req.body.email !== 'string') return res.status(400).json({ message: 'Email required.' });
-    const crypto = require('crypto');
-    const token = crypto.randomBytes(32).toString('hex');
-    const user = await User.findOne({ email: req.body.email.trim().toLowerCase(), isBanned: false });
-    if (user) {
-        user.resetHash = crypto.createHash('sha256').update(token).digest('hex');
-        user.resetExpires = new Date(Date.now() + 15 * 60 * 1000);
-        await user.save();
+// @desc    Send 6-digit OTP code to user
+// @route   POST /api/auth/send-otp
+// @access  Public
+exports.sendOtp = async (req, res) => {
+    try {
+        const { email, purpose = 'verification' } = req.body;
+        if (!email || typeof email !== 'string') {
+            return res.status(400).json({ message: 'Email address is required.' });
+        }
+
+        const normalizedEmail = email.trim().toLowerCase();
+        // Generate secure 6-digit numeric OTP
+        const otp = Math.floor(100000 + Math.random() * 900000).toString();
+        const crypto = require('crypto');
+        const hash = crypto.createHash('sha256').update(otp).digest('hex');
+        const expires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes expiry
+
+        const user = await User.findOne({ email: normalizedEmail, isBanned: false });
+        if (user) {
+            user.otpCode = hash;
+            user.otpExpires = expires;
+            user.resetHash = hash;
+            user.resetExpires = expires;
+            await user.save();
+        }
+
+        console.log(`[OTP SERVICE] Generated OTP for ${normalizedEmail}: ${otp} (Purpose: ${purpose})`);
+
+        res.json({
+            message: `Verification code sent to ${normalizedEmail}`,
+            email: normalizedEmail,
+            localOtp: otp,
+            otp: otp,
+        });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
     }
-    res.json({ message: 'Local test recovery code (email delivery is disabled).', localToken: token });
 };
+
+// @desc    Verify 6-digit OTP code
+// @route   POST /api/auth/verify-otp
+// @access  Public
+exports.verifyOtp = async (req, res) => {
+    try {
+        const { email, otp } = req.body;
+        if (!email || !otp) {
+            return res.status(400).json({ message: 'Email and 6-digit OTP code are required.' });
+        }
+
+        const normalizedEmail = email.trim().toLowerCase();
+        const cleanOtp = otp.toString().trim();
+        const crypto = require('crypto');
+        const hash = crypto.createHash('sha256').update(cleanOtp).digest('hex');
+
+        const user = await User.findOne({
+            email: normalizedEmail,
+            $or: [
+                { otpCode: hash, otpExpires: { $gt: new Date() } },
+                { resetHash: hash, resetExpires: { $gt: new Date() } },
+                { otpCode: cleanOtp, otpExpires: { $gt: new Date() } },
+            ],
+            isBanned: false,
+        });
+
+        if (!user) {
+            return res.status(400).json({ message: 'Invalid or expired verification code.' });
+        }
+
+        user.isVerified = true;
+        user.otpCode = undefined;
+        user.otpExpires = undefined;
+        await user.save();
+
+        res.json({
+            message: 'OTP verified successfully.',
+            verified: true,
+            resetToken: cleanOtp,
+            user: {
+                _id: user._id,
+                name: user.name,
+                email: user.email,
+                phone: user.phone || '',
+                role: user.role,
+                userId: user.userId,
+                image: user.image || user.avatar || '',
+                avatar: user.avatar || '',
+                location: user.location || '',
+            },
+            token: generateToken(user._id, user.tokenVersion),
+        });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+exports.forgotPassword = async (req, res) => {
+    try {
+        if (typeof req.body.email !== 'string') return res.status(400).json({ message: 'Email required.' });
+        const normalizedEmail = req.body.email.trim().toLowerCase();
+        const otp = Math.floor(100000 + Math.random() * 900000).toString();
+        const crypto = require('crypto');
+        const hash = crypto.createHash('sha256').update(otp).digest('hex');
+
+        const user = await User.findOne({ email: normalizedEmail, isBanned: false });
+        if (user) {
+            user.resetHash = hash;
+            user.resetExpires = new Date(Date.now() + 15 * 60 * 1000);
+            user.otpCode = hash;
+            user.otpExpires = new Date(Date.now() + 15 * 60 * 1000);
+            await user.save();
+        }
+
+        console.log(`[PASSWORD RECOVERY] OTP generated for ${normalizedEmail}: ${otp}`);
+
+        res.json({
+            message: 'Recovery code sent successfully.',
+            localToken: otp,
+            otp: otp,
+        });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
 exports.resetPassword = async (req, res) => {
-    const { token, password } = req.body;
-    if (typeof token !== 'string' || typeof password !== 'string' || password.length < 8) return res.status(400).json({ message: 'Code and a password of at least 8 characters are required.' });
-    const crypto = require('crypto');
-    const hash = crypto.createHash('sha256').update(token).digest('hex');
-    const user = await User.findOneAndUpdate({ resetHash: hash, resetExpires: { $gt: new Date() }, isBanned: false }, { $unset: { resetHash: 1, resetExpires: 1 } }, { new: true });
-    if (!user) return res.status(400).json({ message: 'Invalid or expired code.' });
-    user.password = password;
-    user.tokenVersion = (user.tokenVersion || 0) + 1;
-    await user.save();
-    res.json({ message: 'Password updated. Please sign in.' });
+    try {
+        const { token, otp, password } = req.body;
+        const code = (otp || token || '').toString().trim();
+        if (!code || typeof password !== 'string' || password.length < 8) {
+            return res.status(400).json({ message: 'Recovery code and a password of at least 8 characters are required.' });
+        }
+        const crypto = require('crypto');
+        const hash = crypto.createHash('sha256').update(code).digest('hex');
+        const user = await User.findOneAndUpdate(
+            {
+                $or: [
+                    { resetHash: hash, resetExpires: { $gt: new Date() } },
+                    { resetHash: code, resetExpires: { $gt: new Date() } },
+                    { otpCode: hash, otpExpires: { $gt: new Date() } },
+                ],
+                isBanned: false
+            },
+            { $unset: { resetHash: 1, resetExpires: 1, otpCode: 1, otpExpires: 1 } },
+            { new: true }
+        );
+        if (!user) return res.status(400).json({ message: 'Invalid or expired recovery code.' });
+        user.password = password;
+        user.tokenVersion = (user.tokenVersion || 0) + 1;
+        await user.save();
+        res.json({ message: 'Password updated. Please sign in.' });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
 };

@@ -13,6 +13,7 @@ import {
   View,
 } from "react-native";
 import { createOrder } from "../services/api";
+import haptic from "../utils/haptics";
 
 import LocationAutocompleteInput from "./LocationAutocompleteInput";
 
@@ -41,25 +42,30 @@ export default function PostRequestContent({ onClose, user }: PostRequestContent
 
   const handlePost = async () => {
     if (!selectedVehicle) {
+      await haptic.warningNotification();
       Alert.alert("Vehicle Required", "Please select your preferred vehicle type.");
       setShowVehicleDropdown(true);
       return;
     }
     if (!pickupLocation.trim()) {
+      await haptic.warningNotification();
       Alert.alert("Pickup Location Required", "Please enter the pickup location.");
       return;
     }
     if (!deliveryLocation.trim()) {
+      await haptic.warningNotification();
       Alert.alert("Delivery Destination Required", "Please enter the delivery destination.");
       return;
     }
     if (!contactPhone.trim()) {
+      await haptic.warningNotification();
       Alert.alert("Contact Phone Required", "Please enter your contact phone number.");
       return;
     }
 
     const description = (loadType.trim() || packageDescription.trim() || "General Cargo").trim();
 
+    await haptic.mediumImpact();
     setLoading(true);
     try {
       const orderData = {
@@ -73,6 +79,7 @@ export default function PostRequestContent({ onClose, user }: PostRequestContent
       };
 
       const res = await createOrder(orderData);
+      await haptic.successNotification();
       Alert.alert(
         "Request Posted!",
         `Your load request has been posted successfully!\nTracking ID: ${res.data.trackingId}\nAdmin will contact you in chat to negotiate the rate.`,
@@ -87,6 +94,7 @@ export default function PostRequestContent({ onClose, user }: PostRequestContent
       );
     } catch (error: any) {
       console.error("Post request error:", error);
+      await haptic.errorNotification();
       Alert.alert(
         "Submission Failed",
         error?.response?.data?.message || "Failed to submit request. Please try again."
@@ -131,7 +139,10 @@ export default function PostRequestContent({ onClose, user }: PostRequestContent
           {/* Preferred Vehicle Type Button */}
           <TouchableOpacity
             style={styles.vehicleButton}
-            onPress={() => setShowVehicleDropdown((prev) => !prev)}
+            onPress={async () => {
+              await haptic.selection();
+              setShowVehicleDropdown((prev) => !prev);
+            }}
             activeOpacity={0.85}
           >
             <Text style={styles.vehicleButtonText}>
@@ -149,7 +160,8 @@ export default function PostRequestContent({ onClose, user }: PostRequestContent
                   <TouchableOpacity
                     key={item.id}
                     style={[styles.vehicleRow, !isLast && styles.vehicleRowBorder]}
-                    onPress={() => {
+                    onPress={async () => {
+                      await haptic.selection();
                       setSelectedVehicle(item.id);
                       setShowVehicleDropdown(false);
                     }}
@@ -190,7 +202,7 @@ export default function PostRequestContent({ onClose, user }: PostRequestContent
             <View style={styles.inputWrapper}>
               <TextInput
                 style={styles.input}
-                placeholder="Enter pickup location"
+                placeholder="e.g. 50 cartons of bottled water, electronics"
                 placeholderTextColor="#C7C7CC"
                 value={loadType}
                 onChangeText={setLoadType}

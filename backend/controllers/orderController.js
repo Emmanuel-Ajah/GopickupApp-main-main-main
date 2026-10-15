@@ -1,4 +1,5 @@
 const Order = require("../models/Order");
+const { createNotification } = require("./notificationController");
 
 // @desc    Create new order
 // @route   POST /api/orders
@@ -21,6 +22,14 @@ const createOrder = async (req, res) => {
       trackingId: 'TRK-' + require('crypto').randomUUID().slice(0, 8).toUpperCase(),
       kind, vehicle, description, weight, contactPhone, scheduledAt: scheduledAt || undefined,
       totalItems: items.reduce((sum, item) => sum + item.quantity, 0), status, events: [{ status }],
+    });
+
+    createNotification({
+      userId: req.user._id,
+      title: 'Order Placed',
+      body: `Your booking #${order.trackingId} was created. GoPickup dispatchers are finding a driver.`,
+      type: 'order',
+      data: { orderId: order._id, trackingId: order.trackingId },
     });
 
     res.status(201).json(order);
@@ -104,6 +113,25 @@ const negotiateOrder = async (req, res) => {
       order.paymentStatus = paymentStatus || order.paymentStatus;
 
       const updatedOrder = await order.save();
+
+      if (negotiatedPrice !== undefined) {
+        createNotification({
+          userId: order.user,
+          title: 'Delivery Quote Available',
+          body: `A rate of ₦${negotiatedPrice.toLocaleString()} has been quoted for shipment #${order.trackingId}.`,
+          type: 'quote',
+          data: { orderId: order._id, trackingId: order.trackingId, price: negotiatedPrice },
+        });
+      } else if (status && status !== order.status) {
+        createNotification({
+          userId: order.user,
+          title: `Delivery Update: ${status}`,
+          body: `Your shipment #${order.trackingId} status updated to "${status}".`,
+          type: 'delivery',
+          data: { orderId: order._id, trackingId: order.trackingId, status },
+        });
+      }
+
       res.json(updatedOrder);
     } else {
       res.status(404).json({ message: "Order not found" });
@@ -125,5 +153,14 @@ module.exports.acceptQuote = async (req, res) => {
   const order = await Order.findOneAndUpdate({ _id: req.params.id, user: req.user._id, status: 'Pending Negotiation', negotiatedPrice: { $gt: 0 } },
     { $set: { status: 'Processing' }, $push: { events: { status: 'Processing', at: new Date() } } }, { new: true });
   if (!order) return res.status(400).json({ message: 'No quote awaiting acceptance.' });
+
+  createNotification({
+    userId: req.user._id,
+    title: 'Quote Accepted',
+    body: `Your delivery #${order.trackingId} is now Processing. Driver is preparing for dispatch.`,
+    type: 'order',
+    data: { orderId: order._id, trackingId: order.trackingId },
+  });
+
   res.json(order);
 };

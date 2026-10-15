@@ -14,6 +14,7 @@ import {
   View,
 } from "react-native";
 import { createOrder } from "../services/api";
+import haptic from "../utils/haptics";
 import LocationAutocompleteInput from "./LocationAutocompleteInput";
 
 interface BookingDetailsContentProps {
@@ -52,25 +53,35 @@ export default function BookingDetailsContent({
 
   const handleConfirm = async () => {
     if (!selectedVehicle) {
+      await haptic.warningNotification();
       Alert.alert("Vehicle Required", "Please choose the right vehicle.");
       setShowVehicleModal(true);
       return;
     }
     if (!pickupLocation.trim()) {
+      await haptic.warningNotification();
       Alert.alert("Pickup Location Required", "Please enter the pickup location.");
       return;
     }
     if (!deliveryLocation.trim()) {
+      await haptic.warningNotification();
       Alert.alert("Drop off Location Required", "Please enter the drop off location.");
       return;
     }
     if (!description.trim()) {
+      await haptic.warningNotification();
       Alert.alert("Package Description Required", "Please enter a description of the package.");
       return;
     }
 
-    const phone = (contactPhone || user?.phone || "08000000000").trim();
+    const phone = (contactPhone || user?.phone || "").trim();
+    if (!phone) {
+      await haptic.warningNotification();
+      Alert.alert("Contact Phone Required", "Please enter your contact phone number.");
+      return;
+    }
 
+    await haptic.mediumImpact();
     setLoading(true);
     try {
       const orderData = {
@@ -86,6 +97,7 @@ export default function BookingDetailsContent({
       };
 
       const res = await createOrder(orderData);
+      await haptic.successNotification();
       Alert.alert(
         "Booking Confirmed!",
         `Your driver booking request has been confirmed!\nTracking ID: ${res.data.trackingId}\nOur dispatch team will connect with you in chat.`,
@@ -100,6 +112,7 @@ export default function BookingDetailsContent({
       );
     } catch (error: any) {
       console.error("Booking error:", error);
+      await haptic.errorNotification();
       Alert.alert(
         "Booking Failed",
         error?.response?.data?.message || "Failed to confirm booking. Please try again."

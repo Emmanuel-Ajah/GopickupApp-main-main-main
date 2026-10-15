@@ -21,6 +21,8 @@ import {
     View
 } from "react-native";
 import { googleLogin, loginUser } from "../services/api";
+import { useAuth } from "../context/AuthContext";
+import haptic from "../utils/haptics";
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -28,9 +30,11 @@ const { width } = Dimensions.get("window");
 
 export default function LoginScreen() {
   const router = useRouter();
+  const { login } = useAuth();
   const [focusedField, setFocusedField] = useState<string | null>(null);
 
   const handleGoogleLogin = async (idToken: string) => {
+    await haptic.mediumImpact();
     setLoading(true);
     try {
       const res = await googleLogin({ idToken });
@@ -43,11 +47,16 @@ export default function LoginScreen() {
       if (Platform.OS === 'web') alert(welcomeMsg);
       else Alert.alert("Success", welcomeMsg);
 
-      await AsyncStorage.setItem("token", token);
-      await AsyncStorage.setItem("user", JSON.stringify(userData));
-      router.push("/tabs/home");
+      await haptic.successNotification();
+      await login(token, userData);
+      if (userData.role === 'admin') {
+        router.replace("/tabs/admin_home");
+      } else {
+        router.replace("/tabs/home");
+      }
     } catch (error: any) {
       console.error("Google login error:", error);
+      await haptic.errorNotification();
       const message = error.response?.data?.message || "Google login failed";
       if (Platform.OS === 'web') alert(message);
       else Alert.alert("Error", message);
@@ -69,6 +78,7 @@ export default function LoginScreen() {
 
   const handleLogin = async () => {
     if (!formData.email || !formData.password) {
+      await haptic.warningNotification();
       if (Platform.OS === 'web') {
         alert("Please enter both email and password");
       } else {
@@ -77,15 +87,21 @@ export default function LoginScreen() {
       return;
     }
 
+    await haptic.mediumImpact();
     setLoading(true);
     try {
       const response = await loginUser(formData);
       const { token, ...userData } = response.data;
-      await AsyncStorage.setItem("token", token);
-      await AsyncStorage.setItem("user", JSON.stringify(userData));
-      router.push("/tabs/home");
+      await haptic.successNotification();
+      await login(token, userData);
+      if (userData.role === 'admin') {
+        router.replace("/tabs/admin_home");
+      } else {
+        router.replace("/tabs/home");
+      }
     } catch (error: any) {
       console.error("Login error:", error);
+      await haptic.errorNotification();
       const message = error.response?.data?.message || "Invalid email or password";
       if (Platform.OS === 'web') {
         alert("Login Failed: " + message);
@@ -259,7 +275,7 @@ const Styles = StyleSheet.create({
     borderRadius: 175,
     backgroundColor: "#439D25",
     opacity: 0.3,
-    filter: "blur(60px)",
+    ...(Platform.OS === 'web' ? ({ filter: "blur(60px)" } as any) : {}),
   },
   blob1: {
     top: -100,
