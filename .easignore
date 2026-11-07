@@ -1,0 +1,35 @@
+# Ignore backend (not needed for mobile APK/AAB build)
+backend/
+
+# Documentation and Docker files
+*.md
+Dockerfile
+docker-compose.yml
+nginx.conf
+scripts/
+test_*.sh
+upload_certificate.pem
+
+# Dependencies and build outputs
+node_modules/
+.expo/
+dist/
+web-build/
+expo-env.d.ts
+
+# Native artifacts and temporary files
+.kotlin/
+*.orig.*
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+.metro-health-check*
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+.DS_Store
+.env*.local
+*.tsbuildinfo
+
