@@ -1,4 +1,4 @@
-package com.gopickup.gomarket
+package com.gopickup.market
 
 import android.app.Application
 import android.content.res.Configuration
@@ -54,3 +54,4 @@ class MainApplication : Application(), ReactApplication {
     ApplicationLifecycleDispatcher.onConfigurationChanged(this, newConfig)
   }
 }
+

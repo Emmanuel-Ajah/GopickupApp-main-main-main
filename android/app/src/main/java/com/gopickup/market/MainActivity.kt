@@ -1,4 +1,4 @@
-package com.gopickup.gomarket
+package com.gopickup.market
 import expo.modules.splashscreen.SplashScreenManager
 
 import android.os.Build
@@ -63,3 +63,4 @@ class MainActivity : ReactActivity() {
       super.invokeDefaultOnBackPressed()
   }
 }
+
