@@ -103,13 +103,23 @@ export default function AdminDashboardContent() {
                         <View key={order._id} style={styles.orderCard}>
                             <View style={styles.orderHeader}>
                                 <Text style={styles.orderId}>{order.trackingId}</Text>
-                                <View style={[styles.statusBadge, { backgroundColor: order.status === 'Pending' ? '#FFF3E0' : '#E8F5E9' }]}>
-                                    <Text style={styles.statusText}>{order.status}</Text>
+                                <View style={{ flexDirection: "row", gap: 6 }}>
+                                    <View style={[styles.statusBadge, { backgroundColor: order.paymentStatus === 'Paid' ? '#E8F5E9' : '#FFF3E0' }]}>
+                                        <Text style={[styles.statusText, { color: order.paymentStatus === 'Paid' ? '#439D25' : '#D97706' }]}>
+                                            {order.paymentStatus === 'Paid' ? 'Paid ✓' : 'Unpaid'}
+                                        </Text>
+                                    </View>
+                                    <View style={[styles.statusBadge, { backgroundColor: order.status === 'Pending' ? '#FFF3E0' : '#E8F5E9' }]}>
+                                        <Text style={styles.statusText}>{order.status}</Text>
+                                    </View>
                                 </View>
                             </View>
 
                             <Text style={styles.orderUser}>Customer: {order.user?.name || 'Unknown'}</Text>
                             <Text style={styles.orderDetail}>Route: {order.pickupLocation} ➔ {order.deliveryLocation}</Text>
+                            <Text style={[styles.orderDetail, { marginBottom: 6 }]}>
+                                Payment: {order.paymentStatus || 'Unpaid'}{order.totalAmount > 0 ? ` (Materials: ₦${order.totalAmount.toLocaleString()})` : ''}
+                            </Text>
 
                             <TextInput placeholder="Quote total (₦), including delivery" keyboardType="numeric" value={rates[order._id] || ''} onChangeText={value => setRates({ ...rates, [order._id]: value })} style={{ padding: 10, borderWidth: 1, borderColor: '#ddd' }} />
                             <View style={styles.actionRow}>

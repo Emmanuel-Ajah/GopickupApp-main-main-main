@@ -22,8 +22,9 @@ import NaturalResourcesContent from '../../components/NaturalResourcesContent'
 import TrackDeliveryContent from '../../components/TrackDeliveryContent'
 import PostRequestContent from '../../components/PostRequestContent'
 import LocationAutocompleteInput from '../../components/LocationAutocompleteInput'
+import PaystackPaymentModal from '../../components/PaystackPaymentModal'
 import { useAuth } from "../../context/AuthContext"
-import { createOrder } from "../../services/api"
+import { createOrder, recordPayment } from "../../services/api"
 import notificationService from "../../services/notificationService"
 import haptic from "../../utils/haptics"
 
@@ -89,6 +90,8 @@ export default function Home() {
   const [cartReady, setCartReady] = useState(false);
   const [cart, setCart] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState<'Paystack' | 'Quote'>('Paystack');
+  const [activePaymentOrder, setActivePaymentOrder] = useState<any | null>(null);
 
   useEffect(() => {
     if (!user?._id) return;
@@ -156,6 +159,23 @@ export default function Home() {
   };
 
 
+  const handlePaySuccess = async (data: { reference: string }) => {
+    if (!activePaymentOrder) return;
+    const order = activePaymentOrder;
+    setActivePaymentOrder(null);
+    try {
+      await recordPayment(order._id, { reference: data.reference, paymentMethod: 'Paystack' });
+      await haptic.successNotification();
+      Alert.alert("GoPickup", `Payment Confirmed! Your order #${order.trackingId} was successfully paid via Paystack.`);
+      setVisible(false);
+      setCart([]);
+    } catch {
+      Alert.alert("GoPickup", `Order placed! Tracking ID: ${order.trackingId}. Check My Orders for updates.`);
+      setVisible(false);
+      setCart([]);
+    }
+  };
+
   const handleConfirmOrder = async () => {
     if (cart.length === 0) {
       await haptic.warningNotification();
@@ -175,13 +195,24 @@ export default function Home() {
         })),
         ...booking,
         kind: 'materials',
+        paymentMethod: paymentMethod === 'Paystack' ? 'Paystack' : 'Quote',
       };
 
       const response = await createOrder(orderData);
       await haptic.successNotification();
-      Alert.alert("GoPickup", `Order Success! trackingId: ${response.data.trackingId}`);
-      setVisible(false);
-      setCart([]);
+
+      const numericTotal = cart.reduce(
+        (sum, item) => sum + (parseInt(String(item.price || "0").replace(/[^0-9]/g, ""), 10) || 0) * (item.quantity || 1),
+        0
+      );
+
+      if (paymentMethod === 'Paystack' && numericTotal > 0) {
+        setActivePaymentOrder({ ...response.data, totalAmount: numericTotal });
+      } else {
+        Alert.alert("GoPickup", `Order Success! trackingId: ${response.data.trackingId}`);
+        setVisible(false);
+        setCart([]);
+      }
     } catch (error: any) {
       console.error("Order error:", error);
       await haptic.errorNotification();
@@ -216,6 +247,8 @@ export default function Home() {
         <BookingDetailsContent
           onClose={() => setShowBookingDetails(false)}
           user={user}
+          value={booking}
+          onChange={setBooking}
         />
       </View>
     );
@@ -383,6 +416,53 @@ export default function Home() {
                 keyboardType="phone-pad"
                 style={{ borderWidth: 1, borderColor: '#ddd', padding: 10, borderRadius: 8, marginBottom: 8 }}
               />
+              {/* Payment Method Selector */}
+              <View style={{ marginTop: 10, marginBottom: 8, padding: 10, backgroundColor: '#F0F9EF', borderRadius: 10 }}>
+                <Text style={{ fontWeight: '700', fontSize: 13, marginBottom: 8, color: '#000' }}>
+                  Payment Method
+                </Text>
+                <TouchableOpacity
+                  onPress={() => setPaymentMethod('Paystack')}
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    padding: 8,
+                    backgroundColor: paymentMethod === 'Paystack' ? '#FFFFFF' : 'transparent',
+                    borderRadius: 8,
+                    marginBottom: 4,
+                  }}
+                >
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                    <Ionicons name="card-outline" size={18} color="#0BA4DB" />
+                    <Text style={{ fontSize: 13, fontWeight: paymentMethod === 'Paystack' ? '700' : '500', color: '#000' }}>
+                      Paystack (Card, Transfer, USSD)
+                    </Text>
+                  </View>
+                  {paymentMethod === 'Paystack' && <Ionicons name="checkmark-circle" size={18} color="#439D25" />}
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  onPress={() => setPaymentMethod('Quote')}
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    padding: 8,
+                    backgroundColor: paymentMethod === 'Quote' ? '#FFFFFF' : 'transparent',
+                    borderRadius: 8,
+                  }}
+                >
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                    <Ionicons name="time-outline" size={18} color="#606060" />
+                    <Text style={{ fontSize: 13, fontWeight: paymentMethod === 'Quote' ? '700' : '500', color: '#000' }}>
+                      Quote & Pay on Delivery
+                    </Text>
+                  </View>
+                  {paymentMethod === 'Quote' && <Ionicons name="checkmark-circle" size={18} color="#439D25" />}
+                </TouchableOpacity>
+              </View>
+
               {cart.map((item, index) => <View key={index} style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 6 }}>
                 <Text>{item.quantity} × {item.title || item.name}</Text>
                 <TouchableOpacity onPress={() => setCart(cart.filter((_, i) => i !== index))}><Text>Remove</Text></TouchableOpacity>
@@ -406,6 +486,25 @@ export default function Home() {
           )}
         </View>
       </Modal>
+
+      {/* Paystack Payment Modal for Orders */}
+      {activePaymentOrder && (
+        <PaystackPaymentModal
+          visible={!!activePaymentOrder}
+          amount={activePaymentOrder.totalAmount}
+          email={user?.email || 'customer@gopickup.com.ng'}
+          reference={`material_pay_${activePaymentOrder.trackingId}_${Date.now()}`}
+          title={`Pay #${activePaymentOrder.trackingId}`}
+          onSuccess={handlePaySuccess}
+          onClose={() => {
+            Alert.alert("Order Placed", `Your order #${activePaymentOrder.trackingId} was created. You can complete payment anytime from My Orders.`);
+            setActivePaymentOrder(null);
+            setVisible(false);
+            setCart([]);
+          }}
+          metadata={{ orderId: activePaymentOrder._id, trackingId: activePaymentOrder.trackingId }}
+        />
+      )}
     </View>
   );
 }

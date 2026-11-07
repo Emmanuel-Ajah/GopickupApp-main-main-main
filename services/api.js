@@ -62,6 +62,7 @@ export const deleteMessage = (id) => API.delete(`/messages/${id}`);
 
 export const getSupport = () => API.get("/auth/support");
 export const acceptQuote = (id) => API.patch(`/orders/${id}/accept`);
+export const recordPayment = (id, data) => API.post(`/orders/${id}/pay`, data);
 
 export const getMe = () => API.get('/auth/me');
 export const updateMe = (data) => API.patch('/auth/me', data);

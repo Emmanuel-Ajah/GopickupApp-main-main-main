@@ -47,9 +47,23 @@ export default function BookingDetailsContent({
   const [weight, setWeight] = useState(value?.weight || "");
   const [deliveryTime, setDeliveryTime] = useState("Immediate");
   const [scheduledDate, setScheduledDate] = useState(value?.scheduledAt || "");
-  const [paymentMethod, setPaymentMethod] = useState("Card");
+  const [paymentMethod, setPaymentMethod] = useState("Paystack");
   const [contactPhone, setContactPhone] = useState(value?.contactPhone || user?.phone || "");
   const [loading, setLoading] = useState(false);
+
+  React.useEffect(() => {
+    if (onChange) {
+      onChange({
+        vehicle: selectedVehicle,
+        pickupLocation,
+        deliveryLocation,
+        description,
+        weight,
+        contactPhone,
+        scheduledAt: scheduledDate,
+      });
+    }
+  }, [selectedVehicle, pickupLocation, deliveryLocation, description, weight, contactPhone, scheduledDate]);
 
   const handleConfirm = async () => {
     if (!selectedVehicle) {
@@ -260,9 +274,53 @@ export default function BookingDetailsContent({
             )}
           </View>
 
+          {/* Contact Information */}
+          <View style={styles.fieldSection}>
+            <Text style={styles.label}>Contact Phone</Text>
+            <View style={styles.inputWrapper}>
+              <TextInput
+                style={styles.input}
+                placeholder="e.g. 08012345678"
+                placeholderTextColor="#9CA3AF"
+                value={contactPhone}
+                onChangeText={setContactPhone}
+                keyboardType="phone-pad"
+              />
+            </View>
+          </View>
+
           {/* Payment Method */}
           <View style={styles.fieldSection}>
             <Text style={styles.label}>Payment Method</Text>
+
+            {/* Paystack (Card, Bank Transfer, USSD) */}
+            <TouchableOpacity
+              style={styles.paymentRow}
+              onPress={() => setPaymentMethod("Paystack")}
+              activeOpacity={0.7}
+            >
+              <Ionicons
+                name="flash-outline"
+                size={22}
+                color={paymentMethod === "Paystack" ? "#389E23" : "#333333"}
+              />
+              <View style={{ flex: 1, flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
+                <Text
+                  style={[
+                    styles.paymentText,
+                    paymentMethod === "Paystack" && styles.paymentTextSelected,
+                  ]}
+                >
+                  Paystack (Card / Transfer / USSD)
+                </Text>
+                <View style={{ backgroundColor: "#E6F6FC", paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4, marginRight: 6 }}>
+                  <Text style={{ fontSize: 10, fontWeight: "700", color: "#0BA4DB" }}>Instant</Text>
+                </View>
+              </View>
+              {paymentMethod === "Paystack" && (
+                <Ionicons name="checkmark-circle" size={18} color="#389E23" style={styles.checkIcon} />
+              )}
+            </TouchableOpacity>
 
             {/* Card */}
             <TouchableOpacity
@@ -448,6 +506,8 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.04,
     shadowRadius: 8,
     elevation: 2,
+    overflow: "visible",
+    zIndex: 100,
   },
   subHeader: {
     fontSize: 16,

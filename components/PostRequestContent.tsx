@@ -327,6 +327,8 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.04,
     shadowRadius: 8,
     elevation: 2,
+    overflow: "visible",
+    zIndex: 100,
   },
   vehicleButton: {
     backgroundColor: "#389E23",

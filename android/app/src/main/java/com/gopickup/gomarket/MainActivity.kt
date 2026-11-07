@@ -1,4 +1,4 @@
-package com.gopickup
+package com.gopickup.gomarket
 import expo.modules.splashscreen.SplashScreenManager
 
 import android.os.Build

@@ -1,4 +1,4 @@
-package com.gopickup
+package com.gopickup.gomarket
 
 import android.app.Application
 import android.content.res.Configuration

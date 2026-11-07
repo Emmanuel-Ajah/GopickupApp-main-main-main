@@ -164,3 +164,34 @@ module.exports.acceptQuote = async (req, res) => {
 
   res.json(order);
 };
+
+module.exports.recordPayment = async (req, res) => {
+  try {
+    const { reference, paymentMethod = 'Paystack' } = req.body;
+    const order = await Order.findOne({ _id: req.params.id, user: req.user._id });
+    if (!order) return res.status(404).json({ message: 'Order not found.' });
+
+    order.paymentStatus = 'Paid';
+    if (!order.events) order.events = [];
+    order.events.push({ status: 'Payment Received', at: new Date() });
+
+    if (order.status === 'Pending Negotiation' && order.negotiatedPrice > 0) {
+      order.status = 'Processing';
+      order.events.push({ status: 'Processing', at: new Date() });
+    }
+
+    const updatedOrder = await order.save();
+
+    createNotification({
+      userId: req.user._id,
+      title: 'Payment Confirmed',
+      body: `Your payment of ₦${(order.negotiatedPrice || order.totalAmount || 0).toLocaleString()} for #${order.trackingId} was successful via ${paymentMethod}.`,
+      type: 'order',
+      data: { orderId: order._id, trackingId: order.trackingId, reference },
+    });
+
+    res.json(updatedOrder);
+  } catch (error) {
+    res.status(error.status || 500).json({ message: error.message });
+  }
+};
