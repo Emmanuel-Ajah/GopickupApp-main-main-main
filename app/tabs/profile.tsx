@@ -2,6 +2,7 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as ImagePicker from "expo-image-picker";
 import * as Location from "expo-location";
+import * as WebBrowser from "expo-web-browser";
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
@@ -503,6 +504,22 @@ export default function ProfileScreen() {
             <Text style={styles.referSub}>And get Bonus</Text>
           </View>
         </TouchableOpacity>
+
+        {/* Legal & Policy Links */}
+        <View style={styles.legalSection}>
+          <TouchableOpacity
+            style={styles.legalLink}
+            onPress={async () => {
+              await haptic.lightImpact();
+              WebBrowser.openBrowserAsync("https://gopickup.app/privacy");
+            }}
+            activeOpacity={0.7}
+          >
+            <Ionicons name="shield-checkmark-outline" size={18} color="#4B5563" />
+            <Text style={styles.legalText}>Privacy Policy</Text>
+            <Ionicons name="chevron-forward" size={16} color="#9CA3AF" />
+          </TouchableOpacity>
+        </View>
       </ScrollView>
     </View>
   );
@@ -770,5 +787,26 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: "#E8F5E9",
     marginTop: 2,
+  },
+  legalSection: {
+    marginTop: 14,
+    marginBottom: 30,
+    backgroundColor: "#FFFFFF",
+    borderRadius: 16,
+    paddingHorizontal: 16,
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+  },
+  legalLink: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 14,
+  },
+  legalText: {
+    flex: 1,
+    marginLeft: 10,
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#374151",
   },
 });

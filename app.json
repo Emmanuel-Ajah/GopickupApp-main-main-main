@@ -42,7 +42,8 @@
       [
         "expo-location",
         {
-          "locationAlwaysAndWhenInUsePermission": "Allow Gopickup to access your location to find nearby drivers and calculate delivery routes."
+          "locationWhenInUsePermission": "Allow Gopickup to access your location to find nearby drivers and calculate delivery routes.",
+          "isAndroidBackgroundLocationEnabled": false
         }
       ],
       [
