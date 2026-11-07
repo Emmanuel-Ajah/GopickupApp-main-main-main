@@ -19,7 +19,6 @@
     },
     "android": {
       "package": "com.gopickup.market",
-      "versionCode": 1,
       "softwareKeyboardLayoutMode": "resize",
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
